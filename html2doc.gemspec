@@ -6,7 +6,7 @@ require "html2doc/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "html2doc"
-  spec.version       = HTML2DOC::VERSION
+  spec.version       = Html2Doc::VERSION
   spec.authors       = ["Ribose Inc."]
   spec.email         = ["open.source@ribose.com"]
 
