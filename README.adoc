@@ -5,6 +5,7 @@ This gem originated out of https://github.com/riboseinc/asciidoctor-iso, which c
 This work is driven by the Word document generation procedure documented in http://sebsauvage.net/wiki/doku.php?id=word_document_generation
 
 The gem currently does the following:
+
 * Resize any images in the HTML file to fit within the maximum page size. (Word will otherwise crash on reading the document.)
 * Generate a filelist.xml listing of all files to be bundled into the Word document.
 * Bundle up the images, the HTML file of the document proper, and the `header.html` file representing header/footer information, 
