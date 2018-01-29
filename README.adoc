@@ -1,0 +1,5 @@
+Gem to convert an HTML document into a Word document (.doc) format.
+
+This gem originated out of https://github.com/riboseinc/asciidoctor-iso, which creates a Word document from a Microsoft HTML document (created in turn by processing Asciidoc). The Microsoft HTML document is already quite close to Microsoft Word requirements, but future iterations of this gem will become more generic.
+
+This work is driven by the Word document generation procedure documented in http://sebsauvage.net/wiki/doku.php?id=word_document_generation
