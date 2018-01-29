@@ -3,13 +3,15 @@ require "nokogiri"
 
 module Html2Doc
 
-  def process(result, filename, header_filename, dir)
-    docxml = Nokogiri::XML(msword_fix(result))
-    image_cleanup(docxml, dir)
-    system "cp #{header_filename} #{dir}/header.html" unless header_filename.nil?
-    generate_filelist(filename, dir)
-    File.open("#{filename}.htm", "w") { |f| f.write(result) }
-    mime_package result, filename, dir
+  class << self
+    def process(result, filename, header_filename, dir)
+      docxml = Nokogiri::XML(msword_fix(result))
+      image_cleanup(docxml, dir)
+      system "cp #{header_filename} #{dir}/header.html" unless header_filename.nil?
+      generate_filelist(filename, dir)
+      File.open("#{filename}.htm", "w") { |f| f.write(result) }
+      mime_package result, filename, dir
+    end
   end
 
   def msword_fix(r)
