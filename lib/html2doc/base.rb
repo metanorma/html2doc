@@ -4,15 +4,18 @@ require "nokogiri"
 module Html2Doc
 
   def self.process(result, filename, header_filename, dir)
-      docxml = Nokogiri::XML(result)
-      image_cleanup(docxml, dir)
-      define_head(docxml, dir, filename)
-      result = self.msword_fix(docxml.to_xml)
-      system "cp #{header_filename} #{dir}/header.html" unless header_filename.nil?
-      generate_filelist(filename, dir)
-      File.open("#{filename}.htm", "w") { |f| f.write(result) }
-      mime_package result, filename, dir
-    end
+    # preserve HTML escapes
+    /<!DOCTYPE html/.match? result or
+      result = '<!DOCTYPE html SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' + result
+    docxml = Nokogiri::XML(result)
+    image_cleanup(docxml, dir)
+    define_head(docxml, dir, filename, header_filename)
+    result = self.msword_fix(docxml.to_xml)
+    system "cp #{header_filename} #{dir}/header.html" unless header_filename.nil?
+    generate_filelist(filename, dir)
+    File.open("#{filename}.htm", "w") { |f| f.write(result) }
+    mime_package result, filename, dir
+  end
 
   def self.msword_fix(r)
     # brain damage in MSWord parser
@@ -58,9 +61,9 @@ module Html2Doc
     docxml
   end
 
-  def self.define_head(docxml, dir, filename)
-        docxml.xpath("//xmlns:head | //head").each do |h|
-          h.children.first.add_previous_sibling <<~XML
+  def self.define_head1(docxml, dir)
+    docxml.xpath("//xmlns:head | //head").each do |h|
+      h.children.first.add_previous_sibling <<~XML
             <!--[if gte mso 9]>
             <xml>
             <w:WordDocument>
@@ -72,8 +75,32 @@ module Html2Doc
             <![endif]-->
             <meta http-equiv=Content-Type content="text/html; charset=utf-8"/>
             <link rel="File-List" href="#{dir}/filelist.xml"/>
-          XML
-        end
+      XML
+    end
+  end
+
+  def self.stylesheet(filename, header_filename)
+    fn = File.join(File.dirname(__FILE__), "wordstyle.css")
+    stylesheet = File.read(fn, encoding: "UTF-8")
+    if header_filename.nil?
+      stylesheet.gsub!(/\n[^\n]*FILENAME[^\n]*i\n/, "\n")
+    else
+      stylesheet.gsub!(/FILENAME/, filename)
+    end
+    xml = Nokogiri::XML('<style/>')
+    xml.children.first << Nokogiri::XML::Comment.new(xml, "\n#{stylesheet}\n")
+    xml.root.to_s
+  end
+
+  def self.define_head(docxml, dir, filename, header_filename)
+    title = docxml.at("//xmlns:head/xmlns:title | //head/title") 
+    head = docxml.xpath("//xmlns:head | //head")
+    if title.nil?
+      h.children.first.add_previous_sibling stylesheet(filename, header_filename)
+    else
+      title.add_next_sibling stylesheet(filename, header_filename)
+    end
+    self.define_head1(docxml, dir)
   end
 
   def self.mime_preamble(boundary, filename, result)

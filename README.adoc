@@ -1,3 +1,5 @@
+= Html2Doc
+
 Gem to convert an HTML document into a Word document (.doc) format. This is intended for automated generation of Microsoft Word documents, given HTML documents, which are mmuch more readily crafted.
 
 This gem originated out of https://github.com/riboseinc/asciidoctor-iso, which creates a Word document from a Microsoft HTML document (created in turn by processing Asciidoc). The Microsoft HTML document is already quite close to Microsoft Word requirements, but future iterations of this gem will become more generic.
@@ -8,9 +10,23 @@ The gem currently does the following:
 
 * Resize any images in the HTML file to fit within the maximum page size. (Word will otherwise crash on reading the document.)
 * Generate a filelist.xml listing of all files to be bundled into the Word document.
-* Bundle up the images, the HTML file of the document proper, and the `header.html` file representing header/footer information, 
-into a MIME file, and save that file to disk (so that Microsoft Word can deal with it as a Word file.)
+* Inject Microsoft Word-specific CSS into the HTML document. The CSS file used is at `lib/html2doc/wordstyle.css`, and can be customised. (This generic CSS can be overridden by CSS already in the HTML document, since the generic CSS is injected at the top of the document.)
+* Bundle up the images, the HTML file of the document proper, and the `header.html` file representing header/footer information, into a MIME file, and save that file to disk (so that Microsoft Word can deal with it as a Word file.)
 
-Future iterations will add CSS stylesheet support (this is currently assumed to be contained inside the HTML),
-and convert generic HTML to Microsoft-specific HTML. For a representative generator of Microsoft HTML, see
-https://github.com/riboseinc/asciidoctor-iso
+Future iterations will convert generic HTML to Microsoft-specific HTML. For a representative generator of Microsoft HTML, see https://github.com/riboseinc/asciidoctor-iso
+
+== Usage
+
+[sourcecode,ruby]
+--
+require "html2doc"
+
+Html2Doc.process(result, filename, header_filename, dir)
+--
+
+result:: is the Html document to be converted into Word, as a string.
+filename:: is the name the document is to be saved as, without a file suffix
+header_filename:: is the location of the HTML document containing header and footer for the document, as well as footnote/endnote separators; if there is none, use nil. To generate your own such document, save a Word document with headers/footers and/or footnote/endnote separators as an HTML document; the `header.html` will be in the `{filename}.fld` folder generated along with the HTML. A sample file is available at https://github.com/riboseinc/asciidoctor-iso/blob/master/lib/asciidoctor/iso/word/header.html
+dir:: is the directory the document is to be saved to
+
+Note that the local CSS file contains a variable `FILENAME` for the location of footnote/endnote separators and headers/footers, which are provided in the header HTML file. The gem replaces `FILENAME` with the file nane that the document will be saved as.
