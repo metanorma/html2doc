@@ -3,18 +3,18 @@ require "nokogiri"
 
 module Html2Doc
 
-  class << self
-    def process(result, filename, header_filename, dir)
-      docxml = Nokogiri::XML(msword_fix(result))
+  def self.process(result, filename, header_filename, dir)
+      docxml = Nokogiri::XML(result)
       image_cleanup(docxml, dir)
+      define_head(docxml, dir, filename)
+      result = self.msword_fix(docxml.to_xml)
       system "cp #{header_filename} #{dir}/header.html" unless header_filename.nil?
       generate_filelist(filename, dir)
       File.open("#{filename}.htm", "w") { |f| f.write(result) }
       mime_package result, filename, dir
     end
-  end
 
-  def msword_fix(r)
+  def self.msword_fix(r)
     # brain damage in MSWord parser
     r.gsub(%r{<span style="mso-special-character:footnote"/>},
            '<span style="mso-special-character:footnote"></span>').
@@ -29,7 +29,7 @@ module Html2Doc
 
 
 
-  def image_resize(orig_filename)
+  def self.image_resize(orig_filename)
     image_size = ImageSize.path(orig_filename).size
     # max width for Word document is 400, max height is 680
     if image_size[0] > 400
@@ -43,8 +43,8 @@ module Html2Doc
     image_size
   end
 
-  def image_cleanup(docxml, dir)
-    docxml.xpath(ns("//img")).each do |i|
+  def self.image_cleanup(docxml, dir)
+    docxml.xpath("//xmlns:img | //img").each do |i|
       matched = /\.(?<suffix>\S+)$/.match i["src"]
       uuid = UUIDTools::UUID.random_create.to_s
       new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
@@ -55,9 +55,28 @@ module Html2Doc
       i["height"] = image_size[1]
       i["width"] = image_size[0]
     end
+    docxml
   end
 
-  def mime_preamble(boundary, filename, result)
+  def self.define_head(docxml, dir, filename)
+        docxml.xpath("//xmlns:head | //head").each do |h|
+          h.children.first.add_previous_sibling <<~XML
+            <!--[if gte mso 9]>
+            <xml>
+            <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+            </w:WordDocument>
+            </xml>
+            <![endif]-->
+            <meta http-equiv=Content-Type content="text/html; charset=utf-8"/>
+            <link rel="File-List" href="#{dir}/filelist.xml"/>
+          XML
+        end
+  end
+
+  def self.mime_preamble(boundary, filename, result)
     <<~"PREAMBLE"
     MIME-Version: 1.0
     Content-Type: multipart/related; boundary="#{boundary}"
@@ -71,7 +90,7 @@ module Html2Doc
     PREAMBLE
   end
 
-  def mime_attachment(boundary, filename, item, dir)
+  def self.mime_attachment(boundary, filename, item, dir)
     encoded_file = Base64.strict_encode64(
       File.read("#{dir}/#{item}"),
     ).gsub(/(.{76})/, "\\1\n")
@@ -86,19 +105,19 @@ module Html2Doc
     FILE
   end
 
-  def mime_type(item)
+  def self.mime_type(item)
     types = MIME::Types.type_for(item)
     type = types ? types.first.to_s : 'text/plain; charset="utf-8"'
     type = type + ' charset="utf-8"' if /^text/.match?(type) && types
     type
   end
 
-  def mime_boundary
+  def self.mime_boundary
     salt = UUIDTools::UUID.random_create.to_s.gsub(/-/, ".")[0..17]
     "----=_NextPart_#{salt}"
   end
 
-  def mime_package(result, filename, dir)
+  def self.mime_package(result, filename, dir)
     boundary = mime_boundary
     mhtml = mime_preamble(boundary, filename, result)
     Dir.foreach(dir) do |item|
@@ -109,7 +128,7 @@ module Html2Doc
     File.open("#{filename}.doc", "w") { |f| f.write mhtml }
   end
 
-  def generate_filelist(filename, dir)
+  def self.generate_filelist(filename, dir)
     File.open(File.join(dir, "filelist.xml"), "w") do |f|
       f.write(<<~"XML")
                 <xml xmlns:o="urn:schemas-microsoft-com:office:office">
