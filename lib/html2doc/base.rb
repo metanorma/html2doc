@@ -2,16 +2,18 @@ require "uuidtools"
 require "nokogiri"
 
 module Html2Doc
-
-  def self.process(result, filename, header_filename, dir)
+  def self.process(result, filename, header_file, dir)
     # preserve HTML escapes
-    /<!DOCTYPE html/.match? result or
-      result = '<!DOCTYPE html SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' + result
+    unless /<!DOCTYPE html/.match? result
+      result.gsub!(/<\?xml version="1.0"\?>/, "")
+      result = "<!DOCTYPE html SYSTEM " +
+        "'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>" + result
+    end
     docxml = Nokogiri::XML(result)
     image_cleanup(docxml, dir)
-    define_head(docxml, dir, filename, header_filename)
+    define_head(docxml, dir, filename, header_file)
     result = self.msword_fix(docxml.to_xml)
-    system "cp #{header_filename} #{dir}/header.html" unless header_filename.nil?
+    system "cp #{header_file} #{dir}/header.html" unless header_file.nil?
     generate_filelist(filename, dir)
     File.open("#{filename}.htm", "w") { |f| f.write(result) }
     mime_package result, filename, dir
@@ -21,16 +23,13 @@ module Html2Doc
     # brain damage in MSWord parser
     r.gsub(%r{<span style="mso-special-character:footnote"/>},
            '<span style="mso-special-character:footnote"></span>').
-           gsub(%r{(<a style="mso-comment-reference:[^>/]+)/>},
-                "\\1></a>").
-                gsub(%r{<link rel="File-List"}, "<link rel=File-List").
-                gsub(%r{<meta http-equiv="Content-Type"},
-                     "<meta http-equiv=Content-Type").
-                     gsub(%r{&tab;|&amp;tab;},
-                          '<span style="mso-tab-count:1">&#xA0; </span>')
+           gsub(%r{(<a style="mso-comment-reference:[^>/]+)/>}, "\\1></a>").
+           gsub(%r{<link rel="File-List"}, "<link rel=File-List").
+           gsub(%r{<meta http-equiv="Content-Type"},
+                "<meta http-equiv=Content-Type").
+                gsub(%r{&tab;|&amp;tab;},
+                     '<span style="mso-tab-count:1">&#xA0; </span>')
   end
-
-
 
   def self.image_resize(orig_filename)
     image_size = ImageSize.path(orig_filename).size
@@ -47,22 +46,23 @@ module Html2Doc
   end
 
   def self.image_cleanup(docxml, dir)
-    docxml.xpath("//xmlns:img | //img").each do |i|
+    docxml.xpath("//*[local-name() = 'img']").each do |i|
       matched = /\.(?<suffix>\S+)$/.match i["src"]
       uuid = UUIDTools::UUID.random_create.to_s
       new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
       # presupposes that the image source is local
-      system "cp #{i["src"]} #{new_full_filename}"
-      image_size = image_resize(i["src"])
+      system "cp #{i['src']} #{new_full_filename}"
+      # image_size = image_resize(i["src"])
+      i["width"], i["height"] = image_resize(i["src"])
       i["src"] = new_full_filename
-      i["height"] = image_size[1]
-      i["width"] = image_size[0]
+      #i["height"] = image_size[1]
+      #i["width"] = image_size[0]
     end
     docxml
   end
 
   def self.define_head1(docxml, dir)
-    docxml.xpath("//xmlns:head | //head").each do |h|
+    docxml.xpath("//*[local-name() = 'head']").each do |h|
       h.children.first.add_previous_sibling <<~XML
             <!--[if gte mso 9]>
             <xml>
@@ -87,18 +87,18 @@ module Html2Doc
     else
       stylesheet.gsub!(/FILENAME/, filename)
     end
-    xml = Nokogiri::XML('<style/>')
+    xml = Nokogiri::XML("<style/>")
     xml.children.first << Nokogiri::XML::Comment.new(xml, "\n#{stylesheet}\n")
     xml.root.to_s
   end
 
-  def self.define_head(docxml, dir, filename, header_filename)
-    title = docxml.at("//xmlns:head/xmlns:title | //head/title") 
-    head = docxml.xpath("//xmlns:head | //head")
+  def self.define_head(docxml, dir, filename, header_file)
+    title = docxml.at("//*[local-name() = 'head']/*[local-name() = 'title']")
+    head = docxml.at("//*[local-name() = 'head']")
     if title.nil?
-      h.children.first.add_previous_sibling stylesheet(filename, header_filename)
+      head.children.first.add_previous_sibling stylesheet(filename, header_file)
     else
-      title.add_next_sibling stylesheet(filename, header_filename)
+      title.add_next_sibling stylesheet(filename, header_file)
     end
     self.define_head1(docxml, dir)
   end
@@ -168,7 +168,4 @@ module Html2Doc
       f.write("</xml>\n")
     end
   end
-
-
-
 end
