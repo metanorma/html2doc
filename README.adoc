@@ -29,7 +29,7 @@ TO DO: compare with https://github.com/MuhammetDilmac/Html2Docx (much simpler, b
 
 == Usage
 
-[sourcecode,ruby]
+[source,ruby]
 --
 require "html2doc"
 
