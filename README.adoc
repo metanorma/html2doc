@@ -15,6 +15,10 @@ The gem currently does the following:
 
 Future iterations will convert generic HTML to Microsoft-specific HTML. For a representative generator of Microsoft HTML, see https://github.com/riboseinc/asciidoctor-iso
 
+== Constraints
+
+This generates .doc documents. We are yet to review https://github.com/MuhammetDilmac/Html2Docx, which may well do the same job.
+
 == Usage
 
 [sourcecode,ruby]
