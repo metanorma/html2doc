@@ -15,6 +15,8 @@ The gem currently does the following:
 
 Future iterations will convert generic HTML to Microsoft-specific HTML. For a representative generator of Microsoft HTML, see https://github.com/riboseinc/asciidoctor-iso
 
+Work being tracked at https://github.com/riboseinc/asciidoctor-iso/issues/47:
+
 * Render footnotes
 * Render (editorial) comments
 * Render MathML, AsciiMath
