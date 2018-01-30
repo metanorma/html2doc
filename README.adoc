@@ -15,9 +15,15 @@ The gem currently does the following:
 
 Future iterations will convert generic HTML to Microsoft-specific HTML. For a representative generator of Microsoft HTML, see https://github.com/riboseinc/asciidoctor-iso
 
+* Render footnotes
+* Render (editorial) comments
+* Render MathML, AsciiMath
+
 == Constraints
 
-This generates .doc documents. We are yet to review https://github.com/MuhammetDilmac/Html2Docx and https://github.com/jetruby/puredocx, which may well do the same job.
+This generates .doc documents. 
+
+TO DO: compare with https://github.com/MuhammetDilmac/Html2Docx (much simpler, but generates Docx) and https://github.com/jetruby/puredocx (generates Word doc as Ruby object, necessarily simpler).
 
 == Usage
 
