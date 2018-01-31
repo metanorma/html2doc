@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["open.source@ribose.com"]
 
   spec.summary       = "Convert HTML document to Microsoft Word document"
-    "in AsciiDoc."
+  "in AsciiDoc."
   spec.description   = <<~DESCRIPTION
     Convert HTML document to Microsoft Word document.
 
