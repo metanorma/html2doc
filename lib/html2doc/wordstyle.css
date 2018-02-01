@@ -990,3 +990,9 @@ table.MsoNormalTable
 	mso-pagination:widow-orphan;
 	font-size:10.0pt;
 	font-family:"Cambria",serif;}
+br.section
+    {page-break-before:always;
+    mso-break-type:section-break;}
+br.pagebreak
+    {page-break-before:always;
+    mso-special-character:line-break;}
