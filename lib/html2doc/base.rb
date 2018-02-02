@@ -1,12 +1,17 @@
 require "uuidtools"
+require "asciimath"
 require "nokogiri"
+require "xml/xslt"
 
 module Html2Doc
+  @xslt = XML::XSLT.new
+  @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
+
   def self.process(result, filename, stylesheet, header_file, dir)
-    docxml = Nokogiri::HTML(result)
+    docxml = Nokogiri::HTML(asciimath_to_mathml(result))
     cleanup(docxml, dir)
     define_head(docxml, dir, filename, stylesheet, header_file)
-    result = self.msword_fix(docxml.to_xml)
+    result = msword_fix(docxml.to_xml)
     system "cp #{header_file} #{dir}/header.html" unless header_file.nil?
     generate_filelist(filename, dir)
     File.open("#{filename}.htm", "w") { |f| f.write(result) }
@@ -15,7 +20,28 @@ module Html2Doc
 
   def self.cleanup(docxml, dir)
     image_cleanup(docxml, dir)
+mathml_to_ooml(docxml)
     msonormal(docxml)
+  end
+
+  # TODO: different delimiters from asciimath2jax: { delimiters [[1,2]]
+  def self.asciimath_to_mathml(doc)
+    return doc unless /type\s+=\s+"AsciiMath"/.match? doc
+    doc.split(/(`)/).each_slice(4) do |a|
+      a[2] = AsciiMath.parse(a[2]).to_mathml.
+        gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+      a[0] + a[2]
+    end.join
+  end
+
+  def self.mathml_to_ooml(docxml)
+    docxml.xpath("//*[local-name() = 'math']").each do |m|
+      @xslt.xml = m.to_s.gsub(/<math>/,
+                              "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+      ooml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
+        gsub(/ xmlns:[^=]+="[^"]+"/, "")
+      m.swap(ooml)
+    end
   end
 
   # preserve HTML escapes
@@ -87,7 +113,7 @@ module Html2Doc
   end
 
   def self.filename_substitute(stylesheet, header_filename, filename)
-    if header_filename.nil?  
+    if header_filename.nil? 
       stylesheet.gsub!(/\n[^\n]*FILENAME[^\n]*i\n/, "\n")
     else
       stylesheet.gsub!(/FILENAME/, filename)
@@ -96,7 +122,7 @@ module Html2Doc
   end
 
   def self.stylesheet(filename, header_filename, fn)
-    (fn.nil? or fn.empty?) and
+    (fn.nil? || fn.empty?) &&
       fn = File.join(File.dirname(__FILE__), "wordstyle.css")
     stylesheet = File.read(fn, encoding: "UTF-8")
     stylesheet = filename_substitute(stylesheet, header_filename, filename)
