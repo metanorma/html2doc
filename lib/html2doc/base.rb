@@ -3,7 +3,7 @@ require "nokogiri"
 
 module Html2Doc
   def self.process(result, filename, stylesheet, header_file, dir)
-    docxml = Nokogiri::XML(xhtml(result))
+    docxml = Nokogiri::HTML(result)
     cleanup(docxml, dir)
     define_head(docxml, dir, filename, stylesheet, header_file)
     result = self.msword_fix(docxml.to_xml)
@@ -87,12 +87,12 @@ module Html2Doc
   end
 
   def self.filename_substitute(stylesheet, header_filename, filename)
-        if header_filename.nil?  
+    if header_filename.nil?  
       stylesheet.gsub!(/\n[^\n]*FILENAME[^\n]*i\n/, "\n")
     else
       stylesheet.gsub!(/FILENAME/, filename)
     end
-stylesheet
+    stylesheet
   end
 
   def self.stylesheet(filename, header_filename, fn)
