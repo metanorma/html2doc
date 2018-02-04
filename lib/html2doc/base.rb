@@ -9,7 +9,7 @@ module Html2Doc
 
   def self.process(result, filename, stylesheet, header_file, dir, asciimathdelims = nil)
     docxml = Nokogiri::HTML(asciimath_to_mathml(result, asciimathdelims))
-    define_head(cleanup(docxml), dir, filename, stylesheet, header_file)
+    define_head(cleanup(docxml, dir), dir, filename, stylesheet, header_file)
     result = msword_fix(docxml.to_xml)
     system "cp #{header_file} #{dir}/header.html" unless header_file.nil?
     generate_filelist(filename, dir)
