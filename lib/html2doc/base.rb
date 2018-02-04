@@ -10,7 +10,8 @@ module Html2Doc
 
   def self.process(result, filename, stylesheet, header_file, dir, 
                    asciimathdelims = nil)
-    process_html(result, filename, stylesheet, header_file, dir, asciimathdelims)
+    result = process_html(result, filename, stylesheet, header_file, 
+                          dir, asciimathdelims)
     system "cp #{header_file} #{dir}/header.html" unless header_file.nil?
     generate_filelist(filename, dir)
     File.open("#{filename}.htm", "w") { |f| f.write(result) }
@@ -37,7 +38,7 @@ module Html2Doc
   end
 
   def self.asciimath_to_mathml(doc, delims)
-    return if delims.nil? || delims.size < 2
+    return doc if delims.nil? || delims.size < 2
     doc.split(/(#{delims[0]}|#{delims[1]})/).each_slice(4).map do |a|
       a[2].nil? || a[2] = AsciiMath.parse(a[2]).to_mathml.
       gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
