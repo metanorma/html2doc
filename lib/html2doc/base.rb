@@ -7,10 +7,9 @@ module Html2Doc
   @xslt = XML::XSLT.new
   @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
 
-  def self.process(result, filename, stylesheet, header_file, dir)
-    docxml = Nokogiri::HTML(asciimath_to_mathml(result))
-    cleanup(docxml, dir)
-    define_head(docxml, dir, filename, stylesheet, header_file)
+  def self.process(result, filename, stylesheet, header_file, dir, asciimathdelims = nil)
+    docxml = Nokogiri::HTML(asciimath_to_mathml(result, asciimathdelims))
+    define_head(cleanup(docxml), dir, filename, stylesheet, header_file)
     result = msword_fix(docxml.to_xml)
     system "cp #{header_file} #{dir}/header.html" unless header_file.nil?
     generate_filelist(filename, dir)
@@ -20,17 +19,18 @@ module Html2Doc
 
   def self.cleanup(docxml, dir)
     image_cleanup(docxml, dir)
-mathml_to_ooml(docxml)
+    mathml_to_ooml(docxml)
     msonormal(docxml)
+    docxml
   end
 
-  # TODO: different delimiters from asciimath2jax: { delimiters [[1,2]]
-  def self.asciimath_to_mathml(doc)
+  def self.asciimath_to_mathml(doc, delims)
+    return if delims.nil? || delims.size < 2
     return doc unless /type\s+=\s+"AsciiMath"/.match? doc
-    doc.split(/(`)/).each_slice(4) do |a|
+    doc.split(/(#{delims[0]}|#{delims[1]})/).each_slice(4).map do |a|
       a[2] = AsciiMath.parse(a[2]).to_mathml.
         gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
-      a[0] + a[2]
+      a.size > 1 ? a[0] + a[2] : a[0]
     end.join
   end
 
