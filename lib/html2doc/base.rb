@@ -2,6 +2,7 @@ require "uuidtools"
 require "asciimath"
 require "nokogiri"
 require "xml/xslt"
+require "pp"
 
 module Html2Doc
   @xslt = XML::XSLT.new
@@ -26,9 +27,8 @@ module Html2Doc
 
   def self.asciimath_to_mathml(doc, delims)
     return if delims.nil? || delims.size < 2
-    return doc unless /type\s+=\s+"AsciiMath"/.match? doc
     doc.split(/(#{delims[0]}|#{delims[1]})/).each_slice(4).map do |a|
-      a[2] = AsciiMath.parse(a[2]).to_mathml.
+      a[2].nil? || a[2] = AsciiMath.parse(a[2]).to_mathml.
         gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
       a.size > 1 ? a[0] + a[2] : a[0]
     end.join
