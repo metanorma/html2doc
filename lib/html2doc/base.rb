@@ -20,7 +20,7 @@ module Html2Doc
   end
 
   def self.process_html(result, filename, stylesheet, header_file, dir, asciimathdelims)
-    docxml = Nokogiri::HTML(asciimath_to_mathml(result, asciimathdelims))
+    docxml = Nokogiri::XML(asciimath_to_mathml(result, asciimathdelims))
     define_head(cleanup(docxml, dir), dir, filename, stylesheet, header_file)
     result = msword_fix(docxml.to_xml)
   end
@@ -51,7 +51,7 @@ module Html2Doc
       @xslt.xml = m.to_s.gsub(/<math>/,
                               "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
       ooml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
-        gsub(/ xmlns:[^=]+="[^"]+"/, "")
+        gsub(/ xmlns:[^=]+="[^"]+"/, "").gsub(%r{(</?)}, "\\1m:")
       m.swap(ooml)
     end
   end
