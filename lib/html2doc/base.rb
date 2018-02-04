@@ -8,14 +8,25 @@ module Html2Doc
   @xslt = XML::XSLT.new
   @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
 
-  def self.process(result, filename, stylesheet, header_file, dir, asciimathdelims = nil)
-    docxml = Nokogiri::HTML(asciimath_to_mathml(result, asciimathdelims))
-    define_head(cleanup(docxml, dir), dir, filename, stylesheet, header_file)
-    result = msword_fix(docxml.to_xml)
+  def self.process(result, filename, stylesheet, header_file, dir, 
+                   asciimathdelims = nil)
+    process_html(result, filename, stylesheet, header_file, dir, asciimathdelims)
     system "cp #{header_file} #{dir}/header.html" unless header_file.nil?
     generate_filelist(filename, dir)
     File.open("#{filename}.htm", "w") { |f| f.write(result) }
     mime_package result, filename, dir
+    rm_temp_files(filename, dir)
+  end
+
+  def self.process_html(result, filename, stylesheet, header_file, dir, asciimathdelims)
+    docxml = Nokogiri::HTML(asciimath_to_mathml(result, asciimathdelims))
+    define_head(cleanup(docxml, dir), dir, filename, stylesheet, header_file)
+    result = msword_fix(docxml.to_xml)
+  end
+
+  def self.rm_temp_files(filename, dir)
+    system "rm #{filename}.htm"
+    system "rm -r #{filename}_files"
   end
 
   def self.cleanup(docxml, dir)
@@ -29,7 +40,7 @@ module Html2Doc
     return if delims.nil? || delims.size < 2
     doc.split(/(#{delims[0]}|#{delims[1]})/).each_slice(4).map do |a|
       a[2].nil? || a[2] = AsciiMath.parse(a[2]).to_mathml.
-        gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+      gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
       a.size > 1 ? a[0] + a[2] : a[0]
     end.join
   end
@@ -113,7 +124,7 @@ module Html2Doc
   end
 
   def self.filename_substitute(stylesheet, header_filename, filename)
-    if header_filename.nil? 
+    if header_filename.nil?
       stylesheet.gsub!(/\n[^\n]*FILENAME[^\n]*i\n/, "\n")
     else
       stylesheet.gsub!(/FILENAME/, filename)

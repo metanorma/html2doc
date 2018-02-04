@@ -53,5 +53,4 @@ module Html2Doc
     mhtml += "--#{boundary}--"
     File.open("#{filename}.doc", "w") { |f| f.write mhtml }
   end
-
 end
