@@ -1,5 +1,10 @@
 = Html2Doc
 
+
+image:https://img.shields.io/gem/v/html2doc.svg["Gem Version", link="https://rubygems.org/gems/html2doc"]
+image:https://img.shields.io/travis/riboseinc/html2doc/master.svg["Build Status", link="https://travis-ci.org/riboseinc/html2doc"]
+image:https://codeclimate.com/github/riboseinc/html2doc/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/riboseinc/html2doc"]
+
 Gem to convert an HTML document into a Word document (.doc) format. This is intended for automated generation of Microsoft Word documents, given HTML documents, which are mmuch more readily crafted.
 
 This gem originated out of https://github.com/riboseinc/asciidoctor-iso, which creates a Word document from a Microsoft HTML document (created in turn by processing Asciidoc). The Microsoft HTML document is already quite close to Microsoft Word requirements, but future iterations of this gem will become more generic.
