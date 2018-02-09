@@ -80,17 +80,18 @@ module Html2Doc
   end
 
   def self.image_resize(orig_filename)
-    image_size = ImageSize.path(orig_filename).size
+    size = [i["width"], i["height"]]
+    size = ImageSize.path(i["src"]).size unless size[0] && size[1]
     # max width for Word document is 400, max height is 680
-    if image_size[0] > 400
-      image_size[1] = (image_size[1] * 400 / image_size[0]).ceil
-      image_size[0] = 400
+    if size[0] > 400
+      size[1] = (size[1] * 400 / size[0]).ceil
+      size[0] = 400
     end
-    if image_size[1] > 680
-      image_size[0] = (image_size[0] * 680 / image_size[1]).ceil
-      image_size[1] = 680
+    if size[1] > 680
+      size[0] = (size[0] * 680 / size[1]).ceil
+      size[1] = 680
     end
-    image_size
+    size
   end
 
   def self.image_cleanup(docxml, dir)
@@ -100,7 +101,7 @@ module Html2Doc
       new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
       # presupposes that the image source is local
       system "cp #{i['src']} #{new_full_filename}"
-      i["width"], i["height"] = image_resize(i["src"])
+      i["width"], i["height"] = image_resize(i)
       i["src"] = new_full_filename
     end
     docxml
