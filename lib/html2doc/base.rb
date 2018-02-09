@@ -80,7 +80,7 @@ module Html2Doc
   end
 
   def self.image_resize(i)
-    size = [i["width"], i["height"]]
+    size = [i["width"].to_i, i["height"].to_i]
     size = ImageSize.path(i["src"]).size unless size[0] && size[1]
     # max width for Word document is 400, max height is 680
     if size[0] > 400
