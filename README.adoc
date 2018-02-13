@@ -50,3 +50,7 @@ dir:: is the directory the document is to be saved to
 asciimathdelims:: are the AsciiMath delimiters used in the text. If none are provided, no AsciiMath conversion is attempted.
 
 Note that the local CSS stylesheet file contains a variable `FILENAME` for the location of footnote/endnote separators and headers/footers, which are provided in the header HTML file. The gem replaces `FILENAME` with the file nane that the document will be saved as. If you supply your own stylesheet and also wish to use separators or headers/footers, you will likewise need to replace the document name mentioned in your stylesheet with a `FILENAME` string.
+
+== Example
+
+The `spec/examples` directory includes `rice.doc` and its source files: this Word document has been generated from `rice.html` through a call to html2doc from https://github.com/riboseinc/asciidoctor-iso. (The source document `rice.html` was itself generated from Asciidoc, rather than being hand-crafted.)
