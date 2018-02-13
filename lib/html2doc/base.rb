@@ -33,6 +33,7 @@ module Html2Doc
   def self.cleanup(docxml, dir)
     image_cleanup(docxml, dir)
     mathml_to_ooml(docxml)
+    footnotes(docxml)
     msonormal(docxml)
     docxml
   end
