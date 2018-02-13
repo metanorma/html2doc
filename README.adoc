@@ -14,6 +14,7 @@ This work is driven by the Word document generation procedure documented in http
 The gem currently does the following:
 
 * Convert any AsciiMath and MathML to Word's native mathematical formatting language.
+* Identify any footnotes in the document (through hyperlinks with `class = "Footnote"` or `epub:type = "footnote"`), and render them as Microsoft Word footnotes.
 * Resize any images in the HTML file to fit within the maximum page size. (Word will otherwise crash on reading the document.)
 * Generate a filelist.xml listing of all files to be bundled into the Word document.
 * Assign the class `MsoNormal` to any paragraphs that do not have a class, so that they can be treated as Normal Style when editing the Word document.
@@ -22,9 +23,8 @@ The gem currently does the following:
 
 Future iterations will convert generic HTML to Microsoft-specific HTML. For a representative generator of Microsoft HTML, see https://github.com/riboseinc/asciidoctor-iso
 
-Work being tracked at https://github.com/riboseinc/asciidoctor-iso/issues/47:
+Work to be done:
 
-* Render footnotes
 * Render (editorial) comments
 
 == Constraints
