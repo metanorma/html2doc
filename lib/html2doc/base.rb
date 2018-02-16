@@ -81,15 +81,15 @@ module Html2Doc
     r
   end
 
-  def self.image_resize(i)
+  def self.image_resize(i, maxheight, maxwidth)
     size = [i["width"].to_i, i["height"].to_i]
     size = ImageSize.path(i["src"]).size if size[0].zero? && size[1].zero?
-    # max width for Word document is 400, max height is 680
-    if size[0] > 400
-      size = [400, (size[1] * 400 / size[0]).ceil]
+    # max height for Word document is 400, max width is 680
+    if size[0] > maxheight
+      size = [maxheight, (size[1] * maxheight / size[0]).ceil]
     end
-    if size[1] > 680
-      size = [(size[0] * 680 / size[1]).ceil, 680]
+    if size[1] > maxwidth
+      size = [(size[0] * maxwidth / size[1]).ceil, maxwidth]
     end
     size
   end
@@ -101,7 +101,7 @@ module Html2Doc
       new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
       # presupposes that the image source is local
       system "cp #{i['src']} #{new_full_filename}"
-      i["width"], i["height"] = image_resize(i)
+      i["width"], i["height"] = image_resize(i, 400, 680)
       i["src"] = new_full_filename
     end
     docxml
