@@ -2,9 +2,9 @@ require "uuidtools"
 require "nokogiri"
 
 module Html2Doc
-
   def self.footnotes(docxml)
-    i, fn = 1, []
+    i = 1
+    fn = []
     docxml.xpath("//a").each do |a|
       next unless process_footnote_link(docxml, a, i, fn)
       i += 1
@@ -16,7 +16,7 @@ module Html2Doc
     body = docxml.at("//body")
     list = body.add_child("<div style='mso-element:footnote-list'/>")
     footnotes.each_with_index do |f, i|
-      fn = list.first.add_child(footnote_container(i+1))
+      fn = list.first.add_child(footnote_container(i + 1))
       f.parent = fn.first
       footnote_div_to_p(f)
     end
@@ -26,7 +26,7 @@ module Html2Doc
   def self.footnote_div_to_p(f)
     if %w{div aside}.include? f.name
       if f.at(".//p")
-        f = f.replace(f.children)
+        f.replace(f.children)
       else
         f.name = "p"
         f["class"] = "MsoFootnoteText"
@@ -37,15 +37,15 @@ module Html2Doc
   def self.footnote_container(i)
     <<~DIV
       <div style='mso-element:footnote' id='ftn#{i}'>
-        <a style='mso-footnote-id:ftn#{i}' href=#_ftn#{i}' 
-           name='_ftnref#{i}' title='' id='_ftnref#{i}'><span 
-           class='MsoFootnoteReference'><span 
+        <a style='mso-footnote-id:ftn#{i}' href=#_ftn#{i}'
+           name='_ftnref#{i}' title='' id='_ftnref#{i}'><span
+           class='MsoFootnoteReference'><span
            style='mso-special-character:footnote'></span></span></div>
     DIV
   end
 
   def self.process_footnote_link(docxml, a, i, fn)
-    return false unless is_footnote(a)
+    return false unless footnote?(a)
     href = a["href"].gsub(/^#/, "")
     note = docxml.at("//*[@name = '#{href}' or @id = '#{href}']")
     return false if note.nil?
@@ -57,7 +57,7 @@ module Html2Doc
 
   def self.transform_footnote_text(note)
     note["id"] = ""
-    note.xpath(".//div").each { |div| div = div.replace(div.children) }
+    note.xpath(".//div").each { |div| div.replace(div.children) }
     note.xpath(".//aside | .//p").each do |p|
       p.name = "p"
       p["class"] = "MsoFootnoteText"
@@ -65,9 +65,9 @@ module Html2Doc
     note.remove
   end
 
-  def self.is_footnote(a)
-    a["epub:type"]&.casecmp("footnote") == 0 ||
-      a["class"]&.casecmp("footnote") == 0
+  def self.footnote?(a)
+    a["epub:type"]&.casecmp("footnote")&.zero? ||
+      a["class"]&.casecmp("footnote")&.zero?
   end
 
   def self.set_footnote_link_attrs(a, i)
@@ -90,8 +90,4 @@ module Html2Doc
     end
     docxml
   end
-
-
-
-
 end

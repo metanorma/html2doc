@@ -8,9 +8,9 @@ module Html2Doc
   @xslt = XML::XSLT.new
   @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
 
-  def self.process(result, filename, stylesheet, header_file, dir, 
+  def self.process(result, filename, stylesheet, header_file, dir,
                    asciimathdelims = nil)
-    result = process_html(result, filename, stylesheet, header_file, 
+    result = process_html(result, filename, stylesheet, header_file,
                           dir, asciimathdelims)
     system "cp #{header_file} #{dir}/header.html" unless header_file.nil?
     generate_filelist(filename, dir)
@@ -19,13 +19,14 @@ module Html2Doc
     rm_temp_files(filename, dir)
   end
 
-  def self.process_html(result, filename, stylesheet, header_file, dir, asciimathdelims)
+  def self.process_html(result, filename, stylesheet, header_file, dir,
+                        asciimathdelims)
     docxml = Nokogiri::XML(asciimath_to_mathml(result, asciimathdelims))
     define_head(cleanup(docxml, dir), dir, filename, stylesheet, header_file)
-    result = msword_fix(docxml.to_xml)
+    msword_fix(docxml.to_xml)
   end
 
-  def self.rm_temp_files(filename, dir)
+  def self.rm_temp_files(filename, _dir)
     system "rm #{filename}.htm"
     system "rm -r #{filename}_files"
   end
@@ -49,10 +50,10 @@ module Html2Doc
 
   def self.mathml_to_ooml(docxml)
     docxml.xpath("//*[local-name() = 'math']").each do |m|
-      @xslt.xml = m.to_s.gsub(/<math>/,
-                              "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+      @xslt.xml = m.to_s.
+        gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
       ooml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
-        gsub(/ xmlns:[^=]+="[^"]+"/, "")# .gsub(%r{(</?)}, "\\1m:")
+        gsub(/ xmlns:[^=]+="[^"]+"/, "")
       m.swap(ooml)
     end
   end
@@ -82,15 +83,13 @@ module Html2Doc
 
   def self.image_resize(i)
     size = [i["width"].to_i, i["height"].to_i]
-    size = ImageSize.path(i["src"]).size unless size[0] && size[1]
+    size = ImageSize.path(i["src"]).size if size[0].zero? && size[1].zero?
     # max width for Word document is 400, max height is 680
     if size[0] > 400
-      size[1] = (size[1] * 400 / size[0]).ceil
-      size[0] = 400
+      size = [400, (size[1] * 400 / size[0]).ceil]
     end
     if size[1] > 680
-      size[0] = (size[0] * 680 / size[1]).ceil
-      size[1] = 680
+      size = [(size[0] * 680 / size[1]).ceil, 680]
     end
     size
   end
@@ -108,19 +107,23 @@ module Html2Doc
     docxml
   end
 
+  PRINT_VIEW = <<~XML.freeze
+    <!--[if gte mso 9]>
+    <xml>
+    <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+    </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <meta http-equiv=Content-Type content="text/html; charset=utf-8"/>
+  XML
+
   def self.define_head1(docxml, dir)
     docxml.xpath("//*[local-name() = 'head']").each do |h|
       h.children.first.add_previous_sibling <<~XML
-        <!--[if gte mso 9]>
-        <xml>
-        <w:WordDocument>
-        <w:View>Print</w:View>
-        <w:Zoom>100</w:Zoom>
-        <w:DoNotOptimizeForBrowser/>
-        </w:WordDocument>
-        </xml>
-        <![endif]-->
-        <meta http-equiv=Content-Type content="text/html; charset=utf-8"/>
+        #{PRINT_VIEW}
         <link rel="File-List" href="#{dir}/filelist.xml"/>
       XML
     end
@@ -169,10 +172,8 @@ module Html2Doc
 
   def self.generate_filelist(filename, dir)
     File.open(File.join(dir, "filelist.xml"), "w") do |f|
-      f.write(<<~"XML")
-        <xml xmlns:o="urn:schemas-microsoft-com:office:office">
-        <o:MainFile HRef="../#{filename}.htm"/>
-      XML
+      f.write %{<xml xmlns:o="urn:schemas-microsoft-com:office:office">
+        <o:MainFile HRef="../#{filename}.htm"/>}
       Dir.foreach(dir) do |item|
         next if item == "." || item == ".." || /^\./.match(item)
         f.write %{  <o:File HRef="#{item}"/>\n}
