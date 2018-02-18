@@ -29,9 +29,9 @@ Work to be done:
 
 == Constraints
 
-This generates .doc documents. 
+This generates .doc documents. Future versions will upgrade the output to docx.
 
-TO DO: compare with https://github.com/MuhammetDilmac/Html2Docx (much simpler, but generates Docx) and https://github.com/jetruby/puredocx (generates Word doc as Ruby object, necessarily simpler).
+There there are two other Microsoft Word vendors in the Ruby ecosystem. https://github.com/jetruby/puredocx generate Word documents from a ruby struct as a DSL, rather than converting a preexisting html document. That constrains it's coverage to what is explicitly catered for in the DSL. https://github.com/MuhammetDilmac/Html2Docx is a much simpler wrapper around html: it does not do any of the added functionality described above (image resizing, converting footnotes, AsciiMath and MathML), though it does already generate docx.
 
 == Usage
 
