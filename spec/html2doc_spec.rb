@@ -1,16 +1,11 @@
-BLANK_HTML = <<~HTML.freeze
+def html_input(x)
+  <<~HTML
     <html><head><title>blank</title></head>
     <body>
+    #{x}
     </body></html>
-HTML
-
-SIMPLE_HTML = <<~HTML.freeze
-    <html><head><title>blank</title></head>
-    <body>
-      <h1>Hello word!</h1>
-      <div>This is a very simple document</div>
-    </body></html>
-HTML
+  HTML
+end
 
 WORD_HDR = <<~HDR
 MIME-Version: 1.0
@@ -136,7 +131,23 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a blank document" do
-    Html2Doc.process(BLANK_HTML, "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(""), "test", nil, nil, nil, nil)
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END} #{word_body("")} #{WORD_FTR1}
+    OUTPUT
+  end
+
+  it "removes any temp files" do
+    File.delete("test.doc")
+    Html2Doc.process(html_input(""), "test", nil, nil, nil, nil)
+    expect(File.exist?("test.doc")).to be true
+    expect(File.exist?("test.htm")).to be false
+    expect(File.exist?("test_files")).to be false
+  end
+
+  it "processes a stylesheet" do
+    Html2Doc.process(html_input(""), "test", "lib/html2doc/wordstyle.css", nil, nil, nil)
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END} #{word_body("")} #{WORD_FTR1}
@@ -144,7 +155,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a header" do
-    Html2Doc.process(BLANK_HTML, "test", nil, "header.html", nil, nil)
+    Html2Doc.process(html_input(""), "test", nil, "header.html", nil, nil)
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET.gsub(/FILENAME/, "test")} 
@@ -153,12 +164,24 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a populated document" do
-    Html2Doc.process(SIMPLE_HTML, "test", nil, nil, nil, nil)
+    simple_body = "<h1>Hello word!</h1>
+    <div>This is a very simple document</div>"
+    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{word_body("<h1>Hello word!</h1>
-    <div>This is a very simple document</div>")} 
+    #{word_body(simple_body)}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
+    it "processes AsciiMath" do
+    Html2Doc.process(html_input("<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"), "test", nil, nil, nil, ["{{", "}}"])
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div><m:oMath><m:nary><m:naryPr><m:chr m:val="&#x2211;"/><m:limLoc m:val="undOvr"/><m:grow m:val="1"/><m:subHide m:val="off"/><m:supHide m:val="off"/></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e/></m:nary><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup><m:r><m:t>=</m:t></m:r><m:sSup><m:e><m:r><m:t>(</m:t></m:r><m:f><m:fPr><m:type m:val="bar"/></m:fPr><m:num><m:r><m:t>n</m:t></m:r><m:r><m:t>(n+1)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><m:r><m:t>)</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:oMath>
+    </div>')}
     #{WORD_FTR1}
     OUTPUT
   end
