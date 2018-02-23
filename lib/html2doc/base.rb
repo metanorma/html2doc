@@ -32,7 +32,7 @@ module Html2Doc
     # docxml = Nokogiri::XML(asciimath_to_mathml(result, asciimathdelims))
     docxml = to_xhtml(asciimath_to_mathml(result, asciimathdelims))
     define_head(cleanup(docxml, dir), dir, filename, stylesheet, header_file)
-    msword_fix(from_xhtml(docxml)) #.to_xml)
+    msword_fix(from_xhtml(docxml))
   end
 
   def self.rm_temp_files(filename, dir, dir1)
@@ -84,20 +84,14 @@ module Html2Doc
     Nokogiri::XML.parse(xml)
   end
 
-  def self.from_xhtml(xml)
-    xml.to_xml.sub(%r{ xmlns="http://www.w3.org/1999/xhtml"}, "").
-      sub(%r{<!DOCTYPE html SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n}, "").
-      gsub(%{ />}, "/>")
-  end
+  DOCTYPE = <<~"DOCTYPE".freeze
+    <!DOCTYPE html SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+  DOCTYPE
 
-  # preserve HTML escapes
-  def self.xhtml(result)
-    unless /<!DOCTYPE html/.match? result
-      result.gsub!(/<\?xml version="1.0"\?>/, "")
-      result = "<!DOCTYPE html SYSTEM " +
-        "'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>" + result
-    end
-    result
+  def self.from_xhtml(xml)
+    xml.to_xml.sub(%{ xmlns="http://www.w3.org/1999/xhtml"}, "").
+      sub(DOCTYPE, "").
+      gsub(%{ />}, "/>")
   end
 
   def self.msword_fix(r)
@@ -110,8 +104,7 @@ module Html2Doc
     r.gsub!(%r{<link rel="File-List"}, "<link rel=File-List")
     r.gsub!(%r{<meta http-equiv="Content-Type"},
             "<meta http-equiv=Content-Type")
-    r.gsub!(%r{&tab;|&amp;tab;},
-            '<span style="mso-tab-count:1">&#xA0; </span>')
+    r.gsub!(%r{&tab;|&amp;tab;}, '<span style="mso-tab-count:1">&#xA0; </span>')
     r
   end
 
@@ -157,7 +150,7 @@ module Html2Doc
   def self.define_head1(docxml, dir)
     docxml.xpath("//*[local-name() = 'head']").each do |h|
       h.children.first.add_previous_sibling <<~XML
-      #{PRINT_VIEW}
+        #{PRINT_VIEW}
         <link rel="File-List" href="#{dir}/filelist.xml"/>
       XML
     end
