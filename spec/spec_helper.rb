@@ -1,4 +1,10 @@
+require "simplecov"
+SimpleCov.start do
+  add_filter "/spec/"
+end
+
 require "bundler/setup"
+require 'rspec/match_fuzzy'
 require "html2doc"
 
 RSpec.configure do |config|
