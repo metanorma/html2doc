@@ -10,7 +10,6 @@ Gem::Specification.new do |spec|
   spec.email         = ["open.source@ribose.com"]
 
   spec.summary       = "Convert HTML document to Microsoft Word document"
-  "in AsciiDoc."
   spec.description   = <<~DESCRIPTION
     Convert HTML document to Microsoft Word document.
 
@@ -45,4 +44,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rubocop", "~> 0.50"
   spec.add_development_dependency "simplecov", "~> 0.15"
   spec.add_development_dependency "timecop", "~> 0.9"
+  spec.add_development_dependency "rspec-match_fuzzy"
 end

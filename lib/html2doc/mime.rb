@@ -1,5 +1,6 @@
 require "uuidtools"
-require "nokogiri"
+require "base64"
+require 'mime/types'
 
 module Html2Doc
   def self.mime_preamble(boundary, filename, result)

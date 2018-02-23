@@ -8,15 +8,23 @@ module Html2Doc
   @xslt = XML::XSLT.new
   @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
 
-  def self.process(result, filename, stylesheet, header_file, dir,
+  def self.process(result, filename, stylesheet, header_file, dir = nil,
                    asciimathdelims = nil)
+    dir1 = create_dir(filename, dir)
     result = process_html(result, filename, stylesheet, header_file,
-                          dir, asciimathdelims)
-    system "cp #{header_file} #{dir}/header.html" unless header_file.nil?
-    generate_filelist(filename, dir)
+                          dir1, asciimathdelims)
+    system "cp #{header_file} #{dir1}/header.html" unless header_file.nil?
+    generate_filelist(filename, dir1)
     File.open("#{filename}.htm", "w") { |f| f.write(result) }
-    mime_package result, filename, dir
-    rm_temp_files(filename, dir)
+    mime_package result, filename, dir1
+    rm_temp_files(filename, dir, dir1)
+  end
+
+  def self.create_dir(filename, dir)
+    return dir if dir
+    dir = "#{filename}_files"
+    Dir.mkdir(dir) unless File.exists?(dir)
+    dir
   end
 
   def self.process_html(result, filename, stylesheet, header_file, dir,
@@ -26,9 +34,9 @@ module Html2Doc
     msword_fix(docxml.to_xml)
   end
 
-  def self.rm_temp_files(filename, _dir)
+  def self.rm_temp_files(filename, dir, dir1)
     system "rm #{filename}.htm"
-    system "rm -r #{filename}_files"
+    system "rm -r #{dir1}" unless dir
   end
 
   def self.cleanup(docxml, dir)
@@ -123,7 +131,7 @@ module Html2Doc
   def self.define_head1(docxml, dir)
     docxml.xpath("//*[local-name() = 'head']").each do |h|
       h.children.first.add_previous_sibling <<~XML
-        #{PRINT_VIEW}
+      #{PRINT_VIEW}
         <link rel="File-List" href="#{dir}/filelist.xml"/>
       XML
     end
