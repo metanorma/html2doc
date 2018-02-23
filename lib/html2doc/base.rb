@@ -29,9 +29,10 @@ module Html2Doc
 
   def self.process_html(result, filename, stylesheet, header_file, dir,
                         asciimathdelims)
-    docxml = Nokogiri::XML(asciimath_to_mathml(result, asciimathdelims))
+    # docxml = Nokogiri::XML(asciimath_to_mathml(result, asciimathdelims))
+    docxml = to_xhtml(asciimath_to_mathml(result, asciimathdelims))
     define_head(cleanup(docxml, dir), dir, filename, stylesheet, header_file)
-    msword_fix(docxml.to_xml)
+    msword_fix(from_xhtml(docxml)) #.to_xml)
   end
 
   def self.rm_temp_files(filename, dir, dir1)
@@ -66,6 +67,29 @@ module Html2Doc
     end
   end
 
+  NOKOHEAD = <<~HERE.freeze
+    <!DOCTYPE html SYSTEM
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    <head> <title></title> <meta charset="UTF-8" /> </head>
+    <body> </body> </html>
+  HERE
+
+  def self.to_xhtml(xml)
+    xml.gsub!(/<\?xml[^>]*>/, "")
+    unless /<!DOCTYPE /.match? xml
+      xml = '<!DOCTYPE html SYSTEM
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' + xml
+    end
+    Nokogiri::XML.parse(xml)
+  end
+
+  def self.from_xhtml(xml)
+    xml.to_xml.sub(%r{ xmlns="http://www.w3.org/1999/xhtml"}, "").
+      sub(%r{<!DOCTYPE html SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n}, "").
+      gsub(%{ />}, "/>")
+  end
+
   # preserve HTML escapes
   def self.xhtml(result)
     unless /<!DOCTYPE html/.match? result
@@ -80,6 +104,8 @@ module Html2Doc
     # brain damage in MSWord parser
     r.gsub!(%r{<span style="mso-special-character:footnote"/>},
             '<span style="mso-special-character:footnote"></span>')
+    r.gsub!(%r{<div style="mso-element:footnote-list"></div>},
+            '<div style="mso-element:footnote-list"/>')
     r.gsub!(%r{(<a style="mso-comment-reference:[^>/]+)/>}, "\\1></a>")
     r.gsub!(%r{<link rel="File-List"}, "<link rel=File-List")
     r.gsub!(%r{<meta http-equiv="Content-Type"},

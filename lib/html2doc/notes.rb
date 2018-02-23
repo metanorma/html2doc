@@ -1,5 +1,4 @@
 require "uuidtools"
-require "nokogiri"
 
 module Html2Doc
   def self.footnotes(docxml)
