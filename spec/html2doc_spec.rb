@@ -1,6 +1,28 @@
 def html_input(x)
   <<~HTML
-    <html><head><title>blank</title></head>
+    <html><head><title>blank</title>
+    <meta name="Originator" content="Me"/>
+    </head>
+    <body>
+    #{x}
+    </body></html>
+  HTML
+end
+
+def html_input_no_title(x)
+  <<~HTML
+    <html><head>
+    <meta name="Originator" content="Me"/>
+    </head>
+    <body>
+    #{x}
+    </body></html>
+  HTML
+end
+
+def html_input_empty_head(x)
+  <<~HTML
+    <html><head></head>
     <body>
     #{x}
     </body></html>
@@ -34,14 +56,16 @@ HDR
 
 WORD_HDR_END = <<~HDR
 -->
-]]></style></head>
+]]></style>
+<meta name="Originator" content="Me"/>
+</head>
 HDR
 
-def word_body(x)
+def word_body(x, fn)
   <<~BODY
 <body>
   #{x}
-<div style="mso-element:footnote-list"/></body></html>
+#{fn}</body></html>
   BODY
 end
 
@@ -119,10 +143,45 @@ CjwvYm9keT4NCg0KPC9odG1sPg0K
 ------=_NextPart_--
 FTR
 
+WORD_FTR3 = <<~FTR
+------=_NextPart_
+Content-Location: file:///C:/Doc/test_files/609e8807-c2d0-450c-b60b-d995a0f8dcaf.png
+Content-Transfer-Encoding: base64
+Content-Type: image/png
+FTR
+
+WORD_FTR3 = <<~FTR
+------=_NextPart_
+Content-Location: file:///C:/Doc/test_files/filelist.xml
+Content-Transfer-Encoding: base64
+Content-Type: application/xml
+
+PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
+ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9IjFh
+YzIwNjVmLTAzZjAtNGM3YS1iOWE2LTkyZTgyMDU5MWJmMC5wbmciLz4KICA8bzpGaWxlIEhSZWY9
+ImZpbGVsaXN0LnhtbCIvPgo8L3htbD4K
+------=_NextPart_
+Content-Location: file:///C:/Doc/test_files/cb7b0d19-891e-4634-815a-570d019d454c.png
+Content-Transfer-Encoding: base64
+Content-Type: image/png
+------=_NextPart_--
+FTR
+
 DEFAULT_STYLESHEET = File.read("lib/html2doc/wordstyle.css", encoding: "utf-8").freeze
 
 def guid_clean(x)
   x.gsub(/NextPart_[0-9a-f.]+/, "NextPart_")
+end
+
+def image_clean(x)
+  x.gsub(%r{[0-9a-f-]+\.png}, "image.png").
+    gsub(%r{[0-9a-f-]+\.gif}, "image.gif").
+    gsub(%r{[0-9a-f-]+\.(jpeg|jpg)}, "image.jpg").
+    gsub(%r{------=_NextPart_\s+Content-Location: file:///C:/Doc/test_files/image\.(png|gif).*?\s-----=_NextPart_}m, "------=_NextPart_").
+    gsub(%r{Content-Type: image/(png|gif|jpeg)[^-]*------=_NextPart_-?-?}m, "").
+    gsub(%r{ICAgICAg[^-]*-----}m, "-----").
+    gsub(%r{\s*</img>\s*}m, "</img>").
+    gsub(%r{</body>\s*</html>}m, "</body></html>")
 end
 
 RSpec.describe Html2Doc do
@@ -134,7 +193,8 @@ RSpec.describe Html2Doc do
     Html2Doc.process(html_input(""), "test", nil, nil, nil, nil)
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
-    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END} #{word_body("")} #{WORD_FTR1}
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END} 
+    #{word_body("", '<div style="mso-element:footnote-list"/>')} #{WORD_FTR1}
     OUTPUT
   end
 
@@ -146,11 +206,33 @@ RSpec.describe Html2Doc do
     expect(File.exist?("test_files")).to be false
   end
 
-  it "processes a stylesheet" do
+  it "processes a stylesheet in an HTML document with a title" do
     Html2Doc.process(html_input(""), "test", "lib/html2doc/wordstyle.css", nil, nil, nil)
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
-    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END} #{word_body("")} #{WORD_FTR1}
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END} 
+    #{word_body("", '<div style="mso-element:footnote-list"/>')} #{WORD_FTR1}
+    OUTPUT
+  end
+
+  it "processes a stylesheet in an HTML document without a title" do
+    Html2Doc.process(html_input_no_title(""), "test", "lib/html2doc/wordstyle.css", nil, nil, nil)
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR.sub("<title>blank</title>", "")} 
+    #{DEFAULT_STYLESHEET} #{WORD_HDR_END} 
+    #{word_body("", '<div style="mso-element:footnote-list"/>')} #{WORD_FTR1}
+    OUTPUT
+  end
+
+  it "processes a stylesheet in an HTML document with an empty head" do
+    Html2Doc.process(html_input_empty_head(""), "test", "lib/html2doc/wordstyle.css", nil, nil, nil)
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR.sub("<title>blank</title>", "")}
+    #{DEFAULT_STYLESHEET} 
+    #{WORD_HDR_END.sub('<meta name="Originator" content="Me"/>'+"\n", "").sub("</style>\n</head>", "</style></head>")} 
+    #{word_body("", '<div style="mso-element:footnote-list"/>')} #{WORD_FTR1}
     OUTPUT
   end
 
@@ -159,7 +241,7 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET.gsub(/FILENAME/, "test")} 
-    #{WORD_HDR_END} #{word_body("")} #{WORD_FTR2}
+    #{WORD_HDR_END} #{word_body("", '<div style="mso-element:footnote-list"/>')} #{WORD_FTR2}
     OUTPUT
   end
 
@@ -170,18 +252,18 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{word_body(simple_body)}
+    #{word_body(simple_body, '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
   end
 
-    it "processes AsciiMath" do
+  it "processes AsciiMath" do
     Html2Doc.process(html_input("<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"), "test", nil, nil, nil, ["{{", "}}"])
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
     #{word_body('<div><m:oMath><m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="1"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup><m:r><m:t>=</m:t></m:r><m:sSup><m:e><m:r><m:t>(</m:t></m:r><m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num><m:r><m:t>n</m:t></m:r><m:r><m:t>(n+1)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><m:r><m:t>)</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:oMath>
-    </div>')}
+    </div>', '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
   end
@@ -189,15 +271,136 @@ RSpec.describe Html2Doc do
   it "processes tabs" do
     simple_body = "<h1>Hello word!</h1>
     <div>This is a very &tab; simple document</div>"
-    puts html_input(simple_body)
     Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{word_body(simple_body.gsub(/\&tab;/, %[<span style="mso-tab-count:1">&#xA0; </span>]))}
+    #{word_body(simple_body.gsub(/\&tab;/, %[<span style="mso-tab-count:1">&#xA0; </span>]), '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
   end
 
+  it "makes unstyled paragraphs be MsoNormal" do
+    simple_body = '<h1>Hello word!</h1>
+    <p>This is a very simple document</p>
+    <p class="x">This style stays</p>'
+    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body(simple_body.gsub(/<p>/, %[<p class="MsoNormal">]), '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
 
+  it "makes unstyled list entries be MsoNormal" do
+    simple_body = '<h1>Hello word!</h1>
+    <ul>
+    <li>This is a very simple document</li>
+    <li class="x">This style stays</li>
+    </ul>'
+    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body(simple_body.gsub(/<li>/, %[<li class="MsoNormal">]), '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
+  it "resizes images for height" do
+    simple_body = '<img src="spec/19160-6.png">'
+    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    testdoc = File.read("test.doc", encoding: "utf-8")
+    expect(testdoc).to match(%r{Content-Type: image/png})
+    expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="387"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(WORD_FTR3)}
+    OUTPUT
+  end
+
+  it "resizes images for width" do
+    simple_body = '<img src="spec/19160-7.gif">'
+    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    testdoc = File.read("test.doc", encoding: "utf-8")
+    expect(testdoc).to match(%r{Content-Type: image/gif})
+    expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(WORD_FTR3).gsub(/image\.png/, "image.gif")}
+    OUTPUT
+  end
+
+  it "resizes images for height" do
+    simple_body = '<img src="spec/19160-8.jpg">'
+    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    testdoc = File.read("test.doc", encoding: "utf-8")
+    expect(testdoc).to match(%r{Content-Type: image/jpeg})
+    expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(WORD_FTR3).gsub(/image\.png/, "image.jpg")}
+    OUTPUT
+  end
+
+  it "processes epub:type footnotes" do
+    simple_body = '<div>This is a very simple 
+     document<a epub:type="footnote" href="#a1">1</a> allegedly<a epub:type="footnote" href="#a2">2</a></div>
+     <aside id="a1">Footnote</aside>
+     <aside id="a2">Other Footnote</aside>'
+    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div>This is a very simple
+    document<a epub:type="footnote" href="#_ftn1" style="mso-footnote-id:ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a> allegedly<a epub:type="footnote" href="#_ftn2" style="mso-footnote-id:ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a></div>',
+'<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
+<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Footnote</p></div>
+<div style="mso-element:footnote" id="ftn2">
+<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Other Footnote</p></div>
+</div>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
+    it "processes class footnotes" do
+    simple_body = '<div>This is a very simple
+     document<a class="footnote" href="#a1">1</a> allegedly<a class="footnote" href="#a2">2</a></div>
+     <aside id="a1">Footnote</aside>
+     <aside id="a2">Other Footnote</aside>'
+    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div>This is a very simple
+    document<a class="footnote" href="#_ftn1" style="mso-footnote-id:ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a> allegedly<a class="footnote" href="#_ftn2" style="mso-footnote-id:ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a></div>',
+'<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
+<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Footnote</p></div>
+<div style="mso-element:footnote" id="ftn2">
+<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Other Footnote</p></div>
+</div>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
+    it "extracts paragraphs from footnotes" do
+      simple_body = '<div>This is a very simple
+     document<a class="footnote" href="#a1">1</a> allegedly<a class="footnote" href="#a2">2</a></div>
+     <aside id="a1"><p>Footnote</p></aside>
+     <div id="a2"><p>Other Footnote</p></div>'
+      Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+      expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+        to match_fuzzy(<<~OUTPUT)
+      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+      #{word_body('<div>This is a very simple
+    document<a class="footnote" href="#_ftn1" style="mso-footnote-id:ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a> allegedly<a class="footnote" href="#_ftn2" style="mso-footnote-id:ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a></div>',
+      '<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
+<p class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Footnote</p></div>
+<div style="mso-element:footnote" id="ftn2">
+<p class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Other Footnote</p></div>
+</div>')}
+      #{WORD_FTR1}
+      OUTPUT
+    end
 end

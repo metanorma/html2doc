@@ -36,7 +36,7 @@ module Html2Doc
   def self.footnote_container(i)
     <<~DIV
       <div style='mso-element:footnote' id='ftn#{i}'>
-        <a style='mso-footnote-id:ftn#{i}' href=#_ftn#{i}'
+        <a style='mso-footnote-id:ftn#{i}' href='#_ftn#{i}'
            name='_ftnref#{i}' title='' id='_ftnref#{i}'><span
            class='MsoFootnoteReference'><span
            style='mso-special-character:footnote'></span></span></div>

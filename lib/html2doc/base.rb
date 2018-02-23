@@ -1,5 +1,6 @@
 require "uuidtools"
 require "asciimath"
+require "image_size"
 require "nokogiri"
 require "xml/xslt"
 require "pp"
@@ -179,13 +180,19 @@ module Html2Doc
     title = docxml.at("//*[local-name() = 'head']/*[local-name() = 'title']")
     head = docxml.at("//*[local-name() = 'head']")
     css = stylesheet(filename, header_file, cssname)
-    if title.nil?
+    add_stylesheet(head, title, css)
+    define_head1(docxml, dir)
+    namespace(docxml.root)
+  end
+
+  def self.add_stylesheet(head, title, css)
+    if head.children.empty?
+      head.add_child css
+    elsif title.nil?
       head.children.first.add_previous_sibling css
     else
       title.add_next_sibling css
     end
-    define_head1(docxml, dir)
-    namespace(docxml.root)
   end
 
   def self.namespace(root)
