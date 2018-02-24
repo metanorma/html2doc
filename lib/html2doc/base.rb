@@ -208,7 +208,8 @@ module Html2Doc
     File.open(File.join(dir, "filelist.xml"), "w") do |f|
       f.write %{<xml xmlns:o="urn:schemas-microsoft-com:office:office">
         <o:MainFile HRef="../#{filename}.htm"/>}
-      Dir.foreach(dir) do |item|
+      # Dir.foreach(dir).sort_by { |x| x }  do |item|
+      Dir.entries(dir).sort.each do |item|
         next if item == "." || item == ".." || /^\./.match(item)
         f.write %{  <o:File HRef="#{item}"/>\n}
       end
