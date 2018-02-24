@@ -237,7 +237,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a header" do
-    Html2Doc.process(html_input(""), "test", nil, "header.html", nil, nil)
+    Html2Doc.process(html_input(""), "test", nil, "spec/header.html", nil, nil)
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET.gsub(/FILENAME/, "test")} 
