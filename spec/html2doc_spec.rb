@@ -271,13 +271,6 @@ FTR
 
 WORD_FTR3 = <<~FTR
 ------=_NextPart_
-Content-Location: file:///C:/Doc/test_files/609e8807-c2d0-450c-b60b-d995a0f8dcaf.png
-Content-Transfer-Encoding: base64
-Content-Type: image/png
-FTR
-
-WORD_FTR3 = <<~FTR
-------=_NextPart_
 Content-Location: file:///C:/Doc/test_files/filelist.xml
 Content-Transfer-Encoding: base64
 Content-Type: application/xml
