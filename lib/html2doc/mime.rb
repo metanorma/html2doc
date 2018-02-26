@@ -1,6 +1,7 @@
 require "uuidtools"
 require "base64"
 require "mime/types"
+require "image_size"
 
 module Html2Doc
   def self.mime_preamble(boundary, filename, result)
@@ -54,5 +55,43 @@ module Html2Doc
     end
     mhtml += "--#{boundary}--"
     File.open("#{filename}.doc", "w") { |f| f.write mhtml }
+  end
+
+  def self.image_resize(i, maxheight, maxwidth)
+    size = [i["width"].to_i, i["height"].to_i]
+    size = ImageSize.path(i["src"]).size if size[0].zero? && size[1].zero?
+    # max height for Word document is 400, max width is 680
+    if size[0] > maxheight
+      size = [maxheight, (size[1] * maxheight / size[0]).ceil]
+    end
+    if size[1] > maxwidth
+      size = [(size[0] * maxwidth / size[1]).ceil, maxwidth]
+    end
+    size
+  end
+
+  def self.image_cleanup(docxml, dir)
+    docxml.xpath("//*[local-name() = 'img']").each do |i|
+      matched = /\.(?<suffix>\S+)$/.match i["src"]
+      uuid = UUIDTools::UUID.random_create.to_s
+      new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
+      # presupposes that the image source is local
+      system "cp #{i['src']} #{new_full_filename}"
+      i["width"], i["height"] = image_resize(i, 400, 680)
+      i["src"] = new_full_filename
+    end
+    docxml
+  end
+
+  def self.generate_filelist(filename, dir)
+    File.open(File.join(dir, "filelist.xml"), "w") do |f|
+      f.write %{<xml xmlns:o="urn:schemas-microsoft-com:office:office">
+        <o:MainFile HRef="../#{filename}.htm"/>}
+      Dir.entries(dir).sort.each do |item|
+        next if item == "." || item == ".." || /^\./.match(item)
+        f.write %{  <o:File HRef="#{item}"/>\n}
+      end
+      f.write("</xml>\n")
+    end
   end
 end

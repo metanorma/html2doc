@@ -1,6 +1,6 @@
 require "uuidtools"
 require "asciimath"
-require "image_size"
+require "htmlentities"
 require "nokogiri"
 require "xml/xslt"
 require "pp"
@@ -63,13 +63,24 @@ module Html2Doc
     end.join
   end
 
+  # random fixes that OOXML needs to render properly
+  def self.ooxml_cleanup(m)
+    m.xpath(".//xmlns:msup[name(preceding-sibling::*[1])='munderover']",
+            m.document.collect_namespaces).each do |x|
+      x1 = x.replace("<mrow></mrow>").first
+      x1.children = x
+    end
+    m.add_namespace(nil, "http://www.w3.org/1998/Math/MathML")
+    m.to_s
+  end
+
   def self.mathml_to_ooml(docxml)
     docxml.xpath("//*[local-name() = 'math']").each do |m|
-      @xslt.xml = m.to_s.
-        gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
-      ooml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
+      @xslt.xml = ooxml_cleanup(m)# .to_s.
+        #gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+      ooxml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
         gsub(/ xmlns:[^=]+="[^"]+"/, "")
-      m.swap(ooml)
+      m.swap(ooxml)
     end
   end
 
@@ -112,32 +123,6 @@ module Html2Doc
             "<meta http-equiv=Content-Type")
     r.gsub!(%r{&tab;|&amp;tab;}, '<span style="mso-tab-count:1">&#xA0; </span>')
     r
-  end
-
-  def self.image_resize(i, maxheight, maxwidth)
-    size = [i["width"].to_i, i["height"].to_i]
-    size = ImageSize.path(i["src"]).size if size[0].zero? && size[1].zero?
-    # max height for Word document is 400, max width is 680
-    if size[0] > maxheight
-      size = [maxheight, (size[1] * maxheight / size[0]).ceil]
-    end
-    if size[1] > maxwidth
-      size = [(size[0] * maxwidth / size[1]).ceil, maxwidth]
-    end
-    size
-  end
-
-  def self.image_cleanup(docxml, dir)
-    docxml.xpath("//*[local-name() = 'img']").each do |i|
-      matched = /\.(?<suffix>\S+)$/.match i["src"]
-      uuid = UUIDTools::UUID.random_create.to_s
-      new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
-      # presupposes that the image source is local
-      system "cp #{i['src']} #{new_full_filename}"
-      i["width"], i["height"] = image_resize(i, 400, 680)
-      i["src"] = new_full_filename
-    end
-    docxml
   end
 
   PRINT_VIEW = <<~XML.freeze
@@ -207,18 +192,6 @@ module Html2Doc
       m: "http://schemas.microsoft.com/office/2004/12/omml",
     }.each { |k, v| root.add_namespace_definition(k.to_s, v) }
     root.add_namespace(nil, "http://www.w3.org/TR/REC-html40")
-  end
-
-  def self.generate_filelist(filename, dir)
-    File.open(File.join(dir, "filelist.xml"), "w") do |f|
-      f.write %{<xml xmlns:o="urn:schemas-microsoft-com:office:office">
-        <o:MainFile HRef="../#{filename}.htm"/>}
-      Dir.entries(dir).sort.each do |item|
-        next if item == "." || item == ".." || /^\./.match(item)
-        f.write %{  <o:File HRef="#{item}"/>\n}
-      end
-      f.write("</xml>\n")
-    end
   end
 
   def self.msonormal(docxml)

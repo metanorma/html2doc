@@ -381,7 +381,19 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{word_body('<div><m:oMath><m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="1"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup><m:r><m:t>=</m:t></m:r><m:sSup><m:e><m:r><m:t>(</m:t></m:r><m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num><m:r><m:t>n</m:t></m:r><m:r><m:t>(n+1)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><m:r><m:t>)</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:oMath>
+    #{word_body('<div><m:oMath><m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="1"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>=</m:t></m:r><m:sSup><m:e><m:r><m:t>(</m:t></m:r><m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num><m:r><m:t>n</m:t></m:r><m:r><m:t>(n+1)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><m:r><m:t>)</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:oMath>
+    </div>', '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
+  it "wraps msup after munderover in MathML" do
+    Html2Doc.process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
+<munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi></mrow></munderover><msup><mn>2</mn><mrow><mi>i</mi></mrow></msup></math></div>"), "test", nil, nil, nil, ["{{", "}}"])
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div><m:oMath><m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="1"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=0</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>2</m:t></m:r></m:e><m:sup><m:r><m:t>i</m:t></m:r></m:sup></m:sSup></m:e></m:nary></m:oMath>
     </div>', '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
