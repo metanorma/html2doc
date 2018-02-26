@@ -50,7 +50,8 @@ module Html2Doc
     mhtml = mime_preamble(boundary, filename, result)
     mhtml += mime_attachment(boundary, filename, "filelist.xml", dir)
     Dir.foreach(dir) do |item|
-      next if item == "." || item == ".." || /^\./.match(item) || item == "filelist.xml"
+      next if item == "." || item == ".." || /^\./.match(item) ||
+        item == "filelist.xml"
       mhtml += mime_attachment(boundary, filename, item, dir)
     end
     mhtml += "--#{boundary}--"

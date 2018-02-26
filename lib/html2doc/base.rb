@@ -76,8 +76,7 @@ module Html2Doc
 
   def self.mathml_to_ooml(docxml)
     docxml.xpath("//*[local-name() = 'math']").each do |m|
-      @xslt.xml = ooxml_cleanup(m)# .to_s.
-        #gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+      @xslt.xml = ooxml_cleanup(m)
       ooxml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
         gsub(/ xmlns:[^=]+="[^"]+"/, "")
       m.swap(ooxml)
