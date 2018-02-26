@@ -51,9 +51,10 @@ module Html2Doc
 
   def self.asciimath_to_mathml(doc, delims)
     return doc if delims.nil? || delims.size < 2
-    doc.split(/(#{delims[0]}|#{delims[1]})/).each_slice(4).map do |a|
+    doc.split(/(#{Regexp.escape(delims[0])}|#{Regexp.escape(delims[1])})/).
+      each_slice(4).map do |a|
       a[2].nil? || a[2] = AsciiMath.parse(a[2]).to_mathml.
-      gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+        gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
       a.size > 1 ? a[0] + a[2] : a[0]
     end.join
   end
@@ -151,7 +152,7 @@ module Html2Doc
   def self.define_head1(docxml, dir)
     docxml.xpath("//*[local-name() = 'head']").each do |h|
       h.children.first.add_previous_sibling <<~XML
-        #{PRINT_VIEW}
+      #{PRINT_VIEW}
         <link rel="File-List" href="#{dir}/filelist.xml"/>
       XML
     end
@@ -208,7 +209,6 @@ module Html2Doc
     File.open(File.join(dir, "filelist.xml"), "w") do |f|
       f.write %{<xml xmlns:o="urn:schemas-microsoft-com:office:office">
         <o:MainFile HRef="../#{filename}.htm"/>}
-      # Dir.foreach(dir).sort_by { |x| x }  do |item|
       Dir.entries(dir).sort.each do |item|
         next if item == "." || item == ".." || /^\./.match(item)
         f.write %{  <o:File HRef="#{item}"/>\n}
