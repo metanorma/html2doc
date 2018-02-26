@@ -13,7 +13,7 @@ This work is driven by the Word document generation procedure documented in http
 
 The gem currently does the following:
 
-* Convert any AsciiMath and MathML to Word's native mathematical formatting language.
+* Convert any AsciiMath and MathML to Word's native mathematical formatting language, OOXML. Word supports copy-pasting MathML into Word and converting it into OOXML; however the conversion is not infallible (we have found problems with `\sum`, with Word claiming parameters were missing, and inserting dotted squares to indicate as much), and you may need to post-edit the OOXML.
 * Identify any footnotes in the document (through hyperlinks with `class = "Footnote"` or `epub:type = "footnote"`), and render them as Microsoft Word footnotes.
 * Resize any images in the HTML file to fit within the maximum page size. (Word will otherwise crash on reading the document.)
 * Generate a filelist.xml listing of all files to be bundled into the Word document.
@@ -21,7 +21,7 @@ The gem currently does the following:
 * Inject Microsoft Word-specific CSS into the HTML document. The CSS file used is at `lib/html2doc/wordstyle.css`, and can be customised. (This generic CSS can be overridden by CSS already in the HTML document, since the generic CSS is injected at the top of the document.)
 * Bundle up the images, the HTML file of the document proper, and the `header.html` file representing header/footer information, into a MIME file, and save that file to disk (so that Microsoft Word can deal with it as a Word file.)
 
-Future iterations will convert generic HTML to Microsoft-specific HTML. For a representative generator of Microsoft HTML, see https://github.com/riboseinc/asciidoctor-iso
+For a representative generator of Microsoft HTML, see https://github.com/riboseinc/asciidoctor-iso
 
 Work to be done:
 
