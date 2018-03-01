@@ -5,23 +5,24 @@ image:https://img.shields.io/gem/v/html2doc.svg["Gem Version", link="https://rub
 image:https://img.shields.io/travis/riboseinc/html2doc/master.svg["Build Status", link="https://travis-ci.org/riboseinc/html2doc"]
 image:https://codeclimate.com/github/riboseinc/html2doc/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/riboseinc/html2doc"]
 
-Gem to convert an HTML document into a Word document (.doc) format. This is intended for automated generation of Microsoft Word documents, given HTML documents, which are mmuch more readily crafted.
+Gem to convert an HTML document into a Word document (.doc) format. This is intended for automated generation of Microsoft Word documents, given HTML documents, which are much more readily crafted.
 
-This gem originated out of https://github.com/riboseinc/asciidoctor-iso, which creates a Word document from a Microsoft HTML document (created in turn by processing Asciidoc). The Microsoft HTML document is already quite close to Microsoft Word requirements, but future iterations of this gem will become more generic.
+This gem originated out of https://github.com/riboseinc/asciidoctor-iso, which creates a Word document from a automatically generated HTML document (created in turn by processing Asciidoc).
 
 This work is driven by the Word document generation procedure documented in http://sebsauvage.net/wiki/doku.php?id=word_document_generation
 
 The gem currently does the following:
 
-* Convert any AsciiMath and MathML to Word's native mathematical formatting language, OOXML. Word supports copy-pasting MathML into Word and converting it into OOXML; however the conversion is not infallible (we have found problems with `\sum`, with Word claiming parameters were missing, and inserting dotted squares to indicate as much), and you may need to post-edit the OOXML.
-* Identify any footnotes in the document (through hyperlinks with `class = "Footnote"` or `epub:type = "footnote"`), and render them as Microsoft Word footnotes.
+* Convert any AsciiMath and MathML to Word's native mathematical formatting language, OOXML. Word supports copy-pasting MathML into Word and converting it into OOXML; however the conversion is not infallible (we have found problems with `\sum`: Word claims parameters were missing, and inserting dotted squares to indicate as much), and you may need to post-edit the OOXML.
+  * The gem does attempt to repair the MathML input, to bring it in line with Word's OOXML's expectations. If you find any issues with AsciiMath or MathML input, please raise an issue.
+* Identify any footnotes in the document (defined as hyperlinks with attributes `class = "Footnote"` or `epub:type = "footnote"`), and render them as Microsoft Word footnotes.
 * Resize any images in the HTML file to fit within the maximum page size. (Word will otherwise crash on reading the document.)
 * Generate a filelist.xml listing of all files to be bundled into the Word document.
 * Assign the class `MsoNormal` to any paragraphs that do not have a class, so that they can be treated as Normal Style when editing the Word document.
-* Inject Microsoft Word-specific CSS into the HTML document. The CSS file used is at `lib/html2doc/wordstyle.css`, and can be customised. (This generic CSS can be overridden by CSS already in the HTML document, since the generic CSS is injected at the top of the document.)
+* Inject Microsoft Word-specific CSS into the HTML document. If a CSS file is not supplied, the CSS file used is at `lib/html2doc/wordstyle.css` is used by default. Microsoft Word HTML has particular requirements from its CSS, and you should review the sample CSS before replacing it with your own. (This generic CSS can be overridden by CSS already in the HTML document, since the generic CSS is injected at the top of the document.)
 * Bundle up the images, the HTML file of the document proper, and the `header.html` file representing header/footer information, into a MIME file, and save that file to disk (so that Microsoft Word can deal with it as a Word file.)
 
-For a representative generator of Microsoft HTML, see https://github.com/riboseinc/asciidoctor-iso
+For a representative generator of HTML that uses this gem in postprocessing, see https://github.com/riboseinc/asciidoctor-iso
 
 Work to be done:
 
@@ -31,7 +32,10 @@ Work to be done:
 
 This generates .doc documents. Future versions will upgrade the output to docx.
 
-There there are two other Microsoft Word vendors in the Ruby ecosystem. https://github.com/jetruby/puredocx generate Word documents from a ruby struct as a DSL, rather than converting a preexisting html document. That constrains it's coverage to what is explicitly catered for in the DSL. https://github.com/MuhammetDilmac/Html2Docx is a much simpler wrapper around html: it does not do any of the added functionality described above (image resizing, converting footnotes, AsciiMath and MathML), though it does already generate docx.
+There there are two other Microsoft Word vendors in the Ruby ecosystem. 
+
+* https://github.com/jetruby/puredocx generate Word documents from a ruby struct as a DSL, rather than converting a preexisting html document. That constrains it's coverage to what is explicitly catered for in the DSL. 
+* https://github.com/MuhammetDilmac/Html2Docx is a much simpler wrapper around html: it does not do any of the added functionality described above (image resizing, converting footnotes, AsciiMath and MathML), though it does already generate docx.
 
 == Usage
 
