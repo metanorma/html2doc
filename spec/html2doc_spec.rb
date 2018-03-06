@@ -309,7 +309,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a blank document" do
-    Html2Doc.process(html_input(""), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(""), filename: "test")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END} 
@@ -319,14 +319,14 @@ RSpec.describe Html2Doc do
 
   it "removes any temp files" do
     File.delete("test.doc")
-    Html2Doc.process(html_input(""), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(""), filename: "test")
     expect(File.exist?("test.doc")).to be true
     expect(File.exist?("test.htm")).to be false
     expect(File.exist?("test_files")).to be false
   end
 
   it "processes a stylesheet in an HTML document with a title" do
-    Html2Doc.process(html_input(""), "test", "lib/html2doc/wordstyle.css", nil, nil, nil)
+    Html2Doc.process(html_input(""), filename: "test", stylesheet: "lib/html2doc/wordstyle.css")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END} 
@@ -335,7 +335,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a stylesheet in an HTML document without a title" do
-    Html2Doc.process(html_input_no_title(""), "test", "lib/html2doc/wordstyle.css", nil, nil, nil)
+    Html2Doc.process(html_input_no_title(""), filename: "test", stylesheet: "lib/html2doc/wordstyle.css")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR.sub("<title>blank</title>", "")} 
@@ -345,7 +345,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a stylesheet in an HTML document with an empty head" do
-    Html2Doc.process(html_input_empty_head(""), "test", "lib/html2doc/wordstyle.css", nil, nil, nil)
+    Html2Doc.process(html_input_empty_head(""), filename: "test", stylesheet: "lib/html2doc/wordstyle.css")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR.sub("<title>blank</title>", "")}
@@ -356,7 +356,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a header" do
-    Html2Doc.process(html_input(""), "test", nil, "spec/header.html", nil, nil)
+    Html2Doc.process(html_input(""), filename: "test", header_file: "spec/header.html")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET.gsub(/FILENAME/, "test")} 
@@ -367,7 +367,7 @@ RSpec.describe Html2Doc do
   it "processes a populated document" do
     simple_body = "<h1>Hello word!</h1>
     <div>This is a very simple document</div>"
-    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(simple_body), filename: "test")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -377,7 +377,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes AsciiMath" do
-    Html2Doc.process(html_input("<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"), "test", nil, nil, nil, ["{{", "}}"])
+    Html2Doc.process(html_input("<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"), filename: "test", asciimathdelims: ["{{", "}}"])
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -389,7 +389,7 @@ RSpec.describe Html2Doc do
 
   it "wraps msup after munderover in MathML" do
     Html2Doc.process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
-<munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi></mrow></munderover><msup><mn>2</mn><mrow><mi>i</mi></mrow></msup></math></div>"), "test", nil, nil, nil, ["{{", "}}"])
+<munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi></mrow></munderover><msup><mn>2</mn><mrow><mi>i</mi></mrow></msup></math></div>"), filename: "test", asciimathdelims: ["{{", "}}"])
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -402,7 +402,7 @@ RSpec.describe Html2Doc do
   it "processes tabs" do
     simple_body = "<h1>Hello word!</h1>
     <div>This is a very &tab; simple document</div>"
-    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(simple_body), filename: "test")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -415,7 +415,7 @@ RSpec.describe Html2Doc do
     simple_body = '<h1>Hello word!</h1>
     <p>This is a very simple document</p>
     <p class="x">This style stays</p>'
-    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(simple_body), filename: "test")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -430,7 +430,7 @@ RSpec.describe Html2Doc do
     <li>This is a very simple document</li>
     <li class="x">This style stays</li>
     </ul>'
-    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(simple_body), filename: "test")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -441,7 +441,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height" do
     simple_body = '<img src="spec/19160-6.png">'
-    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(simple_body), filename: "test")
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -453,7 +453,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for width" do
     simple_body = '<img src="spec/19160-7.gif">'
-    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(simple_body), filename: "test")
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/gif})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -465,7 +465,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height" do
     simple_body = '<img src="spec/19160-8.jpg">'
-    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(simple_body), filename: "test")
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/jpeg})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -480,7 +480,7 @@ RSpec.describe Html2Doc do
      document<a epub:type="footnote" href="#a1">1</a> allegedly<a epub:type="footnote" href="#a2">2</a></div>
      <aside id="a1">Footnote</aside>
      <aside id="a2">Other Footnote</aside>'
-    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(simple_body), filename: "test")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -500,7 +500,7 @@ RSpec.describe Html2Doc do
      document<a class="footnote" href="#a1">1</a> allegedly<a class="footnote" href="#a2">2</a></div>
      <aside id="a1">Footnote</aside>
      <aside id="a2">Other Footnote</aside>'
-    Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+    Html2Doc.process(html_input(simple_body), filename: "test")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -520,7 +520,7 @@ RSpec.describe Html2Doc do
      document<a class="footnote" href="#a1">1</a> allegedly<a class="footnote" href="#a2">2</a></div>
      <aside id="a1"><p>Footnote</p></aside>
      <div id="a2"><p>Other Footnote</p></div>'
-      Html2Doc.process(html_input(simple_body), "test", nil, nil, nil, nil)
+      Html2Doc.process(html_input(simple_body), filename: "test")
       expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
         to match_fuzzy(<<~OUTPUT)
       #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}

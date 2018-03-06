@@ -9,16 +9,16 @@ module Html2Doc
   @xslt = XML::XSLT.new
   @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
 
-  def self.process(result, filename, stylesheet, header_file, dir = nil,
-                   asciimathdelims = nil)
-    dir1 = create_dir(filename, dir)
-    result = process_html(result, filename, stylesheet, header_file,
-                          dir1, asciimathdelims)
-    system "cp #{header_file} #{dir1}/header.html" unless header_file.nil?
-    generate_filelist(filename, dir1)
-    File.open("#{filename}.htm", "w") { |f| f.write(result) }
-    mime_package result, filename, dir1
-    rm_temp_files(filename, dir, dir1)
+  def self.process(result, hash)
+    hash[:dir1] = create_dir(hash[:filename], hash[:dir])
+    pp hash
+    result = process_html(result, hash)
+    hash[:header_file].nil? ||
+      system("cp #{hash[:header_file]} #{hash[:dir1]}/header.html")
+    generate_filelist(hash[:filename], hash[:dir1])
+    File.open("#{hash[:filename]}.htm", "w") { |f| f.write(result) }
+    mime_package result, hash[:filename], hash[:dir1]
+    rm_temp_files(hash[:filename], hash[:dir], hash[:dir1])
   end
 
   def self.create_dir(filename, dir)
@@ -28,11 +28,9 @@ module Html2Doc
     dir
   end
 
-  def self.process_html(result, filename, stylesheet, header_file, dir,
-                        asciimathdelims)
-    # docxml = Nokogiri::XML(asciimath_to_mathml(result, asciimathdelims))
-    docxml = to_xhtml(asciimath_to_mathml(result, asciimathdelims))
-    define_head(cleanup(docxml, dir), dir, filename, stylesheet, header_file)
+  def self.process_html(result, hash)
+    docxml = to_xhtml(asciimath_to_mathml(result, hash[:asciimathdelims]))
+    define_head(cleanup(docxml, hash[:dir]), hash)
     msword_fix(from_xhtml(docxml))
   end
 
@@ -47,40 +45,6 @@ module Html2Doc
     footnotes(docxml)
     msonormal(docxml)
     docxml
-  end
-
-  def self.asciimath_to_mathml1(x)
-    AsciiMath.parse(HTMLEntities.new.decode(x)).to_mathml.
-        gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
-  end
-
-  def self.asciimath_to_mathml(doc, delims)
-    return doc if delims.nil? || delims.size < 2
-    doc.split(/(#{Regexp.escape(delims[0])}|#{Regexp.escape(delims[1])})/).
-      each_slice(4).map do |a|
-      a[2].nil? || a[2] = asciimath_to_mathml1(a[2])
-      a.size > 1 ? a[0] + a[2] : a[0]
-    end.join
-  end
-
-  # random fixes that OOXML needs to render properly
-  def self.ooxml_cleanup(m)
-    m.xpath(".//xmlns:msup[name(preceding-sibling::*[1])='munderover']",
-            m.document.collect_namespaces).each do |x|
-      x1 = x.replace("<mrow></mrow>").first
-      x1.children = x
-    end
-    m.add_namespace(nil, "http://www.w3.org/1998/Math/MathML")
-    m.to_s
-  end
-
-  def self.mathml_to_ooml(docxml)
-    docxml.xpath("//*[local-name() = 'math']").each do |m|
-      @xslt.xml = ooxml_cleanup(m)
-      ooxml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
-        gsub(/ xmlns:[^=]+="[^"]+"/, "")
-      m.swap(ooxml)
-    end
   end
 
   NOKOHEAD = <<~HERE.freeze
@@ -165,12 +129,12 @@ module Html2Doc
     xml.root.to_s
   end
 
-  def self.define_head(docxml, dir, filename, cssname, header_file)
+  def self.define_head(docxml, hash)
     title = docxml.at("//*[local-name() = 'head']/*[local-name() = 'title']")
     head = docxml.at("//*[local-name() = 'head']")
-    css = stylesheet(filename, header_file, cssname)
+    css = stylesheet(hash[:filename], hash[:header_file], hash[:stylesheet])
     add_stylesheet(head, title, css)
-    define_head1(docxml, dir)
+    define_head1(docxml, hash[:dir1])
     namespace(docxml.root)
   end
 

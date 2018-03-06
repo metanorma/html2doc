@@ -39,15 +39,15 @@ There there are two other Microsoft Word vendors in the Ruby ecosystem. https://
 --
 require "html2doc"
 
-Html2Doc.process(result, filename, stylesheet, header_filename, dir, asciimathdelims = nil)
+Html2Doc.process(result, filename: filename, stylesheet: stylesheet, header_filename: header_filename, dir: dir, asciimathdelims: asciimathdelims)
 --
 
 result:: is the Html document to be converted into Word, as a string.
 filename:: is the name the document is to be saved as, without a file suffix
-stylesheet:: is the full path filename of the CSS stylesheet for Microsoft Word-specific styles. If this is not provided (`nil`), the program will used the default stylesheet included in the gem, `lib/html2doc/wordstyle.css`. The stylsheet provided must match this stylesheet; you can obtain one by saving a Word document with your desired styles to HTML, and extracting the style definitions from the HTML document header.
+stylesheet:: is the full path filename of the CSS stylesheet for Microsoft Word-specific styles. If this is not provided, the program will used the default stylesheet included in the gem, `lib/html2doc/wordstyle.css`. The stylsheet provided must match this stylesheet; you can obtain one by saving a Word document with your desired styles to HTML, and extracting the style definitions from the HTML document header.
 header_filename:: is the filename of the HTML document containing header and footer for the document, as well as footnote/endnote separators; if there is none, use nil. To generate your own such document, save a Word document with headers/footers and/or footnote/endnote separators as an HTML document; the `header.html` will be in the `{filename}.fld` folder generated along with the HTML. A sample file is available at https://github.com/riboseinc/asciidoctor-iso/blob/master/lib/asciidoctor/iso/word/header.html
-dir:: is the folder that any ancillary files (images, headers, filelist) are to be saved to. If not provided (`nil`), it will be created as `{filename}_files`. Anything in the directory will be attached to the Word document; so this folder should only contain the images that accompany the document. (If the images are elsewhere on the local drive, the gem will move them into the folder.)
-asciimathdelims:: are the AsciiMath delimiters used in the text. If none are provided, no AsciiMath conversion is attempted.
+dir:: is the folder that any ancillary files (images, headers, filelist) are to be saved to. If not provided, it will be created as `{filename}_files`. Anything in the directory will be attached to the Word document; so this folder should only contain the images that accompany the document. (If the images are elsewhere on the local drive, the gem will move them into the folder.)
+asciimathdelims:: are the AsciiMath delimiters used in the text (an array of an opening and a closing delimiter). If none are provided, no AsciiMath conversion is attempted.
 
 Note that the local CSS stylesheet file contains a variable `FILENAME` for the location of footnote/endnote separators and headers/footers, which are provided in the header HTML file. The gem replaces `FILENAME` with the file nane that the document will be saved as. If you supply your own stylesheet and also wish to use separators or headers/footers, you will likewise need to replace the document name mentioned in your stylesheet with a `FILENAME` string.
 
