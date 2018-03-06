@@ -43,7 +43,7 @@ There there are two other Microsoft Word vendors in the Ruby ecosystem.
 --
 require "html2doc"
 
-Html2Doc.process(result, filename: filename, stylesheet: stylesheet, header_filename: header_filename, dir: dir, asciimathdelims: asciimathdelims)
+Html2Doc.process(result, filename: filename, stylesheet: stylesheet, header_filename: header_filename, dir: dir, asciimathdelims: asciimathdelims, liststyles: liststyles)
 --
 
 result:: is the Html document to be converted into Word, as a string.
@@ -52,8 +52,15 @@ stylesheet:: is the full path filename of the CSS stylesheet for Microsoft Word-
 header_filename:: is the filename of the HTML document containing header and footer for the document, as well as footnote/endnote separators; if there is none, use nil. To generate your own such document, save a Word document with headers/footers and/or footnote/endnote separators as an HTML document; the `header.html` will be in the `{filename}.fld` folder generated along with the HTML. A sample file is available at https://github.com/riboseinc/asciidoctor-iso/blob/master/lib/asciidoctor/iso/word/header.html
 dir:: is the folder that any ancillary files (images, headers, filelist) are to be saved to. If not provided, it will be created as `{filename}_files`. Anything in the directory will be attached to the Word document; so this folder should only contain the images that accompany the document. (If the images are elsewhere on the local drive, the gem will move them into the folder.)
 asciimathdelims:: are the AsciiMath delimiters used in the text (an array of an opening and a closing delimiter). If none are provided, no AsciiMath conversion is attempted.
+liststyles:: a hash of list style labels in Word CSS, which are used to define the behaviour of list item labels (e.g. _i)_ vs _i._). The gem recognises the hash keys `ul`, `ol`. So if the appearance of an ordered list's item labels in the supplied stylesheet is governed by style `@list l1` (e.g. `@list l1:level1 {mso-level-text:"%1\)";}` appears in the stylesheet), call the method with `liststyles:{ol: "l1"}`.
 
 Note that the local CSS stylesheet file contains a variable `FILENAME` for the location of footnote/endnote separators and headers/footers, which are provided in the header HTML file. The gem replaces `FILENAME` with the file nane that the document will be saved as. If you supply your own stylesheet and also wish to use separators or headers/footers, you will likewise need to replace the document name mentioned in your stylesheet with a `FILENAME` string.
+
+== Caveat
+
+The good news with generating a Word document via HTML is that Word understands CSS, and you can determine much of what the Word document looks like by manipulating that CSS. That extends to features that are not part of HTML CSS: if you want to work out how to get Word to do something in CSS, save a Word document that already does what you want as HTML, and inspect the HTML and CSS you get.
+
+The bad news is that Word's implementation of CSS is poorly documented (even if Office HTML is documented in a 1300 page document (online at https://stigmortenmyre.no/mso/, https://www.rodriguezcommaj.com/assets/resources/microsoft-office-html-and-xml-reference.pdf), and the CSS selectors are only partially and selectively implemented. For list styles, for example, `mso-level-text` governs how the list label is displayed; but it is only recognised in a `@list` style: it is ignored in a CSS rule like `ol li`, or in a `style` attribute on a node. Working out the right CSS for what you want will take some trial and error, and you are better placed to try to do things Word's way than the right way.
 
 == Example
 

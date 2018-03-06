@@ -29,7 +29,7 @@ module Html2Doc
 
   def self.process_html(result, hash)
     docxml = to_xhtml(asciimath_to_mathml(result, hash[:asciimathdelims]))
-    define_head(cleanup(docxml, hash[:dir]), hash)
+    define_head(cleanup(docxml, hash), hash)
     msword_fix(from_xhtml(docxml))
   end
 
@@ -38,9 +38,10 @@ module Html2Doc
     system "rm -r #{dir1}" unless dir
   end
 
-  def self.cleanup(docxml, dir)
-    image_cleanup(docxml, dir)
+  def self.cleanup(docxml, hash)
+    image_cleanup(docxml, hash[:dir1])
     mathml_to_ooml(docxml)
+    lists(docxml, hash[:liststyles])
     footnotes(docxml)
     msonormal(docxml)
     docxml
