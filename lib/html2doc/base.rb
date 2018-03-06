@@ -11,7 +11,6 @@ module Html2Doc
 
   def self.process(result, hash)
     hash[:dir1] = create_dir(hash[:filename], hash[:dir])
-    pp hash
     result = process_html(result, hash)
     hash[:header_file].nil? ||
       system("cp #{hash[:header_file]} #{hash[:dir1]}/header.html")
