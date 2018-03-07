@@ -13,6 +13,7 @@ module Html2Doc
     else
       li["style"] = ""
     end
+    # I don't know what the lfo-n attribute is. I doubt Micro$oft now does either.
     li["style"] += "mso-list:#{listno} level#{level} lfo1;"
   end
 
