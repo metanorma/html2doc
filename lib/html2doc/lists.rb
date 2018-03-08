@@ -28,7 +28,6 @@ module Html2Doc
   end
 
   def self.lists(docxml, liststyles)
-    pp liststyles
     return if liststyles.nil?
     if liststyles.has_key?(:ul)
       list_add(docxml.xpath("//ul[not(ancestor::ul) and not(ancestor::ol)]"), liststyles, :ul, 1)
