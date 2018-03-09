@@ -551,4 +551,24 @@ RSpec.describe Html2Doc do
       OUTPUT
     end
 
+
+   it "restarts numbering of lists with list styles" do
+      simple_body = <<~BODY
+      <div>
+      <ol><li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
+      <ol><li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>
+      BODY
+      Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
+      expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+        to match_fuzzy(<<~OUTPUT)
+      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+      #{word_body('<div>
+      <ol><li style="mso-list:l2 level1 lfo1;" class="MsoNormal"><div><p class="MsoNormal"><ol><li style="mso-list:l2 level2 lfo1;" class="MsoNormal"><ul><li style="mso-list:l1 level3 lfo1;" class="MsoNormal"><p class="MsoNormal"><ol><li style="mso-list:l2 level4 lfo1;" class="MsoNormal"><ol><li style="mso-list:l2 level5 lfo1;" class="MsoNormal">A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
+      <ol><li style="mso-list:l2 level1 lfo2;" class="MsoNormal"><div><p class="MsoNormal"><ol><li style="mso-list:l2 level2 lfo2;" class="MsoNormal"><ul><li style="mso-list:l1 level3 lfo2;" class="MsoNormal"><p class="MsoNormal"><ol><li style="mso-list:l2 level4 lfo2;" class="MsoNormal"><ol><li style="mso-list:l2 level5 lfo2;" class="MsoNormal">A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>',
+       '<div style="mso-element:footnote-list"/>')}
+      #{WORD_FTR1}
+      OUTPUT
+    end
+
+
 end
