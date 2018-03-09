@@ -43,6 +43,7 @@ module Html2Doc
     mathml_to_ooml(docxml)
     lists(docxml, hash[:liststyles])
     footnotes(docxml)
+    bookmarks(docxml)
     msonormal(docxml)
     docxml
   end
@@ -155,6 +156,18 @@ module Html2Doc
       m: "http://schemas.microsoft.com/office/2004/12/omml",
     }.each { |k, v| root.add_namespace_definition(k.to_s, v) }
     root.add_namespace(nil, "http://www.w3.org/TR/REC-html40")
+  end
+
+  def self.bookmarks(docxml)
+    docxml.xpath("//*[@id][not(@name)][not(@style = 'mso-element:footnote')]").each do |x|
+      next if x["id"].empty?
+      if x.children.empty?
+        x.add_child("<a name='#{x["id"]}'></a>")
+      else
+        x.children.first.previous = "<a name='#{x["id"]}'></a>"
+      end
+      x.delete("id")
+    end
   end
 
   def self.msonormal(docxml)

@@ -570,5 +570,24 @@ RSpec.describe Html2Doc do
       OUTPUT
     end
 
+   it "replaces id attributes with explicit a@name bookmarks" do
+      simple_body = <<~BODY
+      <div>
+        <p id="a">Hello</p>
+        <p id="b"/>
+      </div>
+      BODY
+      Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
+      expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+        to match_fuzzy(<<~OUTPUT)
+      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+      #{word_body('<div>
+        <p class="MsoNormal"><a name="a" id="a"></a>Hello</p>
+        <p class="MsoNormal"><a name="b" id="b"></a></p>
+      </div>',
+       '<div style="mso-element:footnote-list"/>')}
+      #{WORD_FTR1}
+      OUTPUT
+    end
 
 end

@@ -17,6 +17,8 @@ The gem currently does the following:
 ** The gem does attempt to repair the MathML input, to bring it in line with Word's OOXML's expectations. If you find any issues with AsciiMath or MathML input, please raise an issue.
 * Identify any footnotes in the document (defined as hyperlinks with attributes `class = "Footnote"` or `epub:type = "footnote"`), and render them as Microsoft Word footnotes.
 * Resize any images in the HTML file to fit within the maximum page size. (Word will otherwise crash on reading the document.)
+* Optionally apply list styles with predefined bullet and numbering from a Word CSS to the unordered and ordered lists in the document, restarting numbering for each ordered list.
+* Convert any internal `@id` anchors to `a@name` anchors; Word only hyperlinks to the latter.
 * Generate a filelist.xml listing of all files to be bundled into the Word document.
 * Assign the class `MsoNormal` to any paragraphs that do not have a class, so that they can be treated as Normal Style when editing the Word document.
 * Inject Microsoft Word-specific CSS into the HTML document. If a CSS file is not supplied, the CSS file used is at `lib/html2doc/wordstyle.css` is used by default. Microsoft Word HTML has particular requirements from its CSS, and you should review the sample CSS before replacing it with your own. (This generic CSS can be overridden by CSS already in the HTML document, since the generic CSS is injected at the top of the document.)
