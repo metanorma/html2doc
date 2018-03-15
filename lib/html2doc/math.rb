@@ -7,7 +7,8 @@ require "pp"
 
 module Html2Doc
   @xslt = XML::XSLT.new
-  @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
+  #@xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
+  @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"))
 
   def self.asciimath_to_mathml1(x)
     AsciiMath.parse(HTMLEntities.new.decode(x)).to_mathml.
@@ -23,7 +24,7 @@ module Html2Doc
     end.join
   end
 
-  # random fixes that OOXML needs to render properly
+  # random fixes to MathML input that OOXML needs to render properly
   def self.ooxml_cleanup(m)
     m.xpath(".//xmlns:msup[name(preceding-sibling::*[1])='munderover']",
             m.document.collect_namespaces).each do |x|
@@ -38,7 +39,8 @@ module Html2Doc
     docxml.xpath("//*[local-name() = 'math']").each do |m|
       @xslt.xml = ooxml_cleanup(m)
       ooxml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
-        gsub(/ xmlns:[^=]+="[^"]+"/, "")
+        gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
+        gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
       m.swap(ooxml)
     end
   end

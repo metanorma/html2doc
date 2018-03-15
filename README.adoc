@@ -56,17 +56,29 @@ dir:: is the folder that any ancillary files (images, headers, filelist) are to 
 asciimathdelims:: are the AsciiMath delimiters used in the text (an array of an opening and a closing delimiter). If none are provided, no AsciiMath conversion is attempted.
 liststyles:: a hash of list style labels in Word CSS, which are used to define the behaviour of list item labels (e.g. _i)_ vs _i._). The gem recognises the hash keys `ul`, `ol`. So if the appearance of an ordered list's item labels in the supplied stylesheet is governed by style `@list l1` (e.g. `@list l1:level1 {mso-level-text:"%1\)";}` appears in the stylesheet), call the method with `liststyles:{ol: "l1"}`.
 
-Note that the local CSS stylesheet file contains a variable `FILENAME` for the location of footnote/endnote separators and headers/footers, which are provided in the header HTML file. The gem replaces `FILENAME` with the file nane that the document will be saved as. If you supply your own stylesheet and also wish to use separators or headers/footers, you will likewise need to replace the document name mentioned in your stylesheet with a `FILENAME` string.
+Note that the local CSS stylesheet file contains a variable `FILENAME` for the location of footnote/endnote separators and headers/footers, which are provided in the header HTML file. The gem replaces `FILENAME` with the file name that the document will be saved as. If you supply your own stylesheet and also wish to use separators or headers/footers, you will likewise need to replace the document name mentioned in your stylesheet with a `FILENAME` string.
 
-== Caveat
+== Caveats
+
+=== HTML
 
 The good news is that Word understands HTML.
 
 The bad news is that Word's understanding of HTML is HTML 4. In order for bookmarks to work, for example, this gem has to translate `<p id="">` back down into `<p><a name="">`. Word (and this gem) will not do much with HTML 5-specific elements, and if you're generating HTML for automated generation of Word documents, keep your HTML old-fashioned.
 
+=== CSS
+
 The good news with generating a Word document via HTML is that Word understands CSS, and you can determine much of what the Word document looks like by manipulating that CSS. That extends to features that are not part of HTML CSS: if you want to work out how to get Word to do something in CSS, save a Word document that already does what you want as HTML, and inspect the HTML and CSS you get.
 
 The bad news is that Word's implementation of CSS is poorly documented -- even if Office HTML is documented in a 1300 page document (online at https://stigmortenmyre.no/mso/, https://www.rodriguezcommaj.com/assets/resources/microsoft-office-html-and-xml-reference.pdf), and the CSS selectors are only partially and selectively implemented. For list styles, for example, `mso-level-text` governs how the list label is displayed; but it is only recognised in a `@list` style: it is ignored in a CSS rule like `ol li`, or in a `style` attribute on a node. Working out the right CSS for what you want will take some trial and error, and you are better placed to try to do things Word's way than the right way.
+
+=== XSLT
+
+This gem is published with an early draft of the XSLT stylesheet transforming MathML into OOXML, `mml2omml.xsl`, that has published for several years now as part of the https://github.com/TEIC/Stylesheets[TEI stylesheet set]. (We have made some further minor edits to the stylesheet.) The stylesheets have been published under a dual Creative Commons Sharealike/BSD licence.
+
+The good news is that the stylesheet is not identical to the stylesheet `mathml2omml.xsl` that is published with Microsoft Word, so it can and has been redistributed. 
+
+The bad news is that the stylesheet is not identical to the stylesheet `mathml2omml.xsl` that is published with Microsoft Word, so it isn't guaranteed to have identical output. If you want to make sure that your MathML import is identical to what Word currently uses, replace `mml2omml.xsl` with `mathml2omml.xsl`, and edit the gem accordingly for your local installation. On Windows, you will find the stylesheet in the same directory as the `winword.exe` executable. On Mac, right-click on the Word application, and select "Show Package Contents"; you will find the stylesheet under `Contents/Resources`.
 
 == Example
 
