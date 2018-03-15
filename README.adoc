@@ -60,9 +60,13 @@ Note that the local CSS stylesheet file contains a variable `FILENAME` for the l
 
 == Caveat
 
+The good news is that Word understands HTML.
+
+The bad news is that Word's understanding of HTML is HTML 4. In order for bookmarks to work, for example, this gem has to translate `<p id="">` back down into `<p><a name="">`. Word (and this gem) will not do much with HTML 5-specific elements, and if you're generating HTML for automated generation of Word documents, keep your HTML old-fashioned.
+
 The good news with generating a Word document via HTML is that Word understands CSS, and you can determine much of what the Word document looks like by manipulating that CSS. That extends to features that are not part of HTML CSS: if you want to work out how to get Word to do something in CSS, save a Word document that already does what you want as HTML, and inspect the HTML and CSS you get.
 
-The bad news is that Word's implementation of CSS is poorly documented (even if Office HTML is documented in a 1300 page document (online at https://stigmortenmyre.no/mso/, https://www.rodriguezcommaj.com/assets/resources/microsoft-office-html-and-xml-reference.pdf), and the CSS selectors are only partially and selectively implemented. For list styles, for example, `mso-level-text` governs how the list label is displayed; but it is only recognised in a `@list` style: it is ignored in a CSS rule like `ol li`, or in a `style` attribute on a node. Working out the right CSS for what you want will take some trial and error, and you are better placed to try to do things Word's way than the right way.
+The bad news is that Word's implementation of CSS is poorly documented -- even if Office HTML is documented in a 1300 page document (online at https://stigmortenmyre.no/mso/, https://www.rodriguezcommaj.com/assets/resources/microsoft-office-html-and-xml-reference.pdf), and the CSS selectors are only partially and selectively implemented. For list styles, for example, `mso-level-text` governs how the list label is displayed; but it is only recognised in a `@list` style: it is ignored in a CSS rule like `ol li`, or in a `style` attribute on a node. Working out the right CSS for what you want will take some trial and error, and you are better placed to try to do things Word's way than the right way.
 
 == Example
 
