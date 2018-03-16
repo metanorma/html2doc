@@ -6,9 +6,6 @@ require "xml/xslt"
 require "pp"
 
 module Html2Doc
-  @xslt = XML::XSLT.new
-  @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
-
   def self.process(result, hash)
     hash[:dir1] = create_dir(hash[:filename], hash[:dir])
     result = process_html(result, hash)
