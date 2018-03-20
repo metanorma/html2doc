@@ -26,10 +26,6 @@ The gem currently does the following:
 
 For a representative generator of HTML that uses this gem in postprocessing, see https://github.com/riboseinc/asciidoctor-iso
 
-Work to be done:
-
-* Render (editorial) comments
-
 == Constraints
 
 This generates .doc documents. Future versions will upgrade the output to docx.
