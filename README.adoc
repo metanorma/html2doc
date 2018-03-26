@@ -32,12 +32,12 @@ Work to be done:
 
 == Constraints
 
-This generates .doc documents. Future versions will upgrade the output to docx.
+This generates .doc documents. Future versions may upgrade the output to docx.
 
 There there are two other Microsoft Word vendors in the Ruby ecosystem. 
 
 * https://github.com/jetruby/puredocx generate Word documents from a ruby struct as a DSL, rather than converting a preexisting html document. That constrains it's coverage to what is explicitly catered for in the DSL. 
-* https://github.com/MuhammetDilmac/Html2Docx is a much simpler wrapper around html: it does not do any of the added functionality described above (image resizing, converting footnotes, AsciiMath and MathML), though it does already generate docx.
+* https://github.com/MuhammetDilmac/Html2Docx is a much simpler wrapper around html: it does not do any of the added functionality described above (image resizing, converting footnotes, AsciiMath and MathML). However it does already generate docx, which involves many more auxiliary files than the .doc format. (Any attempt to generate docx through this gem will likely involve Html2Docx.)
 
 == Usage
 
@@ -57,6 +57,13 @@ asciimathdelims:: are the AsciiMath delimiters used in the text (an array of an 
 liststyles:: a hash of list style labels in Word CSS, which are used to define the behaviour of list item labels (e.g. _i)_ vs _i._). The gem recognises the hash keys `ul`, `ol`. So if the appearance of an ordered list's item labels in the supplied stylesheet is governed by style `@list l1` (e.g. `@list l1:level1 {mso-level-text:"%1\)";}` appears in the stylesheet), call the method with `liststyles:{ol: "l1"}`.
 
 Note that the local CSS stylesheet file contains a variable `FILENAME` for the location of footnote/endnote separators and headers/footers, which are provided in the header HTML file. The gem replaces `FILENAME` with the file name that the document will be saved as. If you supply your own stylesheet and also wish to use separators or headers/footers, you will likewise need to replace the document name mentioned in your stylesheet with a `FILENAME` string.
+
+We include a script in this distribution that processes files from the command line, optionally including header and stylesheet:
+
+[source,console]
+--
+$ bin/html2doc --header header.html --stylesheet stylesheet.css filename.html
+--
 
 == Caveats
 

@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+require "html2doc"
+require "optparse"
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: bin/html2doc filename [options]"
+
+  opts.on("--stylesheet FILE.CSS", "Use the provided stylesheet") do |v|
+    options[:stylesheet] = v
+  end
+  opts.on("--header HEADER.HTML", "Use the provided stylesheet") do |v|
+    options[:header] = v
+  end
+end.parse!
+
+if ARGV.length < 1
+  puts "Usage: bin/html2doc filename [options]"
+  exit
+end
+
+Html2Doc.process(
+  File.read(ARGV[0], encoding: "utf-8"), 
+  filename: ARGV[0].gsub(/\.html?$/, ""),
+  stylesheet: options[:stylesheet],
+  header: options[:header],
+)
+                 
