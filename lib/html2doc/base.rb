@@ -150,6 +150,7 @@ module Html2Doc
     {
       o: "urn:schemas-microsoft-com:office:office",
       w: "urn:schemas-microsoft-com:office:word",
+      v: "urn:schemas-microsoft-com:vml",
       m: "http://schemas.microsoft.com/office/2004/12/omml",
     }.each { |k, v| root.add_namespace_definition(k.to_s, v) }
     root.add_namespace(nil, "http://www.w3.org/TR/REC-html40")
