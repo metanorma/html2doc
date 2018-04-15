@@ -72,7 +72,7 @@ module Html2Doc
   end
 
   def self.image_cleanup(docxml, dir)
-    docxml.xpath("//*[local-name() = 'img']").each do |i|
+    docxml.xpath("//*[local-name() = 'img' or local-name() = 'imagedata']").each do |i|
       matched = /\.(?<suffix>\S+)$/.match i["src"]
       uuid = UUIDTools::UUID.random_create.to_s
       new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
