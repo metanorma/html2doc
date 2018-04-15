@@ -82,6 +82,7 @@ module Html2Doc
     r.gsub!(%r{<link rel="File-List"}, "<link rel=File-List")
     r.gsub!(%r{<meta http-equiv="Content-Type"},
             "<meta http-equiv=Content-Type")
+    r.gsub!(%r{></m:jc>}, "/>")
     r.gsub!(%r{&tab;|&amp;tab;}, '<span style="mso-tab-count:1">&#xA0; </span>')
     r
   end
