@@ -1,3 +1,3 @@
 module Html2Doc
-  VERSION = "0.6.9".freeze
+  VERSION = "0.7.0".freeze
 end

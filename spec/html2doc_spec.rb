@@ -376,7 +376,6 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
-    #{word_body('<div><m:oMath><m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="1"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>=</m:t></m:r><m:sSup><m:e><m:r><m:t>(</m:t></m:r><m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num><m:r><m:t>n</m:t></m:r><m:r><m:t>(n+1)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><m:r><m:t>)</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:oMath>
   it "processes AsciiMath" do
     Html2Doc.process(html_input("<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"), filename: "test", asciimathdelims: ["{{", "}}"])
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
@@ -398,6 +397,56 @@ RSpec.describe Html2Doc do
        </m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>
        </m:oMath>
     </div>', '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
+  it "left-aligns AsciiMath" do
+    Html2Doc.process(html_input("<div style='text-align:left;'>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"), filename: "test", asciimathdelims: ["{{", "}}"])
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('
+       <div style="text-align:left;"><m:oMathPara><m:oMathParaPr><m:jc m:val="left"></m:jc></m:oMathParaPr><m:oMath>
+       <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub>
+       <m:r><m:t>i=1</m:t></m:r>
+       </m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup></m:e></m:nary>
+       <m:r><m:t>=</m:t></m:r>
+       <m:sSup><m:e>
+       <m:r><m:t>(</m:t></m:r>
+       <m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num>
+       <m:r><m:t>n</m:t></m:r>
+       <m:r><m:t>(n+1)</m:t></m:r>
+       </m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f>
+       <m:r><m:t>)</m:t></m:r>
+       </m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>
+       </m:oMath>
+       </m:oMathPara></div>', '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
+  it "right-aligns AsciiMath" do
+    Html2Doc.process(html_input("<div style='text-align:right;'>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"), filename: "test", asciimathdelims: ["{{", "}}"])
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('
+       <div style="text-align:right;"><m:oMathPara><m:oMathParaPr><m:jc m:val="right"></m:jc></m:oMathParaPr><m:oMath>
+       <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub>
+       <m:r><m:t>i=1</m:t></m:r>
+       </m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup></m:e></m:nary>
+       <m:r><m:t>=</m:t></m:r>
+       <m:sSup><m:e>
+       <m:r><m:t>(</m:t></m:r>
+       <m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num>
+       <m:r><m:t>n</m:t></m:r>
+       <m:r><m:t>(n+1)</m:t></m:r>
+       </m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f>
+       <m:r><m:t>)</m:t></m:r>
+       </m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>
+       </m:oMath>
+       </m:oMathPara></div>', '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
   end
@@ -502,7 +551,7 @@ RSpec.describe Html2Doc do
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
     #{word_body('<div>This is a very simple
     document<a epub:type="footnote" href="#_ftn1" style="mso-footnote-id:ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a> allegedly<a epub:type="footnote" href="#_ftn2" style="mso-footnote-id:ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a></div>',
-'<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
+    '<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
 <p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Footnote</p></div>
 <div style="mso-element:footnote" id="ftn2">
 <p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Other Footnote</p></div>
@@ -511,7 +560,7 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
-    it "processes class footnotes" do
+  it "processes class footnotes" do
     simple_body = '<div>This is a very simple
      document<a class="footnote" href="#a1">1</a> allegedly<a class="footnote" href="#a2">2</a></div>
      <aside id="a1">Footnote</aside>
@@ -522,7 +571,7 @@ RSpec.describe Html2Doc do
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
     #{word_body('<div>This is a very simple
     document<a class="footnote" href="#_ftn1" style="mso-footnote-id:ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a> allegedly<a class="footnote" href="#_ftn2" style="mso-footnote-id:ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a></div>',
-'<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
+    '<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
 <p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Footnote</p></div>
 <div style="mso-element:footnote" id="ftn2">
 <p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Other Footnote</p></div>
@@ -531,79 +580,79 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
-    it "extracts paragraphs from footnotes" do
-      simple_body = '<div>This is a very simple
+  it "extracts paragraphs from footnotes" do
+    simple_body = '<div>This is a very simple
      document<a class="footnote" href="#a1">1</a> allegedly<a class="footnote" href="#a2">2</a></div>
      <aside id="a1"><p>Footnote</p></aside>
      <div id="a2"><p>Other Footnote</p></div>'
-      Html2Doc.process(html_input(simple_body), filename: "test")
-      expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
-        to match_fuzzy(<<~OUTPUT)
-      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-      #{word_body('<div>This is a very simple
+    Html2Doc.process(html_input(simple_body), filename: "test")
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div>This is a very simple
     document<a class="footnote" href="#_ftn1" style="mso-footnote-id:ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a> allegedly<a class="footnote" href="#_ftn2" style="mso-footnote-id:ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a></div>',
-      '<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
+    '<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
 <p class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Footnote</p></div>
 <div style="mso-element:footnote" id="ftn2">
 <p class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Other Footnote</p></div>
 </div>')}
-      #{WORD_FTR1}
-      OUTPUT
-    end
+    #{WORD_FTR1}
+    OUTPUT
+  end
 
-   it "labels lists with list styles" do
-      simple_body = <<~BODY
+  it "labels lists with list styles" do
+    simple_body = <<~BODY
       <div><ul>
       <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
-      BODY
-      Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
-      expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
-        to match_fuzzy(<<~OUTPUT)
-      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-      #{word_body('<div><ul>
+    BODY
+    Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div><ul>
        <li style="mso-list:l1 level1 lfo1;" class="MsoNormal"><div><p class="MsoNormal"><ol><li style="mso-list:l2 level2 lfo1;" class="MsoNormal"><ul><li style="mso-list:l1 level3 lfo1;" class="MsoNormal"><p class="MsoNormal"><ol><li style="mso-list:l2 level4 lfo1;" class="MsoNormal"><ol><li style="mso-list:l2 level5 lfo1;" class="MsoNormal">A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>',
-       '<div style="mso-element:footnote-list"/>')}
-      #{WORD_FTR1}
-      OUTPUT
-    end
+    '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
 
 
-   it "restarts numbering of lists with list styles" do
-      simple_body = <<~BODY
+  it "restarts numbering of lists with list styles" do
+    simple_body = <<~BODY
       <div>
       <ol><li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
       <ol><li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>
-      BODY
-      Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
-      expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
-        to match_fuzzy(<<~OUTPUT)
-      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-      #{word_body('<div>
+    BODY
+    Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div>
       <ol><li style="mso-list:l2 level1 lfo1;" class="MsoNormal"><div><p class="MsoNormal"><ol><li style="mso-list:l2 level2 lfo1;" class="MsoNormal"><ul><li style="mso-list:l1 level3 lfo1;" class="MsoNormal"><p class="MsoNormal"><ol><li style="mso-list:l2 level4 lfo1;" class="MsoNormal"><ol><li style="mso-list:l2 level5 lfo1;" class="MsoNormal">A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
       <ol><li style="mso-list:l2 level1 lfo2;" class="MsoNormal"><div><p class="MsoNormal"><ol><li style="mso-list:l2 level2 lfo2;" class="MsoNormal"><ul><li style="mso-list:l1 level3 lfo2;" class="MsoNormal"><p class="MsoNormal"><ol><li style="mso-list:l2 level4 lfo2;" class="MsoNormal"><ol><li style="mso-list:l2 level5 lfo2;" class="MsoNormal">A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>',
-       '<div style="mso-element:footnote-list"/>')}
-      #{WORD_FTR1}
-      OUTPUT
-    end
+    '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
 
-   it "replaces id attributes with explicit a@name bookmarks" do
-      simple_body = <<~BODY
+  it "replaces id attributes with explicit a@name bookmarks" do
+    simple_body = <<~BODY
       <div>
         <p id="a">Hello</p>
         <p id="b"/>
       </div>
-      BODY
-      Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
-      expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
-        to match_fuzzy(<<~OUTPUT)
-      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-      #{word_body('<div>
+    BODY
+    Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div>
         <p class="MsoNormal"><a name="a" id="a"></a>Hello</p>
         <p class="MsoNormal"><a name="b" id="b"></a></p>
       </div>',
-       '<div style="mso-element:footnote-list"/>')}
-      #{WORD_FTR1}
-      OUTPUT
-    end
+    '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
 
 end

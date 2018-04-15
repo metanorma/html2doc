@@ -41,7 +41,25 @@ module Html2Doc
       ooxml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
         gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
         gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
+      ooxml = uncenter(m, ooxml)
       m.swap(ooxml)
     end
+  end
+
+  # if oomml has no siblings, by default it is centered; override this with
+  # left/right if parent is so tagged
+  def self.uncenter(m, ooxml)
+    if m.next == nil && m.previous == nil
+      alignnode = m.at(".//ancestor::*[@style][local-name() = 'p' or local-name() = "\
+                       "'div' or local-name() = 'td']/@style") or return ooxml
+      if alignnode.text.include? ("text-align:left")
+        ooxml = "<m:oMathPara><m:oMathParaPr><m:jc "\
+          "m:val='left'/></m:oMathParaPr>#{ooxml}</m:oMathPara>"
+      elsif alignnode.text.include? ("text-align:right")
+        ooxml = "<m:oMathPara><m:oMathParaPr><m:jc "\
+          "m:val='right'/></m:oMathParaPr>#{ooxml}</m:oMathPara>"
+      end
+    end
+    ooxml
   end
 end
