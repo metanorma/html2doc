@@ -32,6 +32,7 @@ module Html2Doc
 
   def self.rm_temp_files(filename, dir, dir1)
     system "rm #{filename}.htm"
+    system "rm -r #{dir1}/header.html"
     system "rm -r #{dir1}" unless dir
   end
 
