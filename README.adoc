@@ -9,7 +9,7 @@ Gem to convert an HTML document into a Word document (.doc) format. This is inte
 
 This gem originated out of https://github.com/riboseinc/asciidoctor-iso, which creates a Word document from a automatically generated HTML document (created in turn by processing Asciidoc).
 
-This work is driven by the Word document generation procedure documented in http://sebsauvage.net/wiki/doku.php?id=word_document_generation
+This work is driven by the Word document generation procedure documented in http://sebsauvage.net/wiki/doku.php?id=word_document_generation. For more on the approach taken, and on alternative approaches, see https://github.com/riboseinc/html2doc/wiki/Why-not-docx%3F
 
 The gem currently does the following:
 
