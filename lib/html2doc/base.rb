@@ -9,12 +9,18 @@ module Html2Doc
   def self.process(result, hash)
     hash[:dir1] = create_dir(hash[:filename], hash[:dir])
     result = process_html(result, hash)
-    hash[:header_file].nil? ||
-      system("cp #{hash[:header_file]} #{hash[:dir1]}/header.html")
+    process_header(hash[:header_file], hash)
     generate_filelist(hash[:filename], hash[:dir1])
     File.open("#{hash[:filename]}.htm", "w") { |f| f.write(result) }
     mime_package result, hash[:filename], hash[:dir1]
     rm_temp_files(hash[:filename], hash[:dir], hash[:dir1])
+  end
+
+  def self.process_header(headerfile, hash)
+    return if headerfile.nil?
+    doc = File.read(headerfile, encoding: "utf-8")
+    doc = header_image_cleanup(doc, hash[:dir1])
+    File.open("#{hash[:dir1]}/header.html", "w") { |f| f.write(doc) }
   end
 
   def self.create_dir(filename, dir)

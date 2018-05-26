@@ -84,6 +84,27 @@ module Html2Doc
     docxml
   end
 
+  # do not parse the header through Nokogiri, since it will contain 
+  # non-XML like <![if !supportFootnotes]>
+  def self.header_image_cleanup(doc, dir)
+    doc.split(%r{(<img [^>]*>|<v:imagedata [^>]*>)}).each_slice(2).map do |a|
+      header_image_cleanup1(a, dir)
+    end.join
+  end
+
+  def self.header_image_cleanup1(a, dir)
+      if a.size == 2
+        warn a[1]
+        matched = / src=['"](?<src>[^"']+)['"]/.match a[1]
+        matched2 = /\.(?<suffix>\S+)$/.match matched[:src]
+        uuid = UUIDTools::UUID.random_create.to_s
+        new_full_filename = File.join(dir, "#{uuid}.#{matched2[:suffix]}")
+        system "cp #{matched[:src]} #{new_full_filename}"
+        a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, "src='#{new_full_filename}'")
+      end
+    a.join
+  end
+
   def self.generate_filelist(filename, dir)
     File.open(File.join(dir, "filelist.xml"), "w") do |f|
       f.write %{<xml xmlns:o="urn:schemas-microsoft-com:office:office">

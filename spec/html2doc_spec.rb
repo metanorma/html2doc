@@ -364,6 +364,12 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
+      it "processes a header with an image" do
+    Html2Doc.process(html_input(""), filename: "test", header_file: "spec/header_img.html")
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).to match(%r{Content-Type: image/png})
+  end
+
+
   it "processes a populated document" do
     simple_body = "<h1>Hello word!</h1>
     <div>This is a very simple document</div>"
