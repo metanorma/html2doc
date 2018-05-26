@@ -98,10 +98,11 @@ module Html2Doc
         matched2 = /\.(?<suffix>\S+)$/.match matched[:src]
         uuid = UUIDTools::UUID.random_create.to_s
         new_full_filename = "file:///C:/Doc/#{filename}_files/#{uuid}.#{matched2[:suffix]}"
-        system "cp #{matched[:src]} #{new_full_filename}"
+        dest_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
+        system "cp #{matched[:src]} #{dest_filename}"
         a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_full_filename}'")
       end
-    a.join
+      a.join
   end
 
   def self.generate_filelist(filename, dir)
