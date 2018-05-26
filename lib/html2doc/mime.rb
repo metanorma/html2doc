@@ -94,7 +94,6 @@ module Html2Doc
 
   def self.header_image_cleanup1(a, dir)
       if a.size == 2
-        warn a[1]
         matched = / src=['"](?<src>[^"']+)['"]/.match a[1]
         matched2 = /\.(?<suffix>\S+)$/.match matched[:src]
         uuid = UUIDTools::UUID.random_create.to_s
