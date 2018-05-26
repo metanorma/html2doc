@@ -100,7 +100,7 @@ module Html2Doc
         uuid = UUIDTools::UUID.random_create.to_s
         new_full_filename = File.join(dir, "#{uuid}.#{matched2[:suffix]}")
         system "cp #{matched[:src]} #{new_full_filename}"
-        a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, "src='#{new_full_filename}'")
+        a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_full_filename}'")
       end
     a.join
   end
