@@ -86,18 +86,18 @@ module Html2Doc
 
   # do not parse the header through Nokogiri, since it will contain 
   # non-XML like <![if !supportFootnotes]>
-  def self.header_image_cleanup(doc, dir)
+  def self.header_image_cleanup(doc, dir, filename)
     doc.split(%r{(<img [^>]*>|<v:imagedata [^>]*>)}).each_slice(2).map do |a|
-      header_image_cleanup1(a, dir)
+      header_image_cleanup1(a, dir, filename)
     end.join
   end
 
-  def self.header_image_cleanup1(a, dir)
+  def self.header_image_cleanup1(a, dir, filename)
       if a.size == 2
         matched = / src=['"](?<src>[^"']+)['"]/.match a[1]
         matched2 = /\.(?<suffix>\S+)$/.match matched[:src]
         uuid = UUIDTools::UUID.random_create.to_s
-        new_full_filename = "#{uuid}.#{matched2[:suffix]}"
+        new_full_filename = "file:///C:/Doc/#{filename}_files/#{uuid}.#{matched2[:suffix]}"
         system "cp #{matched[:src]} #{new_full_filename}"
         a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_full_filename}'")
       end

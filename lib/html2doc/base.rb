@@ -19,8 +19,7 @@ module Html2Doc
   def self.process_header(headerfile, hash)
     return if headerfile.nil?
     doc = File.read(headerfile, encoding: "utf-8")
-    doc = header_image_cleanup(doc, hash[:dir1])
-    warn doc
+    doc = header_image_cleanup(doc, hash[:dir1], hash[:filename])
     File.open("#{hash[:dir1]}/header.html", "w") { |f| f.write(doc) }
   end
 
