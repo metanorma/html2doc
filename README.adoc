@@ -1,15 +1,20 @@
 = Html2Doc
 
-
 image:https://img.shields.io/gem/v/html2doc.svg["Gem Version", link="https://rubygems.org/gems/html2doc"]
 image:https://img.shields.io/travis/riboseinc/html2doc/master.svg["Build Status", link="https://travis-ci.org/riboseinc/html2doc"]
 image:https://codeclimate.com/github/riboseinc/html2doc/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/riboseinc/html2doc"]
 
+== Purpose
+
 Gem to convert an HTML document into a Word document (.doc) format. This is intended for automated generation of Microsoft Word documents, given HTML documents, which are much more readily crafted.
+
+== Origin
 
 This gem originated out of https://github.com/riboseinc/asciidoctor-iso, which creates a Word document from a automatically generated HTML document (created in turn by processing Asciidoc).
 
 This work is driven by the Word document generation procedure documented in http://sebsauvage.net/wiki/doku.php?id=word_document_generation. For more on the approach taken, and on alternative approaches, see https://github.com/riboseinc/html2doc/wiki/Why-not-docx%3F
+
+== Functions
 
 The gem currently does the following:
 
@@ -28,14 +33,16 @@ For a representative generator of HTML that uses this gem in postprocessing, see
 
 == Constraints
 
-This generates .doc documents. Future versions may upgrade the output to docx.
+This generates `.doc` documents. Future versions may upgrade the output to `docx`.
 
-There there are two other Microsoft Word vendors in the Ruby ecosystem. 
+There there are two other Microsoft Word vendors in the Ruby ecosystem.
 
-* https://github.com/jetruby/puredocx generate Word documents from a ruby struct as a DSL, rather than converting a preexisting html document. That constrains it's coverage to what is explicitly catered for in the DSL. 
+* https://github.com/jetruby/puredocx generate Word documents from a ruby struct as a DSL, rather than converting a preexisting html document. That constrains it's coverage to what is explicitly catered for in the DSL.
 * https://github.com/MuhammetDilmac/Html2Docx is a much simpler wrapper around html: it does not do any of the added functionality described above (image resizing, converting footnotes, AsciiMath and MathML). However it does already generate docx, which involves many more auxiliary files than the .doc format. (Any attempt to generate docx through this gem will likely involve Html2Docx.)
 
 == Usage
+
+=== Programmatic
 
 [source,ruby]
 --
@@ -54,12 +61,37 @@ liststyles:: a hash of list style labels in Word CSS, which are used to define t
 
 Note that the local CSS stylesheet file contains a variable `FILENAME` for the location of footnote/endnote separators and headers/footers, which are provided in the header HTML file. The gem replaces `FILENAME` with the file name that the document will be saved as. If you supply your own stylesheet and also wish to use separators or headers/footers, you will likewise need to replace the document name mentioned in your stylesheet with a `FILENAME` string.
 
+=== Command line
+
 We include a script in this distribution that processes files from the command line, optionally including header and stylesheet:
 
 [source,console]
 --
 $ bin/html2doc --header header.html --stylesheet stylesheet.css filename.html
 --
+
+=== Converting document output to "`Native Word`" (`.docx`)
+
+The generated Word document is not quite in the most "`native`" format used by Word, `.docx`: it outputs the older `.doc` format. (See https://github.com/riboseinc/html2doc/wiki/Why-not-docx%3F for the reasons why.)
+
+Here are the steps to convert our output into native-`docx`.
+
+==== Microsoft Word on macOS
+
+. Open the generated Word document (`*.doc`) in Word.
+
+. Press "`Save`", it prompts you to save as "`.mht`", but change it to "`.doc`", then "`Save".
+
+. It may automatically prompt you, but if not, do "`Save As`", change the file type to "`.docx`".
+
+.. Change the "`View`" to "`Print Layout`".
+
+.. Right click the Table of Contents, click "`Update Field`" (and either selection of "`Update page numbers only`" / "`Update entire able`").
+
+. Press "`Save`" again to save changes.
+
+. Now you have a distributable, native-`docx`, Word document.
+
 
 == Caveats
 
@@ -79,7 +111,7 @@ The bad news is that Word's implementation of CSS is poorly documented -- even i
 
 This gem is published with an early draft of the XSLT stylesheet transforming MathML into OOXML, `mml2omml.xsl`, that has published for several years now as part of the https://github.com/TEIC/Stylesheets[TEI stylesheet set]. (We have made some further minor edits to the stylesheet.) The stylesheets have been published under a dual Creative Commons Sharealike/BSD licence.
 
-The good news is that the stylesheet is not identical to the stylesheet `mathml2omml.xsl` that is published with Microsoft Word, so it can and has been redistributed. 
+The good news is that the stylesheet is not identical to the stylesheet `mathml2omml.xsl` that is published with Microsoft Word, so it can and has been redistributed.
 
 The bad news is that the stylesheet is not identical to the stylesheet `mathml2omml.xsl` that is published with Microsoft Word, so it isn't guaranteed to have identical output. If you want to make sure that your MathML import is identical to what Word currently uses, replace `mml2omml.xsl` with `mathml2omml.xsl`, and edit the gem accordingly for your local installation. On Windows, you will find the stylesheet in the same directory as the `winword.exe` executable. On Mac, right-click on the Word application, and select "Show Package Contents"; you will find the stylesheet under `Contents/Resources`.
 
