@@ -72,7 +72,7 @@ $ bin/html2doc --header header.html --stylesheet stylesheet.css filename.html
 
 === Converting document output to "`Native Word`" (`.docx`)
 
-The generated Word document is not quite in the most "`native`" format used by Word, `.docx`.
+The generated Word document is not quite in the most "`native`" format used by Word, `.docx`: it outputs the older `.doc` format. (See https://github.com/riboseinc/html2doc/wiki/Why-not-docx%3F for the reasons why.)
 
 Here are the steps to convert our output into native-`docx`.
 
