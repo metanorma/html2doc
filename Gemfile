@@ -2,7 +2,6 @@ source "https://rubygems.org"
 
 group :development, :test do
   gem "rspec"
-  gem "rspec-match_fuzzy"
 end
 
 
