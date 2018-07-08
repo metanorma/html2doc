@@ -120,7 +120,7 @@ DEPENDENCIES
   html2doc!
   rake (~> 12.0)
   rspec
-  rspec-match_fuzzy
+  rspec-match_fuzzy (~> 0.1.3)
   rubocop (~> 0.50)
   simplecov (~> 0.15)
   timecop (~> 0.9)
