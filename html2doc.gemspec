@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   DESCRIPTION
 
   spec.homepage      = "https://github.com/riboseinc/html2doc"
-  spec.license       = "MIT"
+  spec.licenses       = ["CC-BY-SA-3.0", "BSD-2-Clause"]
 
   spec.bindir        = "bin"
   spec.require_paths = ["lib"]

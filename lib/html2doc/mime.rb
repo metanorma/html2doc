@@ -36,7 +36,7 @@ module Html2Doc
   def self.mime_type(item)
     types = MIME::Types.type_for(item)
     type = types ? types.first.to_s : 'text/plain; charset="utf-8"'
-    type = type + ' charset="utf-8"' if /^text/.match?(type) && types
+    type = type + ' charset="utf-8"' if /^text/.match(type) && types
     type
   end
 
