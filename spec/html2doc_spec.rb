@@ -517,7 +517,7 @@ RSpec.describe Html2Doc do
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="387"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.png" width="412" height="400"></img>', '<div style="mso-element:footnote-list"/>'))}
     #{image_clean(WORD_FTR3)}
     OUTPUT
   end
@@ -529,7 +529,7 @@ RSpec.describe Html2Doc do
     expect(testdoc).to match(%r{Content-Type: image/gif})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.gif" width="680" height="202"></img>', '<div style="mso-element:footnote-list"/>'))}
     #{image_clean(WORD_FTR3).gsub(/image\.png/, "image.gif")}
     OUTPUT
   end
@@ -541,7 +541,7 @@ RSpec.describe Html2Doc do
     expect(testdoc).to match(%r{Content-Type: image/jpeg})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="122" height="400"></img>', '<div style="mso-element:footnote-list"/>'))}
     #{image_clean(WORD_FTR3).gsub(/image\.png/, "image.jpg")}
     OUTPUT
   end
