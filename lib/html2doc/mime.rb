@@ -58,21 +58,22 @@ module Html2Doc
     File.open("#{filename}.doc", "w") { |f| f.write mhtml }
   end
 
+  # max height for Word document is 400, max width is 680
   def self.image_resize(i, maxheight, maxwidth)
-    size = [i["width"].to_i, i["height"].to_i]
-    size = ImageSize.path(i["src"]).size if size[0].zero? && size[1].zero?
-    # max height for Word document is 400, max width is 680
-    if size[0] > maxheight
-      size = [maxheight, (size[1] * maxheight / size[0]).ceil]
-    end
-    if size[1] > maxwidth
-      size = [(size[0] * maxwidth / size[1]).ceil, maxwidth]
-    end
-    size
+    realSize = ImageSize.path(i["src"]).size
+    s = [i["width"].to_i, i["height"].to_i]
+    s = realSize if s[0].zero? && s[1].zero?
+    s[1] = s[0] * realSize[1] / realSize[0] if s[1].zero? && !s[0].zero?
+    s[0] = s[1] * realSize[0] / realSize[1] if s[0].zero? && !s[1].zero?
+    s = [maxheight, (s[1] * maxheight / s[0]).ceil] if s[0] > maxheight
+    s = [(s[0] * maxwidth / s[1]).ceil, maxwidth] if s[1] > maxwidth
+    s
   end
 
+  IMAGE_PATH = "//*[local-name() = 'img' or local-name() = 'imagedata']".freeze
+
   def self.image_cleanup(docxml, dir)
-    docxml.xpath("//*[local-name() = 'img' or local-name() = 'imagedata']").each do |i|
+    docxml.xpath(IMAGE_PATH).each do |i|
       matched = /\.(?<suffix>\S+)$/.match i["src"]
       uuid = UUIDTools::UUID.random_create.to_s
       new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
@@ -93,16 +94,16 @@ module Html2Doc
   end
 
   def self.header_image_cleanup1(a, dir, filename)
-      if a.size == 2
-        matched = / src=['"](?<src>[^"']+)['"]/.match a[1]
-        matched2 = /\.(?<suffix>\S+)$/.match matched[:src]
-        uuid = UUIDTools::UUID.random_create.to_s
-        new_full_filename = "file:///C:/Doc/#{filename}_files/#{uuid}.#{matched2[:suffix]}"
-        dest_filename = File.join(dir, "#{uuid}.#{matched2[:suffix]}")
-        system "cp #{matched[:src]} #{dest_filename}"
-        a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_full_filename}'")
-      end
-      a.join
+    if a.size == 2
+      matched = / src=['"](?<src>[^"']+)['"]/.match a[1]
+      matched2 = /\.(?<suffix>\S+)$/.match matched[:src]
+      uuid = UUIDTools::UUID.random_create.to_s
+      new_full_filename = "file:///C:/Doc/#{filename}_files/#{uuid}.#{matched2[:suffix]}"
+      dest_filename = File.join(dir, "#{uuid}.#{matched2[:suffix]}")
+      system "cp #{matched[:src]} #{dest_filename}"
+      a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_full_filename}'")
+    end
+    a.join
   end
 
   def self.generate_filelist(filename, dir)

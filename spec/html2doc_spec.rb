@@ -546,6 +546,38 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
+  it "resizes images with missing or auto sizes" do
+    image = { "src" => "spec/19160-8.jpg" }
+    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    image["width"] = "20"
+    expect(Html2Doc.image_resize(image, 100, 100)).to eq [20, 65]
+    image.delete("width")
+    image["height"] = "50"
+    expect(Html2Doc.image_resize(image, 100, 100)).to eq [15, 50]
+    image.delete("height")
+    image["width"] = "500"
+    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    image.delete("width")
+    image["height"] = "500"
+    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    image["width"] = "20"
+    image["height"] = "auto"
+    expect(Html2Doc.image_resize(image, 100, 100)).to eq [20, 65]
+    image["width"] = "auto"
+    image["height"] = "50"
+    expect(Html2Doc.image_resize(image, 100, 100)).to eq [15, 50]
+    image["width"] = "500"
+    image["height"] = "auto"
+    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    image["width"] = "auto"
+    image["height"] = "500"
+    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    image["width"] = "auto"
+    image["height"] = "auto"
+    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+  end
+
+
   it "processes epub:type footnotes" do
     simple_body = '<div>This is a very simple 
      document<a epub:type="footnote" href="#a1">1</a> allegedly<a epub:type="footnote" href="#a2">2</a></div>
