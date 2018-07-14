@@ -65,8 +65,8 @@ module Html2Doc
     s = realSize if s[0].zero? && s[1].zero?
     s[1] = s[0] * realSize[1] / realSize[0] if s[1].zero? && !s[0].zero?
     s[0] = s[1] * realSize[0] / realSize[1] if s[0].zero? && !s[1].zero?
-    s = [(s[1] * maxheight / s[0]).ceil, maxheight] if s[1] > maxheight
-    s = [maxwidth, (s[0] * maxwidth / s[1]).ceil] if s[0] > maxwidth
+    s = [(s[0] * maxheight / s[1]).ceil, maxheight] if s[1] > maxheight
+    s = [maxwidth, (s[1] * maxwidth / s[0]).ceil] if s[0] > maxwidth
     s
   end
 
