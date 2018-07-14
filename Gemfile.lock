@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    html2doc (0.8.1)
+    html2doc (0.8.2)
       asciimath
       htmlentities (~> 4.3.4)
       image_size
