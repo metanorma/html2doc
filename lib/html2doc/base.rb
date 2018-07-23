@@ -20,7 +20,7 @@ module Html2Doc
     return if headerfile.nil?
     doc = File.read(headerfile, encoding: "utf-8")
     doc = header_image_cleanup(doc, hash[:dir1], hash[:filename])
-    File.open("#{hash[:dir1]}/header.html", "w") { |f| f.write(doc) }
+    File.open("#{hash[:dir1]}/header.html", "w:UTF-8") { |f| f.write(doc) }
   end
 
   def self.create_dir(filename, dir)
