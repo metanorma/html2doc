@@ -20,7 +20,7 @@ module Html2Doc
 
   def self.mime_attachment(boundary, filename, item, dir)
     encoded_file = Base64.strict_encode64(
-      File.read("#{dir}/#{item}"),
+      File.read("#{dir}/#{item}", encoding: "utf-8"),
     ).gsub(/(.{76})/, "\\1\n")
     <<~"FILE"
     --#{boundary}
