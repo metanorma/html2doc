@@ -55,7 +55,7 @@ module Html2Doc
       mhtml += mime_attachment(boundary, filename, item, dir)
     end
     mhtml += "--#{boundary}--"
-    File.open("#{filename}.doc", "w") { |f| f.write mhtml }
+    File.open("#{filename}.doc", "w:UTF-8") { |f| f.write mhtml }
   end
 
   # max height for Word document is 400, max width is 680
