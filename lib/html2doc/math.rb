@@ -8,7 +8,7 @@ require "pp"
 module Html2Doc
   @xslt = XML::XSLT.new
   #@xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
-  @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"))
+  @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"), encoding: "utf-8")
 
   def self.asciimath_to_mathml1(x)
     AsciiMath.parse(HTMLEntities.new.decode(x)).to_mathml.
