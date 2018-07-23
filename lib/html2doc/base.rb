@@ -11,7 +11,7 @@ module Html2Doc
     result = process_html(result, hash)
     process_header(hash[:header_file], hash)
     generate_filelist(hash[:filename], hash[:dir1])
-    File.open("#{hash[:filename]}.htm", "w") { |f| f.write(result) }
+    File.open("#{hash[:filename]}.htm", "w:UTF-8") { |f| f.write(result) }
     mime_package result, hash[:filename], hash[:dir1]
     rm_temp_files(hash[:filename], hash[:dir], hash[:dir1])
   end
