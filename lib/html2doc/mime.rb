@@ -2,6 +2,7 @@ require "uuidtools"
 require "base64"
 require "mime/types"
 require "image_size"
+require "fileutils"
 
 module Html2Doc
   def self.mime_preamble(boundary, filename, result)
@@ -78,7 +79,8 @@ module Html2Doc
       uuid = UUIDTools::UUID.random_create.to_s
       new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
       # presupposes that the image source is local
-      system "cp #{i['src']} #{new_full_filename}"
+      #system "cp #{i['src']} #{new_full_filename}"
+      FileUtils.cp i["src"], new_full_filename
       i["width"], i["height"] = image_resize(i, 400, 680)
       i["src"] = new_full_filename
     end
@@ -100,7 +102,8 @@ module Html2Doc
       uuid = UUIDTools::UUID.random_create.to_s
       new_full_filename = "file:///C:/Doc/#{filename}_files/#{uuid}.#{matched2[:suffix]}"
       dest_filename = File.join(dir, "#{uuid}.#{matched2[:suffix]}")
-      system "cp #{matched[:src]} #{dest_filename}"
+      #system "cp #{matched[:src]} #{dest_filename}"
+      FileUtils.cp matched[:src], dest_filename
       a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_full_filename}'")
     end
     a.join
