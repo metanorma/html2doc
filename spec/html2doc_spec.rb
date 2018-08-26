@@ -364,7 +364,7 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
-      it "processes a header with an image" do
+  it "processes a header with an image" do
     Html2Doc.process(html_input(""), filename: "test", header_file: "spec/header_img.html")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).to match(%r{Content-Type: image/png})
   end
@@ -577,6 +577,16 @@ RSpec.describe Html2Doc do
     expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
   end
 
+  it "does not move images if they are external URLs" do
+    simple_body = '<img src="https://example.com/19160-6.png">'
+    Html2Doc.process(html_input(simple_body), filename: "test")
+    testdoc = File.read("test.doc", encoding: "utf-8")
+    expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{image_clean(word_body('<img src="https://example.com/19160-6.png"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(WORD_FTR1)}
+    OUTPUT
+  end
 
   it "processes epub:type footnotes" do
     simple_body = '<div>This is a very simple 

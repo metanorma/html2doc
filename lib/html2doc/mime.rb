@@ -73,13 +73,13 @@ module Html2Doc
 
   IMAGE_PATH = "//*[local-name() = 'img' or local-name() = 'imagedata']".freeze
 
+  # only processes locally stored images
   def self.image_cleanup(docxml, dir)
     docxml.xpath(IMAGE_PATH).each do |i|
+      next if /^http/.match i["src"]
       matched = /\.(?<suffix>\S+)$/.match i["src"]
       uuid = UUIDTools::UUID.random_create.to_s
       new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
-      # presupposes that the image source is local
-      #system "cp #{i['src']} #{new_full_filename}"
       FileUtils.cp i["src"], new_full_filename
       i["width"], i["height"] = image_resize(i, 400, 680)
       i["src"] = new_full_filename
