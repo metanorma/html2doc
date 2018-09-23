@@ -4,6 +4,7 @@ require "htmlentities"
 require "nokogiri"
 require "xml/xslt"
 require "pp"
+require "fileutils"
 
 module Html2Doc
   def self.process(result, hash)
@@ -37,9 +38,9 @@ module Html2Doc
   end
 
   def self.rm_temp_files(filename, dir, dir1)
-    system "rm #{filename}.htm"
-    system "rm -r #{dir1}/header.html"
-    system "rm -r #{dir1}" unless dir
+    FileUtils.rm "#{filename}.htm"
+    FileUtils.rm_f "#{dir1}/header.html"
+    FileUtils.rm_r dir1 unless dir
   end
 
   def self.cleanup(docxml, hash)
