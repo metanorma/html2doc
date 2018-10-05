@@ -59,7 +59,7 @@ module Html2Doc
     File.open("#{filename}.doc", "w:UTF-8") { |f| f.write mhtml }
   end
 
-  # max height for Word document is 400, max width is 680
+  # max width for Word document is 400, max height is 680
   def self.image_resize(i, maxheight, maxwidth)
     realSize = ImageSize.path(i["src"]).size
     s = [i["width"].to_i, i["height"].to_i]
@@ -81,7 +81,7 @@ module Html2Doc
       uuid = UUIDTools::UUID.random_create.to_s
       new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
       FileUtils.cp i["src"], new_full_filename
-      i["width"], i["height"] = image_resize(i, 400, 680)
+      i["width"], i["height"] = image_resize(i, 680, 400)
       i["src"] = new_full_filename
     end
     docxml
