@@ -33,7 +33,9 @@ For a representative generator of HTML that uses this gem in postprocessing, see
 
 == Constraints
 
-This generates `.doc` documents. Future versions may upgrade the output to `docx`.
+This gem generates `.doc` documents. Future versions may upgrade the output to `docx`.
+
+Because `.doc` is the format of an older version of Microsoft Word, the output of this gem do *not* support SVG graphics. (Word itself converts SVG into PNG when it saves documents as Word HTML, which is the input to this gem.)
 
 There there are two other Microsoft Word vendors in the Ruby ecosystem.
 
