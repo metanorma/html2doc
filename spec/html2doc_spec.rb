@@ -383,7 +383,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes AsciiMath" do
-    Html2Doc.process(html_input("<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"), filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.process(html_input("<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2)}}</div>"), filename: "test", asciimathdelims: ["{{", "}}"])
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -656,14 +656,14 @@ RSpec.describe Html2Doc do
   it "labels lists with list styles" do
     simple_body = <<~BODY
       <div><ul>
-      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
+      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li><li>B</li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
     BODY
     Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{word_body('<div><ul>
-       <li style="mso-list:l1 level1 lfo1;" class="MsoNormal"><div><p class="MsoNormal"><ol><li style="mso-list:l2 level2 lfo1;" class="MsoNormal"><ul><li style="mso-list:l1 level3 lfo1;" class="MsoNormal"><p class="MsoNormal"><ol><li style="mso-list:l2 level4 lfo1;" class="MsoNormal"><ol><li style="mso-list:l2 level5 lfo1;" class="MsoNormal">A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>',
+    #{word_body('<div>
+    <p style="mso-list:l1 level1 lfo1;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level4 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpFirst">A</p><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpMiddle">B</p><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpLast">C</p></p></p></p></div></p></div>',
     '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
@@ -681,8 +681,8 @@ RSpec.describe Html2Doc do
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
     #{word_body('<div>
-      <ol><li style="mso-list:l2 level1 lfo1;" class="MsoNormal"><div><p class="MsoNormal"><ol><li style="mso-list:l2 level2 lfo1;" class="MsoNormal"><ul><li style="mso-list:l1 level3 lfo1;" class="MsoNormal"><p class="MsoNormal"><ol><li style="mso-list:l2 level4 lfo1;" class="MsoNormal"><ol><li style="mso-list:l2 level5 lfo1;" class="MsoNormal">A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
-      <ol><li style="mso-list:l2 level1 lfo2;" class="MsoNormal"><div><p class="MsoNormal"><ol><li style="mso-list:l2 level2 lfo2;" class="MsoNormal"><ul><li style="mso-list:l1 level3 lfo2;" class="MsoNormal"><p class="MsoNormal"><ol><li style="mso-list:l2 level4 lfo2;" class="MsoNormal"><ol><li style="mso-list:l2 level5 lfo2;" class="MsoNormal">A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>',
+      <p style="mso-list:l2 level1 lfo1;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level4 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpFirst">A</p></p></p></p></div></p>
+      <p style="mso-list:l2 level1 lfo2;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level4 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level5 lfo2;" class="MsoListParagraphCxSpFirst">A</p></p></p></p></div></p></div>',
     '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT

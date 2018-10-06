@@ -27,13 +27,25 @@ module Html2Doc
     end
   end
 
+  def self.list2para(u)
+    return if u.xpath("./li").empty?
+    u.xpath("./li").last["class"] = "MsoListParagraphCxSpLast"
+    u.xpath("./li").first["class"] = "MsoListParagraphCxSpFirst"
+    u.xpath("./li").each do |l|
+      l.name = "p"
+      l["class"] ||= "MsoListParagraphCxSpMiddle"
+      l&.first_element_child&.name == "p" and l.first_element_child.replace(l.first_element_child.children)
+    end
+    u.replace(u.children)
+  end
+
   def self.lists(docxml, liststyles)
     return if liststyles.nil?
-    if liststyles.has_key?(:ul)
+    liststyles.has_key?(:ul) and
       list_add(docxml.xpath("//ul[not(ancestor::ul) and not(ancestor::ol)]"), liststyles, :ul, 1, nil)
-    end
-    if liststyles.has_key?(:ol)
+    liststyles.has_key?(:ol) and
       list_add(docxml.xpath("//ol[not(ancestor::ul) and not(ancestor::ol)]"), liststyles, :ol, 1, nil)
-    end
+    liststyles.has_key?(:ul) and docxml.xpath("//ul").each { |u| list2para(u) }
+    liststyles.has_key?(:ol) and docxml.xpath("//ol").each { |u| list2para(u) }
   end
 end
