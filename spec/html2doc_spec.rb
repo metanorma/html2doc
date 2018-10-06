@@ -588,6 +588,11 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
+  it "warns about SVG" do
+    simple_body = '<img src="https://example.com/19160-6.svg">'
+    expect{ Html2Doc.process(html_input(simple_body), filename: "test") }.to output("https://example.com/19160-6.svg: SVG not supported\n").to_stderr
+  end
+
   it "processes epub:type footnotes" do
     simple_body = '<div>This is a very simple 
      document<a epub:type="footnote" href="#a1">1</a> allegedly<a epub:type="footnote" href="#a2">2</a></div>

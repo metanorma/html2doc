@@ -73,13 +73,21 @@ module Html2Doc
 
   IMAGE_PATH = "//*[local-name() = 'img' or local-name() = 'imagedata']".freeze
 
+  def self.mkuuid
+    UUIDTools::UUID.random_create.to_s
+  end
+
+  def self.warnsvg(src)
+    warn "#{src}: SVG not supported" if /\.svg$/i.match(src)
+  end
+
   # only processes locally stored images
   def self.image_cleanup(docxml, dir)
     docxml.xpath(IMAGE_PATH).each do |i|
-      next if /^http/.match i["src"]
       matched = /\.(?<suffix>\S+)$/.match i["src"]
-      uuid = UUIDTools::UUID.random_create.to_s
-      new_full_filename = File.join(dir, "#{uuid}.#{matched[:suffix]}")
+      warnsvg(i["src"])
+      next if /^http/.match i["src"]
+      new_full_filename = File.join(dir, "#{mkuuid}.#{matched[:suffix]}")
       FileUtils.cp i["src"], new_full_filename
       i["width"], i["height"] = image_resize(i, 680, 400)
       i["src"] = new_full_filename
@@ -96,15 +104,13 @@ module Html2Doc
   end
 
   def self.header_image_cleanup1(a, dir, filename)
-    if a.size == 2
-      matched = / src=['"](?<src>[^"']+)['"]/.match a[1]
-      matched2 = /\.(?<suffix>\S+)$/.match matched[:src]
-      uuid = UUIDTools::UUID.random_create.to_s
-      new_full_filename = "file:///C:/Doc/#{filename}_files/#{uuid}.#{matched2[:suffix]}"
-      dest_filename = File.join(dir, "#{uuid}.#{matched2[:suffix]}")
-      #system "cp #{matched[:src]} #{dest_filename}"
-      FileUtils.cp matched[:src], dest_filename
-      a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_full_filename}'")
+    if a.size == 2 && !(/ src="https?:/.match a[1])
+      m = / src=['"](?<src>[^"']+)['"]/.match a[1]
+      warnsvg(m[:src])
+      m2 = /\.(?<suffix>\S+)$/.match m[:src]
+      new_filename = "file:///C:/Doc/#{filename}_files/#{mkuuid}.#{m2[:suffix]}"
+      FileUtils.cp m[:src], File.join(dir, "#{mkuuid}.#{m2[:suffix]}")
+      a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_filename}'")
     end
     a.join
   end
