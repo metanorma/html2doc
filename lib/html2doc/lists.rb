@@ -31,6 +31,7 @@ module Html2Doc
     return if u.xpath("./li").empty?
     u.xpath("./li").last["class"] = "MsoListParagraphCxSpLast"
     u.xpath("./li").first["class"] = "MsoListParagraphCxSpFirst"
+    u.xpath("./li/p").each { |p| p["class"] ||= "MsoListParagraphCxSpMiddle" }
     u.xpath("./li").each do |l|
       l.name = "p"
       l["class"] ||= "MsoListParagraphCxSpMiddle"

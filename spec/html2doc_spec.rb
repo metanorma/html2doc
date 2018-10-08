@@ -656,7 +656,7 @@ RSpec.describe Html2Doc do
   it "labels lists with list styles" do
     simple_body = <<~BODY
       <div><ul>
-      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li><li>B</li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
+      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
     BODY
     Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
