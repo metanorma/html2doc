@@ -510,10 +510,10 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
-  it "resizes images for height" do
-    simple_body = '<img src="spec/19160-6.png">'
-    Html2Doc.process(html_input(simple_body), filename: "test")
-    testdoc = File.read("test.doc", encoding: "utf-8")
+  it "resizes images for height, in a file in a subdirectory" do
+    simple_body = '<img src="19160-6.png">'
+    Html2Doc.process(html_input(simple_body), filename: "spec/test")
+    testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -548,33 +548,33 @@ RSpec.describe Html2Doc do
 
   it "resizes images with missing or auto sizes" do
     image = { "src" => "spec/19160-8.jpg" }
-    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100)).to eq [30, 100]
     image["width"] = "20"
-    expect(Html2Doc.image_resize(image, 100, 100)).to eq [20, 65]
+    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100)).to eq [20, 65]
     image.delete("width")
     image["height"] = "50"
-    expect(Html2Doc.image_resize(image, 100, 100)).to eq [15, 50]
+    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100)).to eq [15, 50]
     image.delete("height")
     image["width"] = "500"
-    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100)).to eq [30, 100]
     image.delete("width")
     image["height"] = "500"
-    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100)).to eq [30, 100]
     image["width"] = "20"
     image["height"] = "auto"
-    expect(Html2Doc.image_resize(image, 100, 100)).to eq [20, 65]
+    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100)).to eq [20, 65]
     image["width"] = "auto"
     image["height"] = "50"
-    expect(Html2Doc.image_resize(image, 100, 100)).to eq [15, 50]
+    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100)).to eq [15, 50]
     image["width"] = "500"
     image["height"] = "auto"
-    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100)).to eq [30, 100]
     image["width"] = "auto"
     image["height"] = "500"
-    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100)).to eq [30, 100]
     image["width"] = "auto"
     image["height"] = "auto"
-    expect(Html2Doc.image_resize(image, 100, 100)).to eq [30, 100]
+    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100)).to eq [30, 100]
   end
 
   it "does not move images if they are external URLs" do

@@ -11,7 +11,7 @@ module Html2Doc
     Content-Type: multipart/related; boundary="#{boundary}"
 
     --#{boundary}
-    Content-Location: file:///C:/Doc/#{filename}.htm
+    Content-Location: file:///C:/Doc/#{File.basename(filename)}.htm
     Content-Type: text/html; charset="utf-8"
 
     #{result}
@@ -25,7 +25,7 @@ module Html2Doc
     ).gsub(/(.{76})/, "\\1\n")
     <<~"FILE"
     --#{boundary}
-    Content-Location: file:///C:/Doc/#{filename}_files/#{item}
+    Content-Location: file:///C:/Doc/#{File.basename(filename)}_files/#{item}
     Content-Transfer-Encoding: base64
     Content-Type: #{mime_type(item)}
 
@@ -60,8 +60,8 @@ module Html2Doc
   end
 
   # max width for Word document is 400, max height is 680
-  def self.image_resize(i, maxheight, maxwidth)
-    realSize = ImageSize.path(i["src"]).size
+  def self.image_resize(i, path, maxheight, maxwidth)
+    realSize = ImageSize.path(path).size
     s = [i["width"].to_i, i["height"].to_i]
     s = realSize if s[0].zero? && s[1].zero?
     s[1] = s[0] * realSize[1] / realSize[0] if s[1].zero? && !s[0].zero?
@@ -82,34 +82,34 @@ module Html2Doc
   end
 
   # only processes locally stored images
-  def self.image_cleanup(docxml, dir)
+  def self.image_cleanup(docxml, dir, localdir)
     docxml.xpath(IMAGE_PATH).each do |i|
-      matched = /\.(?<suffix>\S+)$/.match i["src"]
       warnsvg(i["src"])
       next if /^http/.match i["src"]
-      new_full_filename = File.join(dir, "#{mkuuid}.#{matched[:suffix]}")
-      FileUtils.cp i["src"], new_full_filename
-      i["width"], i["height"] = image_resize(i, 680, 400)
-      i["src"] = new_full_filename
+      local_filename = File.join(localdir, i["src"])
+      new_filename = "#{mkuuid}#{File.extname(i["src"])}"
+      FileUtils.cp local_filename, File.join(dir, new_filename)
+      i["width"], i["height"] = image_resize(i, local_filename, 680, 400)
+      i["src"] = File.join(File.basename(dir), new_filename)
     end
     docxml
   end
 
   # do not parse the header through Nokogiri, since it will contain 
   # non-XML like <![if !supportFootnotes]>
-  def self.header_image_cleanup(doc, dir, filename)
+  def self.header_image_cleanup(doc, dir, filename, localdir)
     doc.split(%r{(<img [^>]*>|<v:imagedata [^>]*>)}).each_slice(2).map do |a|
-      header_image_cleanup1(a, dir, filename)
+      header_image_cleanup1(a, dir, filename, localdir)
     end.join
   end
 
-  def self.header_image_cleanup1(a, dir, filename)
+  def self.header_image_cleanup1(a, dir, filename, localdir)
     if a.size == 2 && !(/ src="https?:/.match a[1])
       m = / src=['"](?<src>[^"']+)['"]/.match a[1]
       warnsvg(m[:src])
       m2 = /\.(?<suffix>\S+)$/.match m[:src]
       new_filename = "file:///C:/Doc/#{filename}_files/#{mkuuid}.#{m2[:suffix]}"
-      FileUtils.cp m[:src], File.join(dir, "#{mkuuid}.#{m2[:suffix]}")
+      FileUtils.cp File.join(localdir, m[:src]), File.join(dir, "#{mkuuid}.#{m2[:suffix]}")
       a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_filename}'")
     end
     a.join

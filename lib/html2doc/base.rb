@@ -20,7 +20,7 @@ module Html2Doc
   def self.process_header(headerfile, hash)
     return if headerfile.nil?
     doc = File.read(headerfile, encoding: "utf-8")
-    doc = header_image_cleanup(doc, hash[:dir1], hash[:filename])
+    doc = header_image_cleanup(doc, hash[:dir1], hash[:filename], File.dirname(hash[:filename]))
     File.open("#{hash[:dir1]}/header.html", "w:UTF-8") { |f| f.write(doc) }
   end
 
@@ -44,7 +44,7 @@ module Html2Doc
   end
 
   def self.cleanup(docxml, hash)
-    image_cleanup(docxml, hash[:dir1])
+    image_cleanup(docxml, hash[:dir1], File.dirname(hash[:filename]))
     mathml_to_ooml(docxml)
     lists(docxml, hash[:liststyles])
     footnotes(docxml)
@@ -112,7 +112,7 @@ module Html2Doc
     docxml.xpath("//*[local-name() = 'head']").each do |h|
       h.children.first.add_previous_sibling <<~XML
       #{PRINT_VIEW}
-        <link rel="File-List" href="#{dir}/filelist.xml"/>
+        <link rel="File-List" href="#{File.basename(dir)}/filelist.xml"/>
       XML
     end
   end
@@ -121,7 +121,7 @@ module Html2Doc
     if header_filename.nil?
       stylesheet.gsub!(/\n[^\n]*FILENAME[^\n]*i\n/, "\n")
     else
-      stylesheet.gsub!(/FILENAME/, filename)
+      stylesheet.gsub!(/FILENAME/, File.basename(filename))
     end
     stylesheet
   end
