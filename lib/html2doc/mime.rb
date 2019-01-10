@@ -85,7 +85,7 @@ module Html2Doc
   def self.image_cleanup(docxml, dir, localdir)
     #docxml.xpath(IMAGE_PATH).each do |i|
     docxml.traverse do |i|
-      next unless i.element? && %w(img imagedata).include?(i.name)
+      next unless i.element? && %w(img v:imagedata).include?(i.name)
       warnsvg(i["src"])
       next if /^http/.match i["src"]
       local_filename = File.join(localdir, i["src"])
