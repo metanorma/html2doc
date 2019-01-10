@@ -92,6 +92,12 @@ module Html2Doc
     r.gsub!(%r{<meta http-equiv="Content-Type"},
             "<meta http-equiv=Content-Type")
     r.gsub!(%r{></m:jc>}, "/>")
+    r.gsub!(%r{></v:stroke>}, "/>")
+    r.gsub!(%r{></v:f>}, "/>")
+    r.gsub!(%r{></v:path>}, "/>")
+    r.gsub!(%r{></o:lock>}, "/>")
+    r.gsub!(%r{></v:imagedata>}, "/>")
+    r.gsub!(%r{></w:wrap>}, "/>")
     r.gsub!(%r{&tab;|&amp;tab;}, '<span style="mso-tab-count:1">&#xA0; </span>')
     r
   end
