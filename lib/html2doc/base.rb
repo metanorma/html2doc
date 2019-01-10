@@ -44,6 +44,7 @@ module Html2Doc
   end
 
   def self.cleanup(docxml, hash)
+    namespace(docxml.root)
     image_cleanup(docxml, hash[:dir1], File.dirname(hash[:filename]))
     mathml_to_ooml(docxml)
     lists(docxml, hash[:liststyles])
@@ -142,7 +143,7 @@ module Html2Doc
     css = stylesheet(hash[:filename], hash[:header_file], hash[:stylesheet])
     add_stylesheet(head, title, css)
     define_head1(docxml, hash[:dir1])
-    namespace(docxml.root)
+    rootnamespace(docxml.root)
   end
 
   def self.add_stylesheet(head, title, css)
@@ -162,6 +163,9 @@ module Html2Doc
       v: "urn:schemas-microsoft-com:vml",
       m: "http://schemas.microsoft.com/office/2004/12/omml",
     }.each { |k, v| root.add_namespace_definition(k.to_s, v) }
+  end
+
+  def self.rootnamespace(root)
     root.add_namespace(nil, "http://www.w3.org/TR/REC-html40")
   end
 
