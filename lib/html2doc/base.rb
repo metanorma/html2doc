@@ -172,6 +172,7 @@ module Html2Doc
   def self.bookmarks(docxml)
     docxml.xpath("//*[@id][not(@name)][not(@style = 'mso-element:footnote')]").each do |x|
       next if x["id"].empty?
+      next if %w(imagedata v:imagedata).include? x.name
       if x.children.empty?
         x.add_child("<a name='#{x["id"]}'></a>")
       else
