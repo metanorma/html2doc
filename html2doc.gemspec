@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "thread_safe"
   spec.add_dependency "uuidtools"
   spec.add_dependency "ruby-xslt"
-  spec.add_dependency "asciimath"
+  spec.add_dependency "asciimath", "~> 1.0.7"
 
   spec.add_development_dependency "bundler", "~> 2.0.1"
   spec.add_development_dependency "byebug", "~> 9.1"

@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     html2doc (0.8.7)
-      asciimath
+      asciimath (~> 1.0.7)
       htmlentities (~> 4.3.4)
       image_size
       mime-types
