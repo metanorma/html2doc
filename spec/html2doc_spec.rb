@@ -383,7 +383,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes AsciiMath" do
-    Html2Doc.process(html_input("<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2)}}</div>"), filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.process(html_input(%[<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2 text("integer"))}}</div>]), filename: "test", asciimathdelims: ["{{", "}}"])
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -401,6 +401,7 @@ RSpec.describe Html2Doc do
        </m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f>
        <m:r><m:t>)</m:t></m:r>
        </m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>
+       <m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>"integer"</m:t></m:r>
        </m:oMath>
     </div>', '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}

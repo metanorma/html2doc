@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    html2doc (0.8.6)
+    html2doc (0.8.7)
       asciimath
       htmlentities (~> 4.3.4)
       image_size
@@ -22,7 +22,7 @@ GEM
     docile (1.3.1)
     equivalent-xml (0.6.0)
       nokogiri (>= 1.4.3)
-    ffi (1.9.25)
+    ffi (1.10.0)
     formatador (0.2.5)
     guard (2.15.0)
       formatador (>= 0.2.4)
@@ -52,7 +52,7 @@ GEM
     mime-types-data (3.2018.0812)
     mini_portile2 (2.4.0)
     nenv (0.3.0)
-    nokogiri (1.9.1)
+    nokogiri (1.10.0)
       mini_portile2 (~> 2.4.0)
     notiffany (0.1.1)
       nenv (~> 0.1)
