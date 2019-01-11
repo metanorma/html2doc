@@ -88,6 +88,7 @@ module Html2Doc
       next unless i.element? && %w(img v:imagedata).include?(i.name)
       warnsvg(i["src"])
       next if /^http/.match i["src"]
+      next if %r{^data:image/[^;]+;base64}.match i["src"]
       local_filename = File.join(localdir, i["src"])
       new_filename = "#{mkuuid}#{File.extname(i["src"])}"
       FileUtils.cp local_filename, File.join(dir, new_filename)
@@ -106,7 +107,8 @@ module Html2Doc
   end
 
   def self.header_image_cleanup1(a, dir, filename, localdir)
-    if a.size == 2 && !(/ src="https?:/.match a[1])
+    if a.size == 2 && !(/ src="https?:/.match a[1]) &&
+        !(%r{ src="data:image/[^;]+;base64}.match a[1])
       m = / src=['"](?<src>[^"']+)['"]/.match a[1]
       warnsvg(m[:src])
       m2 = /\.(?<suffix>\S+)$/.match m[:src]
