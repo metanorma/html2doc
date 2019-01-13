@@ -1,7 +1,7 @@
 = Html2Doc
 
 image:https://img.shields.io/gem/v/html2doc.svg["Gem Version", link="https://rubygems.org/gems/html2doc"]
-image:https://img.shields.io/travis/riboseinc/html2doc/master.svg["Build Status", link="https://travis-ci.org/riboseinc/html2doc"]
+image:https://img.shields.io/travis/riboseinc/html2doc/master.svg["Build Status", link="https://travis-ci.com/riboseinc/html2doc"]
 image:https://codeclimate.com/github/riboseinc/html2doc/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/riboseinc/html2doc"]
 
 == Purpose
