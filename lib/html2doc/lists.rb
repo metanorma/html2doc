@@ -29,8 +29,8 @@ module Html2Doc
 
   def self.list2para(u)
     return if u.xpath("./li").empty?
-    u.xpath("./li").last["class"] = "MsoListParagraphCxSpLast"
-    u.xpath("./li").first["class"] = "MsoListParagraphCxSpFirst"
+    u.xpath("./li").first["class"] ||= "MsoListParagraphCxSpFirst"
+    u.xpath("./li").last["class"] ||= "MsoListParagraphCxSpLast"
     u.xpath("./li/p").each { |p| p["class"] ||= "MsoListParagraphCxSpMiddle" }
     u.xpath("./li").each do |l|
       l.name = "p"
