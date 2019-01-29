@@ -31,9 +31,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "nokogiri"
   spec.add_dependency "thread_safe"
   spec.add_dependency "uuidtools"
-  #spec.add_dependency "parallel"
-  spec.add_dependency "concurrent-ruby"
-  spec.add_dependency "ruby-progressbar"
   spec.add_dependency "ruby-xslt"
   spec.add_dependency "asciimath", "~> 1.0.7"
 
