@@ -3,7 +3,9 @@ require "asciimath"
 require "htmlentities"
 require "nokogiri"
 #require "xml/xslt"
-require "parallel"
+#require "parallel"
+require 'concurrent/atomics'
+
 
 module Html2Doc
   #@xslt = XML::XSLT.new
@@ -69,7 +71,8 @@ module Html2Doc
   end
 =end
 
-    def self.mathml_to_ooml(docxml)
+=begin
+  def self.mathml_to_ooml(docxml)
     m = docxml.xpath("//*[local-name() = 'math']")
     m.empty? and return
     Parallel.each(m, in_threads: 10, progress: "Math OOXML") do |x, i|
@@ -81,6 +84,29 @@ module Html2Doc
       ooxml = uncenter(x, ooxml)
       x.swap(ooxml)
     end
+  end
+=end
+
+  def self.mathml_to_ooml(docxml)
+    m = docxml.xpath("//*[local-name() = 'math']")
+    m.empty? and return
+    latch = Concurrent::CountDownLatch.new(m.size)
+    lock = Concurrent::ReadWriteLock.new
+    m.each_with_index do |x, i|
+      Thread.new do
+        #warn "Math OOXML #{i} of #{m.size}" if i % 10 == 0 && m.size > 50 && i > 0
+        x1 = lock.with_read_lock { ooxml_cleanup(x) }
+        doc = Nokogiri::XML(x1)
+        ooxml = @xsltemplate.transform(doc).to_xml.gsub(/<\?[^>]+>\s*/, "").
+          gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
+          gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
+        ooxml = uncenter(x, ooxml)
+        lock.with_write_lock { x.swap(ooxml) }
+        latch.count_down
+        warn "Math OOXML #{m.size - latch.count} of #{m.size}" if latch.count % 10 == 0 && m.size > 50
+      end
+    end
+    latch.wait
   end
 
   # if oomml has no siblings, by default it is centered; override this with

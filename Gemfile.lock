@@ -3,11 +3,11 @@ PATH
   specs:
     html2doc (0.8.8)
       asciimath (~> 1.0.7)
+      concurrent-ruby
       htmlentities (~> 4.3.4)
       image_size
       mime-types
       nokogiri
-      parallel
       ruby-progressbar
       thread_safe
       uuidtools
@@ -19,6 +19,7 @@ GEM
     ast (2.4.0)
     byebug (9.1.0)
     coderay (1.1.2)
+    concurrent-ruby (1.1.4)
     diff-lcs (1.3)
     docile (1.3.1)
     equivalent-xml (0.6.0)
