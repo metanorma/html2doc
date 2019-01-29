@@ -2,16 +2,16 @@ require "uuidtools"
 require "asciimath"
 require "htmlentities"
 require "nokogiri"
-#require "xml/xslt"
+require "xml/xslt"
 #require "parallel"
 require 'concurrent'
 require 'concurrent/atomics'
 
 
 module Html2Doc
-  #@xslt = XML::XSLT.new
-  #@xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
-  #@xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"), encoding: "utf-8")
+  @xslt = XML::XSLT.new
+  @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
+  @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"), encoding: "utf-8")
   @xsltemplate = Nokogiri::XSLT(File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"), encoding: "utf-8"))
 
   def self.asciimath_to_mathml1(x)
@@ -88,17 +88,17 @@ module Html2Doc
   end
 =end
 
+=begin
   def self.mathml_to_ooml(docxml)
     m = docxml.xpath("//*[local-name() = 'math']")
     m.empty? and return
     latch = Concurrent::CountDownLatch.new(m.size)
     lock = Concurrent::ReadWriteLock.new
-    pool = Concurrent::FixedThreadPool.new(10)
-    m.each_with_index do |x, i|
+    pool = Concurrent::FixedThreadPool.new(100)
+    m.each do |x1|
       pool.post do
-        #warn "Math OOXML #{i} of #{m.size}" if i % 10 == 0 && m.size > 50 && i > 0
-        x1 = lock.with_read_lock { ooxml_cleanup(x) }
-        doc = Nokogiri::XML(x1)
+        x = lock.with_read_lock { x1 }
+        doc = Nokogiri::XML(ooxml_cleanup(x))
         ooxml = @xsltemplate.transform(doc).to_xml.gsub(/<\?[^>]+>\s*/, "").
           gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
           gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
@@ -110,21 +110,45 @@ module Html2Doc
     end
     latch.wait
   end
+=end
 
-  # if oomml has no siblings, by default it is centered; override this with
-  # left/right if parent is so tagged
-  def self.uncenter(m, ooxml)
-    if m.next == nil && m.previous == nil
-      alignnode = m.at(".//ancestor::*[@style][local-name() = 'p' or local-name() = "\
-                       "'div' or local-name() = 'td']/@style") or return ooxml
-      if alignnode.text.include? ("text-align:left")
-        ooxml = "<m:oMathPara><m:oMathParaPr><m:jc "\
-          "m:val='left'/></m:oMathParaPr>#{ooxml}</m:oMathPara>"
-      elsif alignnode.text.include? ("text-align:right")
-        ooxml = "<m:oMathPara><m:oMathParaPr><m:jc "\
-          "m:val='right'/></m:oMathParaPr>#{ooxml}</m:oMathPara>"
+ def self.mathml_to_ooml(docxml)
+    m = docxml.xpath("//*[local-name() = 'math']")
+    m.empty? and return
+    latch = Concurrent::CountDownLatch.new(m.size)
+    lock = Concurrent::ReadWriteLock.new
+    pool = Concurrent::FixedThreadPool.new(10)
+    m.each do |x1|
+      pool.post do
+        x = lock.with_read_lock { x1 }
+        @xslt.xml = ooxml_cleanup(x)
+        ooxml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
+          gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
+          gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
+        ooxml = uncenter(x, ooxml)
+        lock.with_write_lock { x.swap(ooxml) }
+        latch.count_down
+        warn "Math OOXML #{m.size - latch.count} of #{m.size}" if latch.count % 10 == 0 && m.size > 50
       end
     end
-    ooxml
-  end
+    latch.wait
+ end
+
+
+ # if oomml has no siblings, by default it is centered; override this with
+ # left/right if parent is so tagged
+ def self.uncenter(m, ooxml)
+   if m.next == nil && m.previous == nil
+     alignnode = m.at(".//ancestor::*[@style][local-name() = 'p' or local-name() = "\
+                      "'div' or local-name() = 'td']/@style") or return ooxml
+     if alignnode.text.include? ("text-align:left")
+       ooxml = "<m:oMathPara><m:oMathParaPr><m:jc "\
+         "m:val='left'/></m:oMathParaPr>#{ooxml}</m:oMathPara>"
+     elsif alignnode.text.include? ("text-align:right")
+       ooxml = "<m:oMathPara><m:oMathParaPr><m:jc "\
+         "m:val='right'/></m:oMathParaPr>#{ooxml}</m:oMathPara>"
+     end
+   end
+   ooxml
+ end
 end
