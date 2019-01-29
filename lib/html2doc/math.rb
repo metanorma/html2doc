@@ -32,9 +32,9 @@ module Html2Doc
   end
 
   # random fixes to MathML input that OOXML needs to render properly
-  def self.ooxml_cleanup(m)
+  def self.ooxml_cleanup(m, docnamespaces)
     m.xpath(".//xmlns:msup[name(preceding-sibling::*[1])='munderover']",
-            m.document.collect_namespaces).each do |x|
+            docnamespaces).each do |x|
       x1 = x.replace("<mrow></mrow>").first
       x1.children = x
     end
@@ -118,10 +118,11 @@ module Html2Doc
     latch = Concurrent::CountDownLatch.new(m.size)
     lock = Concurrent::ReadWriteLock.new
     pool = Concurrent::FixedThreadPool.new(10)
+    docnamespaces = docxml.collect_namespaces
     m.each do |x1|
       pool.post do
         x = lock.with_read_lock { x1 }
-        @xslt.xml = ooxml_cleanup(x)
+        @xslt.xml = ooxml_cleanup(x, docnamespaces)
         ooxml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
           gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
           gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
