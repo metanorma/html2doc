@@ -8,6 +8,7 @@ PATH
       mime-types
       nokogiri
       parallel
+      ruby-progressbar
       thread_safe
       uuidtools
 

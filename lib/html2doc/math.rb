@@ -72,7 +72,7 @@ module Html2Doc
     def self.mathml_to_ooml(docxml)
     m = docxml.xpath("//*[local-name() = 'math']")
     m.empty? and return
-    Parallel.each(m, in_threads: 3, progress: "Math OOXML") do |x, i|
+    Parallel.each(m, in_threads: 10, progress: "Math OOXML") do |x, i|
       #warn "Math OOXML #{i} of #{m.size}" if i % 10 == 0 && m.size > 50 && i > 0
       doc = Nokogiri::XML(ooxml_cleanup(x))
       ooxml = @xsltemplate.transform(doc).to_xml.gsub(/<\?[^>]+>\s*/, "").
