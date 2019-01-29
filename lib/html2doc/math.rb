@@ -4,6 +4,7 @@ require "htmlentities"
 require "nokogiri"
 #require "xml/xslt"
 #require "parallel"
+require 'concurrent'
 require 'concurrent/atomics'
 
 
@@ -92,8 +93,9 @@ module Html2Doc
     m.empty? and return
     latch = Concurrent::CountDownLatch.new(m.size)
     lock = Concurrent::ReadWriteLock.new
+    pool = Concurrent::FixedThreadPool.new(10)
     m.each_with_index do |x, i|
-      Thread.new do
+      pool.post do
         #warn "Math OOXML #{i} of #{m.size}" if i % 10 == 0 && m.size > 50 && i > 0
         x1 = lock.with_read_lock { ooxml_cleanup(x) }
         doc = Nokogiri::XML(x1)
