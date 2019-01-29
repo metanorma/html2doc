@@ -9,6 +9,7 @@ module Html2Doc
   @xslt = XML::XSLT.new
   #@xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
   @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"), encoding: "utf-8")
+  @xsltemplate = Nokogiri::XSLT(File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"), encoding: "utf-8"))
 
   def self.asciimath_to_mathml1(x)
     AsciiMath.parse(HTMLEntities.new.decode(x)).to_mathml.
@@ -21,7 +22,7 @@ module Html2Doc
     #m.each_slice(4).map do |a|
     #require "byebug"; byebug
     m.each_slice(4).map.with_index do |(*a), i|
-      warn "MathML #{i} of #{m.size}" if i % 10 == 0 && m.size > 50 && i > 0
+      warn "MathML #{i} of #{(m.size / 4).floor}" if i % 100 == 0 && m.size > 1000 && i > 0
       a[2].nil? || a[2] = asciimath_to_mathml1(a[2])
       a.size > 1 ? a[0] + a[2] : a[0]
     end.join
@@ -38,12 +39,25 @@ module Html2Doc
     m.to_s
   end
 
-  def self.mathml_to_ooml(docxml)
+  def self.mathml_to_ooml1(docxml)
     m = docxml.xpath("//*[local-name() = 'math']")
     m.each_with_index do |x, i|
       warn "Math OOXML #{i} of #{m.size}" if i % 10 == 0 && m.size > 50 && i > 0
       @xslt.xml = ooxml_cleanup(x)
       ooxml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
+        gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
+        gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
+      ooxml = uncenter(x, ooxml)
+      x.swap(ooxml)
+    end
+  end
+
+  def self.mathml_to_ooml(docxml)
+    m = docxml.xpath("//*[local-name() = 'math']")
+    m.each_with_index do |x, i|
+      warn "Math OOXML #{i} of #{m.size}" if i % 10 == 0 && m.size > 50 && i > 0
+      doc = Nokogiri::XML(ooxml_cleanup(x))
+      ooxml = @xsltemplate.transform(doc).to_xml.gsub(/<\?[^>]+>\s*/, "").
         gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
         gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
       ooxml = uncenter(x, ooxml)
