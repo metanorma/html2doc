@@ -17,8 +17,11 @@ module Html2Doc
 
   def self.asciimath_to_mathml(doc, delims)
     return doc if delims.nil? || delims.size < 2
-    doc.split(/(#{Regexp.escape(delims[0])}|#{Regexp.escape(delims[1])})/).
-      each_slice(4).map do |a|
+    m = doc.split(/(#{Regexp.escape(delims[0])}|#{Regexp.escape(delims[1])})/)
+    #m.each_slice(4).map do |a|
+    #require "byebug"; byebug
+    m.each_slice(4).map.with_index do |(*a), i|
+      warn "MathML #{i} of #{m.size}" if i % 10 == 0 && m.size > 50 && i > 0
       a[2].nil? || a[2] = asciimath_to_mathml1(a[2])
       a.size > 1 ? a[0] + a[2] : a[0]
     end.join
@@ -36,13 +39,15 @@ module Html2Doc
   end
 
   def self.mathml_to_ooml(docxml)
-    docxml.xpath("//*[local-name() = 'math']").each do |m|
-      @xslt.xml = ooxml_cleanup(m)
+    m = docxml.xpath("//*[local-name() = 'math']")
+    m.each_with_index do |x, i|
+      warn "Math OOXML #{i} of #{m.size}" if i % 10 == 0 && m.size > 50 && i > 0
+      @xslt.xml = ooxml_cleanup(x)
       ooxml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
         gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
         gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
-      ooxml = uncenter(m, ooxml)
-      m.swap(ooxml)
+      ooxml = uncenter(x, ooxml)
+      x.swap(ooxml)
     end
   end
 
