@@ -7,14 +7,14 @@ PATH
       image_size
       mime-types
       nokogiri
-      ruby-xslt
+      parallel
       thread_safe
       uuidtools
 
 GEM
   remote: https://rubygems.org/
   specs:
-    asciimath (1.0.7)
+    asciimath (1.0.8)
     ast (2.4.0)
     byebug (9.1.0)
     coderay (1.1.2)
@@ -92,7 +92,6 @@ GEM
       ruby-progressbar (~> 1.7)
       unicode-display_width (~> 1.0, >= 1.0.1)
     ruby-progressbar (1.10.0)
-    ruby-xslt (0.9.10)
     ruby_dep (1.5.0)
     shellany (0.0.1)
     simplecov (0.16.1)

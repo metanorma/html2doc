@@ -2,7 +2,7 @@ require "uuidtools"
 require "asciimath"
 require "htmlentities"
 require "nokogiri"
-require "xml/xslt"
+#require "xml/xslt"
 require "pp"
 require "fileutils"
 

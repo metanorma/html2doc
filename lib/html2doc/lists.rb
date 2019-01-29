@@ -2,7 +2,6 @@ require "uuidtools"
 require "asciimath"
 require "htmlentities"
 require "nokogiri"
-require "xml/xslt"
 require "pp"
 
 module Html2Doc
