@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
     This gem is in active development.
   DESCRIPTION
 
-  spec.homepage      = "https://github.com/riboseinc/html2doc"
+  spec.homepage      = "https://github.com/metanorma/html2doc"
   spec.licenses       = ["CC-BY-SA-3.0", "BSD-2-Clause"]
 
   spec.bindir        = "bin"

@@ -1,8 +1,8 @@
 = Html2Doc
 
 image:https://img.shields.io/gem/v/html2doc.svg["Gem Version", link="https://rubygems.org/gems/html2doc"]
-image:https://img.shields.io/travis/riboseinc/html2doc/master.svg["Build Status", link="https://travis-ci.org/riboseinc/html2doc"]
-image:https://codeclimate.com/github/riboseinc/html2doc/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/riboseinc/html2doc"]
+image:https://img.shields.io/travis/metanorma/html2doc/master.svg["Build Status", link="https://travis-ci.org/metanorma/html2doc"]
+image:https://codeclimate.com/github/metanorma/html2doc/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/metanorma/html2doc"]
 
 == Purpose
 
@@ -10,9 +10,9 @@ Gem to convert an HTML document into a Word document (.doc) format. This is inte
 
 == Origin
 
-This gem originated out of https://github.com/riboseinc/asciidoctor-iso, which creates a Word document from a automatically generated HTML document (created in turn by processing Asciidoc).
+This gem originated out of https://github.com/metanorma/metanorma-iso, which creates a Word document from a automatically generated HTML document (created in turn by processing Asciidoc).
 
-This work is driven by the Word document generation procedure documented in http://sebsauvage.net/wiki/doku.php?id=word_document_generation. For more on the approach taken, and on alternative approaches, see https://github.com/riboseinc/html2doc/wiki/Why-not-docx%3F
+This work is driven by the Word document generation procedure documented in http://sebsauvage.net/wiki/doku.php?id=word_document_generation. For more on the approach taken, and on alternative approaches, see https://github.com/metanorma/html2doc/wiki/Why-not-docx%3F
 
 == Functions
 
@@ -30,7 +30,7 @@ The gem currently does the following:
 * Inject Microsoft Word-specific CSS into the HTML document. If a CSS file is not supplied, the CSS file used is at `lib/html2doc/wordstyle.css` is used by default. Microsoft Word HTML has particular requirements from its CSS, and you should review the sample CSS before replacing it with your own. (This generic CSS can be overridden by CSS already in the HTML document, since the generic CSS is injected at the top of the document.)
 * Bundle up the local images, the HTML file of the document proper, and the `header.html` file representing header/footer information, into a MIME file, and save that file to disk (so that Microsoft Word can deal with it as a Word file.)
 
-For a representative generator of HTML that uses this gem in postprocessing, see https://github.com/riboseinc/asciidoctor-iso
+For a representative generator of HTML that uses this gem in postprocessing, see https://github.com/metanorma/metanorma-iso
 
 == Constraints
 
@@ -57,7 +57,7 @@ Html2Doc.process(result, filename: filename, stylesheet: stylesheet, header_file
 result:: is the Html document to be converted into Word, as a string.
 filename:: is the name the document is to be saved as, without a file suffix
 stylesheet:: is the full path filename of the CSS stylesheet for Microsoft Word-specific styles. If this is not provided, the program will used the default stylesheet included in the gem, `lib/html2doc/wordstyle.css`. The stylsheet provided must match this stylesheet; you can obtain one by saving a Word document with your desired styles to HTML, and extracting the style definitions from the HTML document header.
-header_filename:: is the filename of the HTML document containing header and footer for the document, as well as footnote/endnote separators; if there is none, use nil. To generate your own such document, save a Word document with headers/footers and/or footnote/endnote separators as an HTML document; the `header.html` will be in the `{filename}.fld` folder generated along with the HTML. A sample file is available at https://github.com/riboseinc/asciidoctor-iso/blob/master/lib/asciidoctor/iso/word/header.html
+header_filename:: is the filename of the HTML document containing header and footer for the document, as well as footnote/endnote separators; if there is none, use nil. To generate your own such document, save a Word document with headers/footers and/or footnote/endnote separators as an HTML document; the `header.html` will be in the `{filename}.fld` folder generated along with the HTML. A sample file is available at https://github.com/metanorma/metanorma-iso/blob/master/lib/asciidoctor/iso/word/header.html
 dir:: is the folder that any ancillary files (images, headers, filelist) are to be saved to. If not provided, it will be created as `{filename}_files`. Anything in the directory will be attached to the Word document; so this folder should only contain the images that accompany the document. (If the images are elsewhere on the local drive, the gem will move them into the folder. External URL images are left alone, and are not downloaded.)
 asciimathdelims:: are the AsciiMath delimiters used in the text (an array of an opening and a closing delimiter). If none are provided, no AsciiMath conversion is attempted.
 liststyles:: a hash of list style labels in Word CSS, which are used to define the behaviour of list item labels (e.g. _i)_ vs _i._). The gem recognises the hash keys `ul`, `ol`. So if the appearance of an ordered list's item labels in the supplied stylesheet is governed by style `@list l1` (e.g. `@list l1:level1 {mso-level-text:"%1\)";}` appears in the stylesheet), call the method with `liststyles:{ol: "l1"}`.
@@ -75,7 +75,7 @@ $ bin/html2doc --header header.html --stylesheet stylesheet.css filename.html
 
 === Converting document output to "`Native Word`" (`.docx`)
 
-The generated Word document is not quite in the most "`native`" format used by Word, `.docx`: it outputs the older `.doc` format. (See https://github.com/riboseinc/html2doc/wiki/Why-not-docx%3F for the reasons why.)
+The generated Word document is not quite in the most "`native`" format used by Word, `.docx`: it outputs the older `.doc` format. (See https://github.com/metanorma/html2doc/wiki/Why-not-docx%3F for the reasons why.)
 
 Here are the steps to convert our output into native-`docx`.
 
@@ -126,4 +126,4 @@ By default, mathematical formulas that are the only content of their paragraph a
 
 == Example
 
-The `spec/examples` directory includes `rice.doc` and its source files: this Word document has been generated from `rice.html` through a call to html2doc from https://github.com/riboseinc/asciidoctor-iso. (The source document `rice.html` was itself generated from Asciidoc, rather than being hand-crafted.)
+The `spec/examples` directory includes `rice.doc` and its source files: this Word document has been generated from `rice.html` through a call to html2doc from https://github.com/metanorma/metanorma-iso. (The source document `rice.html` was itself generated from Asciidoc, rather than being hand-crafted.)
