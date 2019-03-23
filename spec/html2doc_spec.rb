@@ -73,7 +73,7 @@ WORD_FTR1 = <<~FTR
   ------=_NextPart_
 Content-Location: file:///C:/Doc/test_files/filelist.xml
 Content-Transfer-Encoding: base64
-Content-Type: application/xml
+Content-Type: #{Html2Doc::mime_type('filelist.xml')}
 
 PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
 ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9ImZp
@@ -86,7 +86,7 @@ WORD_FTR2 = <<~FTR
   ------=_NextPart_
 Content-Location: file:///C:/Doc/test_files/filelist.xml
 Content-Transfer-Encoding: base64
-Content-Type: application/xml
+Content-Type: #{Html2Doc::mime_type('filelist.xml')}
 PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
 ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9ImZp
 bGVsaXN0LnhtbCIvPgogIDxvOkZpbGUgSFJlZj0iaGVhZGVyLmh0bWwiLz4KPC94bWw+Cg==
@@ -273,7 +273,7 @@ WORD_FTR3 = <<~FTR
 ------=_NextPart_
 Content-Location: file:///C:/Doc/test_files/filelist.xml
 Content-Transfer-Encoding: base64
-Content-Type: application/xml
+Content-Type: #{Html2Doc::mime_type('filelist.xml')}
 
 PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
 ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9IjFh
