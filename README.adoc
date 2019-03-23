@@ -2,6 +2,7 @@
 
 image:https://img.shields.io/gem/v/html2doc.svg["Gem Version", link="https://rubygems.org/gems/html2doc"]
 image:https://img.shields.io/travis/metanorma/html2doc/master.svg["Build Status", link="https://travis-ci.org/metanorma/html2doc"]
+image:https://ci.appveyor.com/api/projects/status/reqae7y99cfd0yod?svg=true["Appveyor Build Status", link="https://ci.appveyor.com/project/ribose/html2doc"]
 image:https://codeclimate.com/github/metanorma/html2doc/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/metanorma/html2doc"]
 
 == Purpose
