@@ -2,12 +2,8 @@ require "uuidtools"
 require "asciimath"
 require "htmlentities"
 require "nokogiri"
-require "xml/xslt"
 
 module Html2Doc
-  @xslt = XML::XSLT.new
-  @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mathml2omml.xsl"))
-  @xslt.xsl = File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"), encoding: "utf-8")
   @xsltemplate = Nokogiri::XSLT(File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"), encoding: "utf-8"))
 
   def self.asciimath_to_mathml1(x)
@@ -33,7 +29,7 @@ module Html2Doc
       x1.children = x
     end
     m.add_namespace(nil, "http://www.w3.org/1998/Math/MathML")
-    m.to_s
+    m
   end
 
   def self.mathml_to_ooml(docxml)
@@ -41,8 +37,13 @@ module Html2Doc
     m = docxml.xpath("//*[local-name() = 'math']")
     m.each_with_index do |x, i|
       warn "Math OOXML #{i} of #{m.size}" if i % 100 == 0 && m.size > 500 && i > 0
-      @xslt.xml = ooxml_cleanup(x, docnamespaces)
-      ooxml = @xslt.serve.gsub(/<\?[^>]+>\s*/, "").
+      element = ooxml_cleanup(x, docnamespaces)
+
+      doc = Nokogiri::XML::Document::new()
+      doc.root = element
+
+      ooxml = @xsltemplate.transform(doc).to_s.
+        gsub(/<\?[^>]+>\s*/, "").
         gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
         gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
       ooxml = uncenter(x, ooxml)
