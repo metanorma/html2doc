@@ -20,14 +20,18 @@ module Html2Doc
   end
 
   def self.mime_attachment(boundary, filename, item, dir)
-    encoded_file = Base64.strict_encode64(
-      File.read("#{dir}/#{item}", encoding: "utf-8"),
-    ).gsub(/(.{76})/, "\\1\n")
+    content_type = mime_type(item)
+    text_mode = %w[text application].any? { |p| content_type.start_with? p }
+
+    path = File.join(dir, item)
+    content = text_mode ? File.read(path, encoding: "utf-8") : IO.binread(path)
+
+    encoded_file = Base64.strict_encode64(content).gsub(/(.{76})/, "\\1\n")
     <<~"FILE"
     --#{boundary}
     Content-Location: file:///C:/Doc/#{File.basename(filename)}_files/#{item}
     Content-Transfer-Encoding: base64
-    Content-Type: #{mime_type(item)}
+    Content-Type: #{content_type}
 
     #{encoded_file}
 
