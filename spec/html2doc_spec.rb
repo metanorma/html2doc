@@ -723,4 +723,15 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
+  it "test image base64 image encoding" do
+    simple_body = '<img src="19160-6.png">'
+    Html2Doc.process(html_input(simple_body), filename: "spec/test", debug: true)
+    testdoc = File.read("spec/test.doc", encoding: "utf-8")
+    base64_image = testdoc[/image\/png\n\n(.*?)\n\n----/m, 1].gsub!("\n", "")
+    base64_image_basename = testdoc[%r{Content-Location: file:///C:/Doc/test_files/([0-9a-z\-]+)\.png}m, 1]
+    doc_bin_image = Base64.strict_decode64(base64_image)
+    file_bin_image = IO.read("spec/test_files/#{base64_image_basename}.png", mode: "rb")
+    expect(doc_bin_image).to eq file_bin_image
+    FileUtils.rm_rf %w[spec/test_files spec/test.doc spec/test.htm]
+  end
 end

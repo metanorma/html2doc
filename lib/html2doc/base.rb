@@ -14,7 +14,7 @@ module Html2Doc
     generate_filelist(hash[:filename], hash[:dir1])
     File.open("#{hash[:filename]}.htm", "w:UTF-8") { |f| f.write(result) }
     mime_package result, hash[:filename], hash[:dir1]
-    rm_temp_files(hash[:filename], hash[:dir], hash[:dir1])
+    rm_temp_files(hash[:filename], hash[:dir], hash[:dir1]) unless hash[:debug]
   end
 
   def self.process_header(headerfile, hash)
