@@ -44,7 +44,7 @@ jobs:
         run: |
           bundle exec rake spec
 
-  test-macos:
+  test-windows:
     name: Test on Ruby ${{ matrix.ruby }} Windows
     runs-on: windows-latest
     strategy:
