@@ -22,7 +22,7 @@ jobs:
           bundle install --jobs 4 --retry 3
       - name: Run specs
         run: |
-          bundle exec rake spec
+          bundle exec rake
 
   test-macos:
     name: Test on Ruby ${{ matrix.ruby }} macOS
@@ -39,12 +39,11 @@ jobs:
           architecture: 'x64'
       - name: Update gems
         run: |
-          sudo gem uninstall bundler
-          sudo gem install bundler -v "~> 2"
+          sudo gem install bundler -v "~> 2" --force
           bundle install --jobs 4 --retry 3
       - name: Run specs
         run: |
-          bundle exec rake spec
+          bundle exec rake
 
   test-windows:
     name: Test on Ruby ${{ matrix.ruby }} Windows
@@ -62,7 +61,9 @@ jobs:
       - name: Update gems
         run: |
           gem install bundler -v "~> 2"
+          bundle config --local path vendor/bundle
+          bundle update
           bundle install --jobs 4 --retry 3
       - name: Run specs
         run: |
-          bundle exec rake spec
+          bundle exec rake
