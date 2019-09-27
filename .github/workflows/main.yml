@@ -12,16 +12,16 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@master
-      - name: Use Ruby ${{ matrix.ruby }}
+      - name: Use Ruby
         uses: actions/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
           architecture: 'x64'
       - name: Update gems
         run: |
-          sudo gem update --system
-          sudo gem install bundler -v "~> 2"
-          sudo bundle update
+          gem update --system
+          gem install bundler -v "~> 2"
+          bundle update
       - name: Run specs
         run: |
           rake spec
