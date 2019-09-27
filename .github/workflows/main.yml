@@ -18,7 +18,7 @@ jobs:
           architecture: 'x64'
       - name: Update gems
         run: |
-          gem install bundler
+          gem install bundler "~> 2"
           bundle install --jobs 4 --retry 3
       - name: Run specs
         run: |
@@ -39,6 +39,7 @@ jobs:
           architecture: 'x64'
       - name: Update gems
         run: |
+          sudo gem install bundler "~> 2"
           bundle install --jobs 4 --retry 3
       - name: Run specs
         run: |
@@ -59,7 +60,7 @@ jobs:
           architecture: 'x64'
       - name: Update gems
         run: |
-          gem install bundler
+          gem install bundler "~> 2"
           bundle install --jobs 4 --retry 3
       - name: Run specs
         run: |
