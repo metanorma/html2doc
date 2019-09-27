@@ -18,6 +18,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           architecture: 'x64'
       - name: Update gems
+        shell: pwsh
         run: |
           gem install bundler -v "~> 2"
           bundle config --local path vendor/bundle
