@@ -9,7 +9,8 @@ jobs:
     strategy:
       matrix:
         ruby: [ '2.6', '2.5', '2.4' ]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
+        # macos-latest
     steps:
       - uses: actions/checkout@master
       - name: Use Ruby
