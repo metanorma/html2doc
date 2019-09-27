@@ -3,7 +3,9 @@
 https://github.com/metanorma/html2doc/workflows/main/badge.svg
 
 image:https://img.shields.io/gem/v/html2doc.svg["Gem Version", link="https://rubygems.org/gems/html2doc"]
-image:https://github.com/metanorma/html2doc/workflows/main/badge.svg["Build Status", link="https://github.com/metanorma/html2doc/actions?workflow=CI"]
+image:https://github.com/metanorma/html2doc/workflows/ubuntu/badge.svg["Build Status", link="https://github.com/metanorma/html2doc/actions?workflow=ubuntu"]
+image:https://github.com/metanorma/html2doc/workflows/macos/badge.svg["Build Status", link="https://github.com/metanorma/html2doc/actions?workflow=macos"]
+image:https://github.com/metanorma/html2doc/workflows/windows/badge.svg["Build Status", link="https://github.com/metanorma/html2doc/actions?workflow=windows"]
 image:https://codeclimate.com/github/metanorma/html2doc/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/metanorma/html2doc"]
 
 ////
