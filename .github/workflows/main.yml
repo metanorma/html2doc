@@ -20,7 +20,6 @@ jobs:
       - name: Update gems
         run: |
           gem install bundler -v "~> 2"
-          gem update --system
           bundle update
       - name: Run specs
         run: |
