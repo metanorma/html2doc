@@ -1,9 +1,10 @@
+# Auto-generated !!! Do not edit it manually
+# use ci-master https://github.com/metanorma/metanorma-build-scripts
 name: macos
 
 on: [push]
 
 jobs:
-
   test-macos:
     name: Test on Ruby ${{ matrix.ruby }} macOS
     runs-on: macos-latest
