@@ -1,9 +1,10 @@
+# Auto-generated !!! Do not edit it manually
+# use ci-master https://github.com/metanorma/metanorma-build-scripts
 name: windows
 
 on: [push]
 
 jobs:
-
   test-windows:
     name: Test on Ruby ${{ matrix.ruby }} Windows
     runs-on: windows-latest
