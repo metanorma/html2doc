@@ -99,6 +99,10 @@ module Html2Doc
     r.gsub!(%r{></v:imagedata>}, "/>")
     r.gsub!(%r{></w:wrap>}, "/>")
     r.gsub!(%r{&tab;|&amp;tab;}, '<span style="mso-tab-count:1">&#xA0; </span>')
+    r = r.split(%r{(<m:oMath>|</m:oMath>)}).each_slice(4).map do |a|
+      a.size > 2 and a[2] = a[2].gsub(/>\s+</, "><")
+      a
+    end.join
     r
   end
 
