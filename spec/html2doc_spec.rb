@@ -368,6 +368,20 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
+  it "processes spaces in AsciiMath" do
+    Html2Doc.process(html_input(%[<div>{{text " integer ")}}</div>]), filename: "test", asciimathdelims: ["{{", "}}"])
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body("
+       <div><m:oMath>
+       <m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>integer</m:t></m:r>
+       </m:oMath>
+       </div>", '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
   it "left-aligns AsciiMath" do
     Html2Doc.process(html_input("<div style='text-align:left;'>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"), filename: "test", asciimathdelims: ["{{", "}}"])
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
