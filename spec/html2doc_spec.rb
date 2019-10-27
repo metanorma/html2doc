@@ -287,9 +287,11 @@ ASCII_MATH=<<~FTR
 </m:r>
 <m:sSup>
 <m:e>
-<m:r>
-<m:t>(</m:t>
-</m:r>
+<m:d>
+<m:dPr>
+<m:sepChr m:val=","></m:sepChr>
+</m:dPr>
+<m:e>
 <m:f>
 <m:fPr>
 <m:type m:val="bar"></m:type>
@@ -298,9 +300,16 @@ ASCII_MATH=<<~FTR
 <m:r>
 <m:t>n</m:t>
 </m:r>
+<m:d>
+<m:dPr>
+<m:sepChr m:val=","></m:sepChr>
+</m:dPr>
+<m:e>
 <m:r>
-<m:t>(n+1)</m:t>
+<m:t>n+1</m:t>
 </m:r>
+</m:e>
+</m:d>
 </m:num>
 <m:den>
 <m:r>
@@ -308,9 +317,8 @@ ASCII_MATH=<<~FTR
 </m:r>
 </m:den>
 </m:f>
-<m:r>
-<m:t>)</m:t>
-</m:r>
+</m:e>
+</m:d>
 </m:e>
 <m:sup>
 <m:r>
