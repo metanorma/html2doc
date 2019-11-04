@@ -44,11 +44,11 @@ module Html2Doc
       element = ooxml_cleanup(x, docnamespaces)
       doc = Nokogiri::XML::Document::new()
       doc.root = element
-      ooxml = @xsltemplate.transform(doc).to_s.
+      ooxml = (esc_space(@xsltemplate.transform(doc))).to_s.
         gsub(/<\?[^>]+>\s*/, "").
         gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
         gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
-      ooxml = uncenter(esc_space(x), ooxml)
+      ooxml = uncenter(x, ooxml)
       x.swap(ooxml)
     end
   end

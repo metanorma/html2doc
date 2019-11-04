@@ -641,6 +641,30 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
+    it "labels lists with multiple list styles" do
+    simple_body = <<~BODY
+      <div><ul class="steps">
+      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
+      <div><ul>
+      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
+      <div><ul class="other">
+      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
+    BODY
+    Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2", steps: "l3"})
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div>
+    <p style="mso-list:l3 level1 lfo2;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l3 level2 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l3 level4 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l3 level5 lfo2;" class="MsoListParagraphCxSpFirst">A</p><p style="mso-list:l3 level5 lfo2;" class="MsoListParagraphCxSpMiddle">B<p class="MsoListParagraphCxSpMiddle">B2</p></p><p style="mso-list:l3 level5 lfo2;" class="MsoListParagraphCxSpLast">C</p></p></p></p></div></p></div>
+    <div>
+    <p style="mso-list:l1 level1 lfo1;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level4 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpFirst">A</p><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpMiddle">B<p class="MsoListParagraphCxSpMiddle">B2</p></p><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpLast">C</p></p></p></p></div></p></div>
+    <div>
+    <p style="mso-list:l1 level1 lfo3;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo3;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level4 lfo3;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level5 lfo3;" class="MsoListParagraphCxSpFirst">A</p><p style="mso-list:l2 level5 lfo3;" class="MsoListParagraphCxSpMiddle">B<p class="MsoListParagraphCxSpMiddle">B2</p></p><p style="mso-list:l2 level5 lfo3;" class="MsoListParagraphCxSpLast">C</p></p></p></p></div></p></div>',
+    '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
   it "replaces id attributes with explicit a@name bookmarks" do
     simple_body = <<~BODY
       <div>
