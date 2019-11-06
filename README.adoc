@@ -2,15 +2,13 @@
 
 https://github.com/metanorma/html2doc/workflows/main/badge.svg
 
+https://github.com/metanorma/html2doc[html2doc]::
 image:https://img.shields.io/gem/v/html2doc.svg["Gem Version", link="https://rubygems.org/gems/html2doc"]
-image:https://github.com/metanorma/html2doc/workflows/ubuntu/badge.svg["Build Status", link="https://github.com/metanorma/html2doc/actions?workflow=ubuntu"]
-image:https://github.com/metanorma/html2doc/workflows/macos/badge.svg["Build Status", link="https://github.com/metanorma/html2doc/actions?workflow=macos"]
-image:https://github.com/metanorma/html2doc/workflows/windows/badge.svg["Build Status", link="https://github.com/metanorma/html2doc/actions?workflow=windows"]
+image:https://travis-ci.com/metanorma/html2doc.svg["Build Status", link="https://travis-ci.com/metanorma/html2doc"]
+image:https://ci.appveyor.com/api/projects/status/aspj42o70q3dnkf1?svg=true["Appveyor Build Status", link="https://ci.appveyor.com/project/metanorma/html2doc"]
 image:https://codeclimate.com/github/metanorma/html2doc/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/metanorma/html2doc"]
-
-////
-image:https://ci.appveyor.com/api/projects/status/reqae7y99cfd0yod?svg=true["Appveyor Build Status", link="https://ci.appveyor.com/project/ribose/html2doc"]
-////
+image:https://img.shields.io/github/issues-pr-raw/metanorma/html2doc.svg["Pull Requests", link="https://github.com/metanorma/html2doc/pulls"]
+image:https://img.shields.io/github/commits-since/metanorma/html2doc/latest.svg["Commits since latest",link="https://github.com/metanorma/html2doc/releases"]
 
 == Purpose
 
