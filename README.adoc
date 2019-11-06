@@ -2,7 +2,6 @@
 
 https://github.com/metanorma/html2doc/workflows/main/badge.svg
 
-https://github.com/metanorma/html2doc[html2doc]::
 image:https://img.shields.io/gem/v/html2doc.svg["Gem Version", link="https://rubygems.org/gems/html2doc"]
 image:https://travis-ci.com/metanorma/html2doc.svg["Build Status", link="https://travis-ci.com/metanorma/html2doc"]
 image:https://ci.appveyor.com/api/projects/status/aspj42o70q3dnkf1?svg=true["Appveyor Build Status", link="https://ci.appveyor.com/project/metanorma/html2doc"]
