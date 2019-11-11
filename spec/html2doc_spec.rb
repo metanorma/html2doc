@@ -541,6 +541,18 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
+  it "deals with absolute image locations" do
+    simple_body = %{<img src="#{File.expand_path(File.dirname(__FILE__))}/19160-6.png">}
+    Html2Doc.process(html_input(simple_body), filename: "spec/test")
+    testdoc = File.read("spec/test.doc", encoding: "utf-8")
+    expect(testdoc).to match(%r{Content-Type: image/png})
+    expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(WORD_FTR3)}
+    OUTPUT
+  end
+
   it "warns about SVG" do
     simple_body = '<img src="https://example.com/19160-6.svg">'
     expect{ Html2Doc.process(html_input(simple_body), filename: "test") }.to output("https://example.com/19160-6.svg: SVG not supported\n").to_stderr
