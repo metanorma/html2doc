@@ -93,7 +93,7 @@ module Html2Doc
       warnsvg(i["src"])
       next if /^http/.match i["src"]
       next if %r{^data:image/[^;]+;base64}.match i["src"]
-      local_filename = %r{^/}.match(i["src"]) ? i["src"] :
+      local_filename = %r{^([A-Z]:)?/}.match(i["src"]) ? i["src"] :
         File.join(localdir, i["src"])
       new_filename = "#{mkuuid}#{File.extname(i["src"])}"
       FileUtils.cp local_filename, File.join(dir, new_filename)
