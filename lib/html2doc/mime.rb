@@ -118,7 +118,8 @@ module Html2Doc
       warnsvg(m[:src])
       m2 = /\.(?<suffix>\S+)$/.match m[:src]
       new_filename = "file:///C:/Doc/#{filename}_files/#{mkuuid}.#{m2[:suffix]}"
-      FileUtils.cp File.join(localdir, m[:src]), File.join(dir, "#{mkuuid}.#{m2[:suffix]}")
+      old_filename = %r{^([A-Z]:)?/}.match(m[:src]) ? m[:src] : File.join(localdir, m[:src])
+      FileUtils.cp old_filename, File.join(dir, "#{mkuuid}.#{m2[:suffix]}")
       a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_filename}'")
     end
     a.join
