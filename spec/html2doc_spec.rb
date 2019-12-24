@@ -348,7 +348,7 @@ RSpec.describe Html2Doc do
     File.open("spec/header_img1.html", "w:UTF-8") do |f|
       f.write doc.sub(%r{spec/19160-6.png}, File.expand_path(File.join(File.dirname(__FILE__), "19160-6.png")))
     end
-    Html2Doc.process(html_input(""), filename: "test", header_file: "spec/header_img.html")
+    Html2Doc.process(html_input(""), filename: "test", header_file: "spec/header_img1.html")
     doc = guid_clean(File.read("test.doc", encoding: "utf-8"))
     expect(doc).to match(%r{Content-Type: image/png})
     expect(doc).to match(%r{file:///C:/Doc/test_files/[^.]+\.png})

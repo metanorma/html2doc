@@ -116,7 +116,7 @@ module Html2Doc
         !(%r{ src="data:image/[^;]+;base64}.match a[1])
       m = / src=['"](?<src>[^"']+)['"]/.match a[1]
       warnsvg(m[:src])
-      m2 = /\.(?<suffix>\S+)$/.match m[:src]
+      m2 = /\.(?<suffix>[a-zA-Z_0-9]+)$/.match m[:src]
       new_filename = "file:///C:/Doc/#{filename}_files/#{mkuuid}.#{m2[:suffix]}"
       old_filename = %r{^([A-Z]:)?/}.match(m[:src]) ? m[:src] : File.join(localdir, m[:src])
       FileUtils.cp old_filename, File.join(dir, "#{mkuuid}.#{m2[:suffix]}")
