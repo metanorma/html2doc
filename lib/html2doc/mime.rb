@@ -87,10 +87,9 @@ module Html2Doc
 
   # only processes locally stored images
   def self.image_cleanup(docxml, dir, localdir)
-    #docxml.xpath(IMAGE_PATH).each do |i|
     docxml.traverse do |i|
       next unless i.element? && %w(img v:imagedata).include?(i.name)
-      warnsvg(i["src"])
+      #warnsvg(i["src"])
       next if /^http/.match i["src"]
       next if %r{^data:image/[^;]+;base64}.match i["src"]
       local_filename = %r{^([A-Z]:)?/}.match(i["src"]) ? i["src"] :
@@ -115,12 +114,12 @@ module Html2Doc
     if a.size == 2 && !(/ src="https?:/.match a[1]) &&
         !(%r{ src="data:image/[^;]+;base64}.match a[1])
       m = / src=['"](?<src>[^"']+)['"]/.match a[1]
-      warnsvg(m[:src])
+      #warnsvg(m[:src])
       m2 = /\.(?<suffix>[a-zA-Z_0-9]+)$/.match m[:src]
-      new_filename = "file:///C:/Doc/#{filename}_files/#{mkuuid}.#{m2[:suffix]}"
+      new_filename = "#{mkuuid}.#{m2[:suffix]}"
       old_filename = %r{^([A-Z]:)?/}.match(m[:src]) ? m[:src] : File.join(localdir, m[:src])
-      FileUtils.cp old_filename, File.join(dir, "#{mkuuid}.#{m2[:suffix]}")
-      a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='#{new_filename}'")
+      FileUtils.cp old_filename, File.join(dir, new_filename)
+      a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='file:///C:/Doc/#{filename}_files/#{new_filename}'")
     end
     a.join
   end
