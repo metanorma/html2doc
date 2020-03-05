@@ -37,11 +37,12 @@ module Html2Doc
     "<span style='mso-special-character:footnote'/></span>".freeze
 
   def self.footnote_container(docxml, i)
-    ref = docxml&.at("//a[@href='#_ftn#{i}']")&.children&.to_xml || FN
+    ref = docxml&.at("//a[@href='#_ftn#{i}']")&.children&.to_xml(indent: 0).
+      gsub(/>\n</, "><") || FN
     <<~DIV
       <div style='mso-element:footnote' id='ftn#{i}'>
         <a style='mso-footnote-id:ftn#{i}' href='#_ftn#{i}'
-           name='_ftnref#{i}' title='' id='_ftnref#{i}'>#{ref}</a></div>
+           name='_ftnref#{i}' title='' id='_ftnref#{i}'>#{ref.strip}</a></div>
     DIV
   end
 
