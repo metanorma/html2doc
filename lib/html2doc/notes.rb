@@ -41,7 +41,7 @@ module Html2Doc
     <<~DIV
       <div style='mso-element:footnote' id='ftn#{i}'>
         <a style='mso-footnote-id:ftn#{i}' href='#_ftn#{i}'
-           name='_ftnref#{i}' title='' id='_ftnref#{i}'>#{ref}</div>
+           name='_ftnref#{i}' title='' id='_ftnref#{i}'>#{ref}</a></div>
     DIV
   end
 
@@ -51,9 +51,17 @@ module Html2Doc
     note = docxml.at("//*[@name = '#{href}' or @id = '#{href}']")
     return false if note.nil?
     set_footnote_link_attrs(a, i)
-    ref = a.at(".//span[@class = 'MsoFootnoteReference']") and
-      ref.replace(FN)
-    a.children = FN if ref.nil?
+    if a.at("./span[@class = 'MsoFootnoteReference']")
+      a.children.each do |c|
+        if c.name == "span" and c["class"] == "MsoFootnoteReference"
+          c.replace(FN)
+        else
+          c.wrap("<span class='MsoFootnoteReference'></span>")
+        end
+      end
+    else
+      a.children = FN
+    end
     fn << transform_footnote_text(note)
   end
 
