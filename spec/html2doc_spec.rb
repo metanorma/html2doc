@@ -585,9 +585,13 @@ RSpec.describe Html2Doc do
     #{word_body('<div>This is a very simple
     document<a epub:type="footnote" href="#_ftn1" style="mso-footnote-id:ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a> allegedly<a epub:type="footnote" href="#_ftn2" style="mso-footnote-id:ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a></div>',
     '<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
-<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Footnote</p></div>
+<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference">
+<span style="mso-special-character:footnote"></span>
+</span></a>Footnote</p></div>
 <div style="mso-element:footnote" id="ftn2">
-<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Other Footnote</p></div>
+<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference">
+<span style="mso-special-character:footnote"></span>
+</span></a>Other Footnote</p></div>
 </div>')}
     #{WORD_FTR1}
     OUTPUT
@@ -605,9 +609,37 @@ RSpec.describe Html2Doc do
     #{word_body('<div>This is a very simple
     document<a class="footnote" href="#_ftn1" style="mso-footnote-id:ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a> allegedly<a class="footnote" href="#_ftn2" style="mso-footnote-id:ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a></div>',
     '<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
-<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Footnote</p></div>
+<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference">
+<span style="mso-special-character:footnote"></span>
+</span></a>Footnote</p></div>
 <div style="mso-element:footnote" id="ftn2">
-<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Other Footnote</p></div>
+<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference">
+<span style="mso-special-character:footnote"></span>
+</span></a>Other Footnote</p></div>
+</div>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
+  it "processes footnotes with text wrapping the footnote reference" do
+        simple_body = '<div>This is a very simple
+     document<a class="footnote" href="#a1">(<span class="MsoFootnoteReference">1</span>)</a> allegedly<a class="footnote" href="#a2">2</a></div>
+     <aside id="a1">Footnote</aside>
+     <aside id="a2">Other Footnote</aside>'
+    Html2Doc.process(html_input(simple_body), filename: "test")
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div>This is a very simple
+    document<a class="footnote" href="#_ftn1" style="mso-footnote-id:ftn1" name="_ftnref1" title="" id="_ftnref1">(<span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span>)</a> allegedly<a class="footnote" href="#_ftn2" style="mso-footnote-id:ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a></div>',
+    '<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
+<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1">(<span class="MsoFootnoteReference">
+<span style="mso-special-character:footnote"></span>
+</span>)</a>Footnote</p></div>
+<div style="mso-element:footnote" id="ftn2">
+<p id="" class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference">
+<span style="mso-special-character:footnote"></span>
+</span></a>Other Footnote</p></div>
 </div>')}
     #{WORD_FTR1}
     OUTPUT
@@ -625,9 +657,13 @@ RSpec.describe Html2Doc do
     #{word_body('<div>This is a very simple
     document<a class="footnote" href="#_ftn1" style="mso-footnote-id:ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a> allegedly<a class="footnote" href="#_ftn2" style="mso-footnote-id:ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a></div>',
     '<div style="mso-element:footnote-list"><div style="mso-element:footnote" id="ftn1">
-<p class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Footnote</p></div>
+<p class="MsoFootnoteText"><a style="mso-footnote-id:ftn1" href="#_ftn1" name="_ftnref1" title="" id="_ftnref1"><span class="MsoFootnoteReference">
+<span style="mso-special-character:footnote"></span>
+</span></a>Footnote</p></div>
 <div style="mso-element:footnote" id="ftn2">
-<p class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference"><span style="mso-special-character:footnote"></span></span></a>Other Footnote</p></div>
+<p class="MsoFootnoteText"><a style="mso-footnote-id:ftn2" href="#_ftn2" name="_ftnref2" title="" id="_ftnref2"><span class="MsoFootnoteReference">
+<span style="mso-special-character:footnote"></span>
+</span></a>Other Footnote</p></div>
 </div>')}
     #{WORD_FTR1}
     OUTPUT

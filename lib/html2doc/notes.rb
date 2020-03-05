@@ -15,7 +15,7 @@ module Html2Doc
     body = docxml.at("//body")
     list = body.add_child("<div style='mso-element:footnote-list'/>")
     footnotes.each_with_index do |f, i|
-      fn = list.first.add_child(footnote_container(i + 1))
+      fn = list.first.add_child(footnote_container(docxml, i + 1))
       f.parent = fn.first
       footnote_div_to_p(f)
     end
@@ -33,13 +33,15 @@ module Html2Doc
     end
   end
 
-  def self.footnote_container(i)
+  FN = "<span class='MsoFootnoteReference'>"\
+    "<span style='mso-special-character:footnote'/></span>".freeze
+
+  def self.footnote_container(docxml, i)
+    ref = docxml&.at("//a[@href='#_ftn#{i}']")&.children&.to_xml || FN
     <<~DIV
       <div style='mso-element:footnote' id='ftn#{i}'>
         <a style='mso-footnote-id:ftn#{i}' href='#_ftn#{i}'
-           name='_ftnref#{i}' title='' id='_ftnref#{i}'><span
-           class='MsoFootnoteReference'><span
-           style='mso-special-character:footnote'></span></span></div>
+           name='_ftnref#{i}' title='' id='_ftnref#{i}'>#{ref}</div>
     DIV
   end
 
@@ -49,8 +51,9 @@ module Html2Doc
     note = docxml.at("//*[@name = '#{href}' or @id = '#{href}']")
     return false if note.nil?
     set_footnote_link_attrs(a, i)
-    a.children = "<span class='MsoFootnoteReference'>"\
-      "<span style='mso-special-character:footnote'/></span>"
+    ref = a.at(".//span[@class = 'MsoFootnoteReference']") and
+      ref.replace(FN)
+    a.children = FN if ref.nil?
     fn << transform_footnote_text(note)
   end
 
