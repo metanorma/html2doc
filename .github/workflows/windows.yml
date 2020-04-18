@@ -27,7 +27,6 @@ jobs:
         run: |
           gem install bundler
           bundle config --local path vendor/bundle
-          bundle update
           bundle install --jobs 4 --retry 3
       - name: Run specs
         run: |

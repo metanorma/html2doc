@@ -39,5 +39,5 @@ jobs:
           [[ -f ".github/workflows/dependent_repos.env" ]] && source .github/workflows/dependent_repos.env
           for repo in $DEPENDENT_REPOS
           do
-            sh trigger-gh-actions.sh $ORGANISATION $repo $GH_USERNAME $GH_ACCESS_TOKEN $GITHUB_REPOSITORY
+            sh trigger-gh-actions.sh $ORGANISATION $repo $GH_USERNAME $GH_ACCESS_TOKEN $GITHUB_REPOSITORY "{ \"ref\": \"${GITHUB_REF}\" }"
           done
