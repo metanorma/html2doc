@@ -2,7 +2,7 @@ require "uuidtools"
 require "asciimath"
 require "htmlentities"
 require "nokogiri"
-require "pp"
+require "uuidtools"
 
 module Html2Doc
   def self.style_list(li, level, liststyle, listnumber)
@@ -15,13 +15,8 @@ module Html2Doc
     li["style"] += "mso-list:#{liststyle} level#{level} lfo#{listnumber};"
   end
 
-  def self.list_add(xpath, liststyles, listtype, level)
-    xpath.each_with_index do |list, i|
-      @listnumber += 1 if level == 1
-      list["seen"] = true if level == 1
-      (list.xpath(".//li") - list.xpath(".//ol//li | .//ul//li")).each do |li|
-        style_list(li, level, liststyles[listtype], @listnumber)
-        if [:ul, :ol].include? listtype
+  def self.list_add1(li, liststyles, listtype, level)
+    if [:ul, :ol].include? listtype
           list_add(li.xpath(".//ul") - li.xpath(".//ul//ul | .//ol//ul"),
                    liststyles, :ul, level + 1)
           list_add(li.xpath(".//ol") - li.xpath(".//ul//ol | .//ol//ol"),
@@ -32,6 +27,20 @@ module Html2Doc
           list_add(li.xpath(".//ol") - li.xpath(".//ul//ol | .//ol//ol"),
                    liststyles, listtype, level + 1)
         end
+  end
+
+  def self.list_add(xpath, liststyles, listtype, level)
+    xpath.each_with_index do |list, i|
+      @listnumber += 1 if level == 1
+      list["seen"] = true if level == 1
+      list["id"] ||= UUIDTools::UUID.random_create
+      (list.xpath(".//li") - list.xpath(".//ol//li | .//ul//li")).each do |li|
+        style_list(li, level, liststyles[listtype], @listnumber)
+        list_add1(li, liststyles, listtype, level)
+      end
+      list.xpath(".//ul[not(ancestor::li/ancestor::*/@id = #{list['id']})] | "\
+                 ".//ol[not(ancestor::li/ancestor::*/@id = #{list['id']})]").each do |li|
+        list_add1(li.parent, liststyles, listtype, level-1)
       end
     end
   end

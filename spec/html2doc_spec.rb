@@ -655,15 +655,16 @@ RSpec.describe Html2Doc do
 
   it "labels lists with list styles" do
     simple_body = <<~BODY
-      <div><ul>
-      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
+      <div><ul id="0">
+      <li><div><p><ol id="1"><li><ul id="2"><li><p><ol id="3"><li><ol id="4"><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li><div><ul id="5"><li>C</li></ul></div>
     BODY
     Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
     #{word_body('<div>
-    <p style="mso-list:l1 level1 lfo1;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level4 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpFirst">A</p><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpMiddle">B<p class="MsoListParagraphCxSpMiddle">B2</p></p><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpLast">C</p></p></p></p></div></p></div>',
+    <p style="mso-list:l1 level1 lfo1;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level4 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpFirst">A</p><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpMiddle">B<p class="MsoListParagraphCxSpMiddle">B2</p></p><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpLast">C</p></p></p></p></div></p><div><p style="mso-list:l1 level1 lfo2;" class="MsoListParagraphCxSpFirst">C</p></div>
+    </div>',
     '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
@@ -673,8 +674,8 @@ RSpec.describe Html2Doc do
   it "restarts numbering of lists with list styles" do
     simple_body = <<~BODY
       <div>
-      <ol><li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
-      <ol><li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>
+      <ol id="1"><li><div><p><ol id="2"><li><ul id="3"><li><p><ol id="4"><li><ol id="5"><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
+      <ol id="6"><li><div><p><ol id="7"><li><ul id="8"><li><p><ol id="9"><li><ol id="10"><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>
     BODY
     Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2"})
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
@@ -690,12 +691,12 @@ RSpec.describe Html2Doc do
 
     it "labels lists with multiple list styles" do
     simple_body = <<~BODY
-      <div><ul class="steps">
-      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
-      <div><ul>
-      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
-      <div><ul class="other">
-      <li><div><p><ol><li><ul><li><p><ol><li><ol><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
+      <div><ul class="steps" id="0">
+      <li><div><p><ol id="1"><li><ul id="2"><li><p><ol id="3"><li><ol id="4"><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
+      <div><ul id="5">
+      <li><div><p><ol id="6"><li><ul id="7"><li><p><ol id="8"><li><ol id="9"><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
+      <div><ul class="other" id="10">
+      <li><div><p><ol id="11"><li><ul id="12"><li><p><ol id="13"><li><ol id="14"><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
     BODY
     Html2Doc.process(html_input(simple_body), filename: "test", liststyles: {ul: "l1", ol: "l2", steps: "l3"})
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
