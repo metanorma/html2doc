@@ -38,8 +38,8 @@ module Html2Doc
         style_list(li, level, liststyles[listtype], @listnumber)
         list_add1(li, liststyles, listtype, level)
       end
-      list.xpath(".//ul[not(ancestor::li/ancestor::*/@id = #{list['id']})] | "\
-                 ".//ol[not(ancestor::li/ancestor::*/@id = #{list['id']})]").each do |li|
+      list.xpath(".//ul[not(ancestor::li/ancestor::*/@id = '#{list['id']}')] | "\
+                 ".//ol[not(ancestor::li/ancestor::*/@id = '#{list['id']}')]").each do |li|
         list_add1(li.parent, liststyles, listtype, level-1)
       end
     end
