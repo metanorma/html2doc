@@ -8,6 +8,7 @@ group :development, :test do
   gem "rspec"
 end
 
+gem "asciimath", git: "https://github.com/asciidoctor/asciimath"
 gemspec
 
 if File.exist? 'Gemfile.devel'
