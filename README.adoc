@@ -24,7 +24,7 @@ This work is driven by the Word document generation procedure documented in http
 
 The gem currently does the following:
 
-* Convert any AsciiMath and MathML to Word's native mathematical formatting language, OOXML. Word supports copy-pasting MathML into Word and converting it into OOXML; however the conversion is not infallible (we have found problems with `\sum`: Word claims parameters were missing, and inserting dotted squares to indicate as much), and you may need to post-edit the OOXML.
+* Convert any AsciiMath and MathML to Word's native mathematical formatting language, OOXML. Word supports copy-pasting MathML into Word and converting it into OOXML; however the conversion is not infallible (we have in the past found problems with `\sum`: Word claims parameters were missing, and inserting dotted squares to indicate as much), and you may need to post-edit the OOXML.
 ** The gem does attempt to repair the MathML input, to bring it in line with Word's OOXML's expectations. If you find any issues with AsciiMath or MathML input, please raise an issue.
 * Identify any footnotes in the document (defined as hyperlinks with attributes `class = "Footnote"` or `epub:type = "footnote"`), and render them as Microsoft Word footnotes. 
 ** The corresponding footnote content is any `div` or `aside` element with the same `@id` attribute as the footnote points to; e.g. `<a href="#ftn1" epub:type="footnote"><sup>3</sup></a></span>`, pointing to `<aside id="ftn3">`.
