@@ -372,11 +372,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{word_body("
+    #{word_body(%{
        <div><m:oMath>
-       #{ASCII_MATH}<m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>\"integer\"</m:t></m:r>
+       <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>=</m:t></m:r><m:sSup><m:e><m:r><m:t>(</m:t></m:r><m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num><m:r><m:t>n</m:t></m:r><m:r><m:t>(</m:t></m:r><m:r><m:t>n+1</m:t></m:r><m:r><m:t>)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><m:r><m:t>)</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>"integer"</m:t></m:r><m:r><m:t>)</m:t></m:r>
        </m:oMath>
-       </div>", '<div style="mso-element:footnote-list"/>')}
+       </div>}, '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
   end
@@ -388,7 +388,7 @@ RSpec.describe Html2Doc do
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
     #{word_body("
        <div><m:oMath>
-       <m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>integer</m:t></m:r>
+       <m:r><m:t>text</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>integer</m:t></m:r><m:r><m:t>)</m:t></m:r>
        </m:oMath>
        </div>", '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
@@ -400,11 +400,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{word_body("
-       <div style=\"text-align:left;\"><m:oMathPara><m:oMathParaPr><m:jc m:val=\"left\"/></m:oMathParaPr><m:oMath>
-       #{ASCII_MATH}
+    #{word_body(%{
+       <div style="text-align:left;"><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+       <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>=</m:t></m:r><m:sSup><m:e><m:r><m:t>(</m:t></m:r><m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num><m:r><m:t>n</m:t></m:r><m:r><m:t>(</m:t></m:r><m:r><m:t>n+1</m:t></m:r><m:r><m:t>)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><m:r><m:t>)</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>
        </m:oMath>
-       </m:oMathPara></div>", '<div style="mso-element:footnote-list"/>')}
+       </m:oMathPara></div>}, '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
   end
@@ -414,11 +414,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
       to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{word_body("
-       <div style=\"text-align:right;\"><m:oMathPara><m:oMathParaPr><m:jc m:val=\"right\"/></m:oMathParaPr><m:oMath>
-       #{ASCII_MATH}
+    #{word_body(%{
+       <div style="text-align:right;"><m:oMathPara><m:oMathParaPr><m:jc m:val="right"/></m:oMathParaPr><m:oMath>
+       <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>=</m:t></m:r><m:sSup><m:e><m:r><m:t>(</m:t></m:r><m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num><m:r><m:t>n</m:t></m:r><m:r><m:t>(</m:t></m:r><m:r><m:t>n+1</m:t></m:r><m:r><m:t>)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><m:r><m:t>)</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>
        </m:oMath>
-       </m:oMathPara></div>", '<div style="mso-element:footnote-list"/>')}
+       </m:oMathPara></div>}, '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
   end
