@@ -32,6 +32,9 @@ module Html2Doc
       next unless x.next_element && x.next_element != "mrow"
       x.next_element.wrap("<mrow/>")
     end
+    m.xpath(".//xmlns:mtext", docnamespaces).each do |x|
+      x.children = x.children.to_xml.gsub(/^\s/, "&#xA0;").gsub(/\s$/, "&#xA0;")
+    end
     m.add_namespace(nil, "http://www.w3.org/1998/Math/MathML")
     m
   end

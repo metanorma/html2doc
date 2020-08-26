@@ -388,9 +388,24 @@ RSpec.describe Html2Doc do
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
     #{word_body("
        <div><m:oMath>
-       <m:r><m:t>text</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>integer</m:t></m:r><m:r><m:t>)</m:t></m:r>
+       <m:r><m:t>text</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>&#xA0;integer&#xA0;</m:t></m:r><m:r><m:t>)</m:t></m:r>
        </m:oMath>
        </div>", '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
+  it "processes spaces in MathML mtext" do
+    Html2Doc.process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
+                                <mrow><mi>H</mi><mtext> original </mtext><mi>J</mi></mrow>
+</math></div>"), filename: "test", asciimathdelims: ["{{", "}}"])
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div><m:oMath>
+    <m:r><m:t>H</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>&#xA0;original&#xA0;</m:t></m:r><m:r><m:t>J</m:t></m:r>
+    </m:oMath>
+    </div>', '<div style="mso-element:footnote-list"/>')}
     #{WORD_FTR1}
     OUTPUT
   end
