@@ -27,15 +27,37 @@ module Html2Doc
 
   # random fixes to MathML input that OOXML needs to render properly
   def self.ooxml_cleanup(m, docnamespaces)
+    m = mathml_preserve_space(mathml_insert_rows(m, docnamespaces), docnamespaces)
+    m.add_namespace(nil, "http://www.w3.org/1998/Math/MathML")
+    m
+  end
+
+  def self.mathml_insert_rows(m, docnamespaces)
     m.xpath(%w(msup msub msubsup munder mover munderover).
             map { |m| ".//xmlns:#{m}" }.join(" | "), docnamespaces).each do |x|
       next unless x.next_element && x.next_element != "mrow"
       x.next_element.wrap("<mrow/>")
     end
+    m
+  end
+
+  def self.mathml_preserve_space(m, docnamespaces)
     m.xpath(".//xmlns:mtext", docnamespaces).each do |x|
       x.children = x.children.to_xml.gsub(/^\s/, "&#xA0;").gsub(/\s$/, "&#xA0;")
     end
-    m.add_namespace(nil, "http://www.w3.org/1998/Math/MathML")
+    m
+  end
+
+  def self.unitalic(m)
+    m.xpath(".//xmlns:r[xmlns:rPr/xmlns:sty[@m:val = 'p']]").each do |x|
+      x.wrap("<span style='font-style:normal;'></span>")
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr/xmlns:sty[@m:val = 'bi']]").each do |x|
+      x.wrap("<span style='font-weight:bold;'></span>")
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr/xmlns:sty[@m:val = 'b']]").each do |x|
+      x.wrap("<span style='font-style:normal;font-weight:bold;'></span>")
+    end
     m
   end
 
@@ -48,10 +70,10 @@ module Html2Doc
       element = ooxml_cleanup(x, docnamespaces)
       doc = Nokogiri::XML::Document::new()
       doc.root = element
-      ooxml = (esc_space(@xsltemplate.transform(doc))).to_s.
+      ooxml = (unitalic(esc_space(@xsltemplate.transform(doc)))).to_s.
         gsub(/<\?[^>]+>\s*/, "").
         gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
-        gsub(%r{<(/)?([a-z])}, "<\\1m:\\2")
+        gsub(%r{<(/)?(?!span)([a-z])}, "<\\1m:\\2")
       ooxml = uncenter(x, ooxml)
       x.swap(ooxml)
     end

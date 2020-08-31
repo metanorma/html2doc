@@ -878,9 +878,21 @@
                </xsl:otherwise>
             </xsl:choose>
          </xsl:if>
-      </xsl:variable>
+       </xsl:variable>
+       <!-- NN 20200831 https://github.com/metanorma/metanorma-nist/issues/155 Read in ancestor mstyle -->
+       <xsl:variable name="mathvariant2">
+         <xsl:choose>
+           <xsl:when test="$mathvariant=''">
+             <xsl:value-of select="$ndCur/ancestor::mml:mstyle[@mathvariant][1]/@mathvariant"/>
+           </xsl:when>
+           <xsl:otherwise>
+             <xsl:value-of select="$mathvariant"/>
+           </xsl:otherwise>
+         </xsl:choose>
+       </xsl:variable>
+       <!-- END NN -->
       <xsl:call-template name="CreateMathRPR">
-         <xsl:with-param name="mathvariant" select="$mathvariant"/>
+         <xsl:with-param name="mathvariant" select="$mathvariant2"/>
          <xsl:with-param name="fontstyle" select="$fontstyle"/>
          <xsl:with-param name="fontweight" select="$fontweight"/>
          <xsl:with-param name="ndCur" select="$ndCur"/>
@@ -905,7 +917,7 @@
             <xsl:with-param name="fontweight" select="$fontweight"/>
             <xsl:with-param name="ndCur" select="$ndCur"/>
          </xsl:call-template>
-      </xsl:variable>
+       </xsl:variable>
       <xsl:if test="$fLit=1 or $fNor=1 or ($sFontCur!='italic' and $sFontCur!='')">
          <rPr>
             <xsl:if test="$fNor=1">
@@ -936,7 +948,9 @@
          <xsl:when test="not($ndCur)">
             <xsl:value-of select="'italic'"/>
          </xsl:when>
-         <xsl:when test="$ndCur/self::mml:mi and (string-length(normalize-space($ndCur)) &lt;= 1)               or $ndCur/self::mml:mn and string(number($ndCur/text()))!='NaN'               or $ndCur/self::mml:mo">
+         <!--<xsl:when test="$ndCur/self::mml:mi and (string-length(normalize-space($ndCur)) &lt;= 1)               or $ndCur/self::mml:mn and string(number($ndCur/text()))!='NaN'               or $ndCur/self::mml:mo">-->
+           <!-- https://github.com/metanorma/metanorma-nist/issues/155 : DO NOT italicise mml:mo -->
+           <xsl:when test="$ndCur/self::mml:mi and (string-length(normalize-space($ndCur)) &lt;= 1)               or $ndCur/self::mml:mn and string(number($ndCur/text()))!='NaN'">
 
 	   <!-- The default for the above three cases is fontstyle=italic fontweight=normal.-->
 	   <xsl:choose>
