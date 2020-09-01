@@ -931,7 +931,7 @@
                <xsl:with-param name="fNor" select="$fNor"/>
             </xsl:call-template>
          </rPr>
-      </xsl:if>
+       </xsl:if>
   </xsl:template>
 
   <!-- %%Template: GetFontCur
@@ -947,7 +947,7 @@
          </xsl:when>
          <xsl:when test="not($ndCur)">
             <xsl:value-of select="'italic'"/>
-         </xsl:when>
+          </xsl:when>
          <!--<xsl:when test="$ndCur/self::mml:mi and (string-length(normalize-space($ndCur)) &lt;= 1)               or $ndCur/self::mml:mn and string(number($ndCur/text()))!='NaN'               or $ndCur/self::mml:mo">-->
            <!-- https://github.com/metanorma/metanorma-nist/issues/155 : DO NOT italicise mml:mo -->
            <xsl:when test="$ndCur/self::mml:mi and (string-length(normalize-space($ndCur)) &lt;= 1)               or $ndCur/self::mml:mn and string(number($ndCur/text()))!='NaN'">
@@ -1014,6 +1014,12 @@
             </sty>
          </xsl:when>
          <xsl:when test="$font='italic'">
+           <!-- NN 20200901 https://github.com/metanorma/metanorma-itu/issues/173 italic needs to be added explicitly to mtext -->
+           <xsl:if test="$fNor=1">
+            <sty>
+               <xsl:attribute name="m:val">i</xsl:attribute>
+            </sty>
+           </xsl:if>
       </xsl:when>
          <xsl:when test="$font='script'">
             <scr>

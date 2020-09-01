@@ -53,7 +53,10 @@ module Html2Doc
       x.wrap("<span style='font-style:normal;'></span>")
     end
     m.xpath(".//xmlns:r[xmlns:rPr/xmlns:sty[@m:val = 'bi']]").each do |x|
-      x.wrap("<span style='font-weight:bold;'></span>")
+      x.wrap("<span style='font-style:italic;font-weight:bold;'></span>")
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr/xmlns:sty[@m:val = 'i']]").each do |x|
+      x.wrap("<span class='nostem'><em></em></span>")
     end
     m.xpath(".//xmlns:r[xmlns:rPr/xmlns:sty[@m:val = 'b']]").each do |x|
       x.wrap("<span style='font-style:normal;font-weight:bold;'></span>")
@@ -73,7 +76,7 @@ module Html2Doc
       ooxml = (unitalic(esc_space(@xsltemplate.transform(doc)))).to_s.
         gsub(/<\?[^>]+>\s*/, "").
         gsub(/ xmlns(:[^=]+)?="[^"]+"/, "").
-        gsub(%r{<(/)?(?!span)([a-z])}, "<\\1m:\\2")
+        gsub(%r{<(/)?(?!span)(?!em)([a-z])}, "<\\1m:\\2")
       ooxml = uncenter(x, ooxml)
       x.swap(ooxml)
     end
