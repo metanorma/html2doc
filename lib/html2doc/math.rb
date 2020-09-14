@@ -2,6 +2,7 @@ require "uuidtools"
 require "asciimath"
 require "htmlentities"
 require "nokogiri"
+require "plane1converter"
 
 module Html2Doc
   @xsltemplate =
@@ -49,19 +50,57 @@ module Html2Doc
   end
 
   def self.unitalic(m)
-    m.xpath(".//xmlns:r[xmlns:rPr/xmlns:sty[@m:val = 'p']]").each do |x|
+    m.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'p']]").each do |x|
       x.wrap("<span style='font-style:normal;'></span>")
     end
-    m.xpath(".//xmlns:r[xmlns:rPr/xmlns:sty[@m:val = 'bi']]").each do |x|
-      x.wrap("<span style='font-style:italic;font-weight:bold;'></span>")
+    m.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'bi']]").each do |x|
+      x.wrap("<span class='nostem' style='font-weight:bold;'><em></em></span>")
     end
-    m.xpath(".//xmlns:r[xmlns:rPr/xmlns:sty[@m:val = 'i']]").each do |x|
+    m.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'i']]").each do |x|
       x.wrap("<span class='nostem'><em></em></span>")
     end
-    m.xpath(".//xmlns:r[xmlns:rPr/xmlns:sty[@m:val = 'b']]").each do |x|
+    m.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'b']]").each do |x|
       x.wrap("<span style='font-style:normal;font-weight:bold;'></span>")
     end
+    m.xpath(".//xmlns:r[xmlns:rPr/xmlns:scr[@m:val = 'monospace']]").each do |x|
+      toPlane1(x, :monospace)
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr/xmlns:scr[@m:val = 'double-struck']]").each do |x|
+      toPlane1(x, :doublestruck)
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:sty) or xmlns:sty/@m:val = 'p']/xmlns:scr[@m:val = 'script']]").each do |x|
+      toPlane1(x, :script)
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'b']/xmlns:scr[@m:val = 'script']]").each do |x|
+      toPlane1(x, :scriptbold)
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:sty) or xmlns:sty/@m:val = 'p']/xmlns:scr[@m:val = 'fraktur']]").each do |x|
+      toPlane1(x, :fraktur)
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'b']/xmlns:scr[@m:val = 'fraktur']]").each do |x|
+      toPlane1(x, :frakturbold)
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:sty) or xmlns:sty/@m:val = 'p']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+      toPlane1(x, :sans)
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'b']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+      toPlane1(x, :sansbold)
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'i']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+      toPlane1(x, :sansitalic)
+    end
+    m.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'bi']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+      toPlane1(x, :sansbolditalic)
+    end
     m
+  end
+
+  def self.toPlane1(x, font)
+    x.traverse do |n|
+      next unless n.text?
+      n.replace(Plane1Converter.conv(HTMLEntities.new.decode(n.text), font))
+    end
+    x
   end
 
   def self.mathml_to_ooml(docxml)
