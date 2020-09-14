@@ -1087,8 +1087,16 @@
                <xsl:attribute name="m:val">bi</xsl:attribute>
             </sty>
          </xsl:when>
-         <xsl:when test="$font='monospace'"/>
+         <xsl:when test="$font='monospace'">
          <!-- We can't do monospace, so leave empty -->
+         <!-- NN 2020 https://github.com/metanorma/html2doc/issues/47 no, we will -->
+         <scr>
+               <xsl:attribute name="m:val">monospace</xsl:attribute>
+            </scr>
+            <sty>
+               <xsl:attribute name="m:val">p</xsl:attribute>
+             </sty>
+             </xsl:when>
       <xsl:when test="$font='bold'">
             <sty>
                <xsl:attribute name="m:val">b</xsl:attribute>
