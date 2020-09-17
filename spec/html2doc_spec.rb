@@ -424,6 +424,21 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
+  it "unwraps accent in MathML" do
+    Html2Doc.process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
+                                <mover accent='true'><mrow><mi>p</mi></mrow><mrow><mo>^</mo></mrow></mover>
+</math></div>"), filename: "test", asciimathdelims: ["{{", "}}"])
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).
+      to match_fuzzy(<<~OUTPUT)
+    #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+    #{word_body('<div><m:oMath>
+    <m:acc><m:accPr><m:chr m:val="^"></m:chr></m:accPr><m:e><m:r><m:t>p</m:t></m:r></m:e></m:acc>
+    </m:oMath>
+    </div>', '<div style="mso-element:footnote-list"/>')}
+    #{WORD_FTR1}
+    OUTPUT
+  end
+
   it "left-aligns AsciiMath" do
     Html2Doc.process(html_input("<div style='text-align:left;'>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"), filename: "test", asciimathdelims: ["{{", "}}"])
     expect(guid_clean(File.read("test.doc", encoding: "utf-8"))).

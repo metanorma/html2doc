@@ -26,9 +26,19 @@ module Html2Doc
     end.join
   end
 
+  def self.unwrap_accents(doc)
+    doc.xpath("//*[@accent = 'true']").each do |x|
+      x.elements.length > 1 or next
+      x.elements[1].name == "mrow" and
+        x.elements[1].replace(x.elements[1].children)
+    end
+    doc
+  end
+
   # random fixes to MathML input that OOXML needs to render properly
   def self.ooxml_cleanup(m, docnamespaces)
-    m = mathml_preserve_space(mathml_insert_rows(m, docnamespaces), docnamespaces)
+    m = unwrap_accents(mathml_preserve_space(
+      mathml_insert_rows(m, docnamespaces), docnamespaces))
     m.add_namespace(nil, "http://www.w3.org/1998/Math/MathML")
     m
   end
