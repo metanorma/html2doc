@@ -4,7 +4,7 @@ name: rake
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main  ]
     tags: [ v* ]
   pull_request:
 
@@ -33,13 +33,18 @@ jobs:
       - uses: actions/checkout@master
 
       - name: Use Ruby
-        uses: ruby/setup-ruby@v1
+        uses: actions/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
+
+      - uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: bundle-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: bundle
 
       - name: Update gems
-        run: bundle install --jobs 4 --retry 3
+        run: bundle install --jobs 4 --retry 3 --deployment
 
       - name: Run specs
         run: bundle exec rake
@@ -52,7 +57,7 @@ jobs:
       - name: Trigger notify workflow
         uses: Sibz/github-status-action@v1
         with:
-          authToken: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
+          authToken: ${{ secrets.GITHUB_TOKEN }}
           context: 'tests-passed-successfully'
           description: 'Tests passed successfully'
           state: 'success'
