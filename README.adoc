@@ -3,9 +3,7 @@
 https://github.com/metanorma/html2doc/workflows/main/badge.svg
 
 image:https://img.shields.io/gem/v/html2doc.svg["Gem Version", link="https://rubygems.org/gems/html2doc"]
-image:https://github.com/metanorma/html2doc/workflows/ubuntu/badge.svg["Ubuntu Build Status", link="https://github.com/metanorma/html2doc/actions?query=workflow%3Aubuntu"]
-image:https://github.com/metanorma/html2doc/workflows/macos/badge.svg["OSX Build Status", link="https://github.com/metanorma/html2doc/actions?query=workflow%3Amacos"]
-image:https://github.com/metanorma/html2doc/workflows/windows/badge.svg["Windows Build Status", link="https://github.com/metanorma/html2doc/actions?query=workflow%3Awindows"]
+image:https://github.com/metanorma/html2doc/workflows/rake/badge.svg["Build Status", link="https://github.com/metanorma/html2doc/actions?workflow=rake"]
 image:https://codeclimate.com/github/metanorma/html2doc/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/metanorma/html2doc"]
 image:https://img.shields.io/github/issues-pr-raw/metanorma/html2doc.svg["Pull Requests", link="https://github.com/metanorma/html2doc/pulls"]
 image:https://img.shields.io/github/commits-since/metanorma/html2doc/latest.svg["Commits since latest",link="https://github.com/metanorma/html2doc/releases"]
