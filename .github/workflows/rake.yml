@@ -36,7 +36,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: vendor/bundle
           key: bundle-${{ matrix.os }}-${{ matrix.ruby }}-${{ hashFiles('**/*.gemspec') }}
@@ -48,15 +48,14 @@ jobs:
 
       - run: bundle exec rake
 
-  notify:
-    name: Trigger notify workflow
+  tests-passed:
     needs: rake
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger notify workflow
+      - name: Trigger tests passed event
         uses: Sibz/github-status-action@v1
         with:
-          authToken: ${{ secrets.GITHUB_TOKEN }}
+          authToken: ${{ secrets.METANORMA_CI_PAT_TOKEN || secrets.GITHUB_TOKEN }}
           context: 'tests-passed-successfully'
           description: 'Tests passed successfully'
           state: 'success'
