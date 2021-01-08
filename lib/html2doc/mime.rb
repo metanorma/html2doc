@@ -68,7 +68,7 @@ module Html2Doc
     realSize = ImageSize.path(path).size
     s = [i["width"].to_i, i["height"].to_i]
     s = realSize if s[0].zero? && s[1].zero?
-    return [nil, nil] if realSize[0].nil? || realSize[1].nil?
+    return [nil, nil] if realSize.nil? || realSize[0].nil? || realSize[1].nil?
     s[1] = s[0] * realSize[1] / realSize[0] if s[1].zero? && !s[0].zero?
     s[0] = s[1] * realSize[0] / realSize[1] if s[0].zero? && !s[1].zero?
     s = [(s[0] * maxheight / s[1]).ceil, maxheight] if s[1] > maxheight
