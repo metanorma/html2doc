@@ -19,21 +19,22 @@ module Html2Doc
     PREAMBLE
   end
 
-  def self.mime_attachment(boundary, filename, item, dir)
+  def self.mime_attachment(boundary, filename, item, dir, encode = true)
     content_type = mime_type(item)
     text_mode = %w[text application].any? { |p| content_type.start_with? p }
 
     path = File.join(dir, item)
     content = text_mode ? File.read(path, encoding: "utf-8") : IO.binread(path)
 
-    encoded_file = Base64.strict_encode64(content).gsub(/(.{76})/, "\\1\n")
+    content = encode ? Base64.strict_encode64(content).gsub(/(.{76})/, "\\1\n") :
+      [content.gsub(/\r/, "")].pack("M")
     <<~"FILE"
     --#{boundary}
     Content-Location: file:///C:/Doc/#{File.basename(filename)}_files/#{item}
-    Content-Transfer-Encoding: base64
+    Content-Transfer-Encoding: #{encode ? 'base64' : 'quoted-printable'}
     Content-Type: #{content_type}
 
-    #{encoded_file}
+    #{content}
 
     FILE
   end
@@ -41,24 +42,24 @@ module Html2Doc
   def self.mime_type(item)
     types = MIME::Types.type_for(item)
     type = types ? types.first.to_s : 'text/plain; charset="utf-8"'
-    type = type + ' charset="utf-8"' if /^text/.match(type) && types
+    type = type + '; charset="utf-8"' if /^text/.match(type) && types
     type
   end
 
   def self.mime_boundary
-    salt = UUIDTools::UUID.random_create.to_s.gsub(/-/, ".")[0..17]
+    salt = UUIDTools::UUID.random_create.to_s.upcase.gsub(/-/, ".")[0..17]
     "----=_NextPart_#{salt}"
   end
 
   def self.mime_package(result, filename, dir)
     boundary = mime_boundary
     mhtml = mime_preamble(boundary, filename, result)
-    mhtml += mime_attachment(boundary, filename, "filelist.xml", dir)
     Dir.foreach(dir) do |item|
       next if item == "." || item == ".." || /^\./.match(item) ||
         item == "filelist.xml"
-      mhtml += mime_attachment(boundary, filename, item, dir)
+      mhtml += mime_attachment(boundary, filename, item, dir, item != "header.html")
     end
+    mhtml += mime_attachment(boundary, filename, "filelist.xml", dir, false)
     mhtml += "--#{boundary}--"
     File.open("#{filename}.doc", "w:UTF-8") { |f| f.write mhtml }
   end
@@ -128,7 +129,7 @@ module Html2Doc
   def self.generate_filelist(filename, dir)
     File.open(File.join(dir, "filelist.xml"), "w") do |f|
       f.write %{<xml xmlns:o="urn:schemas-microsoft-com:office:office">
-        <o:MainFile HRef="../#{filename}.htm"/>}
+        <o:MainFile HRef="../#{filename}.htm"/>\n}
       Dir.entries(dir).sort.each do |item|
         next if item == "." || item == ".." || /^\./.match(item)
         f.write %{  <o:File HRef="#{item}"/>\n}
