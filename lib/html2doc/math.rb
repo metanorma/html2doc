@@ -10,9 +10,15 @@ module Html2Doc
                              encoding: "utf-8"))
 
   def self.asciimath_to_mathml1(x)
-    AsciiMath::MathMLBuilder.new(:msword => true).append_expression(
-      AsciiMath.parse(HTMLEntities.new.decode(x)).ast).to_s.
-        gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+    begin
+      AsciiMath::MathMLBuilder.new(:msword => true).append_expression(
+        AsciiMath.parse(HTMLEntities.new.decode(x)).ast).to_s.
+      gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+    rescue StandardError => e
+      puts "parsing: #{x}"
+      puts e.message
+      raise e
+    end
   end
 
   def self.asciimath_to_mathml(doc, delims)
