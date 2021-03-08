@@ -467,6 +467,14 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
+  it "raises error in processing of broken AsciiMath" do
+    begin
+    expect{ Html2Doc.process(html_input(%[<div style='text-align:right;'>{{u_c = 6.6"unitsml(kHz)}}</div>]), filename: "test", asciimathdelims: ["{{", "}}"]) }.to output('parsing: u_c = 6.6"unitsml(kHz)').to_stderr
+    rescue StandardError
+    end
+    expect{ Html2Doc.process(html_input(%[<div style='text-align:right;'>{{u_c = 6.6"unitsml(kHz)}}</div>]), filename: "test", asciimathdelims: ["{{", "}}"]) }.to raise_error(StandardError)
+  end
+
   it "wraps msup after munderover in MathML" do
     Html2Doc.process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
 <munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi></mrow></munderover><msup><mn>2</mn><mrow><mi>i</mi></mrow></msup></math></div>"), filename: "test", asciimathdelims: ["{{", "}}"])
