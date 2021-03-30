@@ -11,7 +11,8 @@ module Html2Doc
     Content-Type: multipart/related; boundary="#{boundary}"
 
     --#{boundary}
-    Content-Location: file:///C:/Doc/#{File.basename(filename)}.htm
+    Content-ID: <#{File.basename(filename)}>
+    Content-Disposition: inline; filename="#{File.basename(filename)}"
     Content-Type: text/html; charset="utf-8"
 
     #{result}
@@ -29,7 +30,8 @@ module Html2Doc
     encoded_file = Base64.strict_encode64(content).gsub(/(.{76})/, "\\1\n")
     <<~"FILE"
     --#{boundary}
-    Content-Location: file:///C:/Doc/#{File.basename(filename)}_files/#{item}
+    Content-ID: <#{File.basename(item)}>
+    Content-Disposition: inline; filename="#{File.basename(item)}"
     Content-Transfer-Encoding: base64
     Content-Type: #{content_type}
 
@@ -52,15 +54,22 @@ module Html2Doc
 
   def self.mime_package(result, filename, dir)
     boundary = mime_boundary
-    mhtml = mime_preamble(boundary, filename, result)
-    mhtml += mime_attachment(boundary, filename, "filelist.xml", dir)
+    mhtml = mime_preamble(boundary, "#{filename}.htm", result)
+    mhtml += mime_attachment(boundary, "#{filename}.htm", "filelist.xml", dir)
     Dir.foreach(dir) do |item|
       next if item == "." || item == ".." || /^\./.match(item) ||
         item == "filelist.xml"
-      mhtml += mime_attachment(boundary, filename, item, dir)
+      mhtml += mime_attachment(boundary, "#{filename}.htm", item, dir)
     end
     mhtml += "--#{boundary}--"
-    File.open("#{filename}.doc", "w:UTF-8") { |f| f.write mhtml }
+    File.open("#{filename}.doc", "w:UTF-8") { |f| f.write contentid(mhtml) }
+  end
+
+  def self.contentid(mhtml)
+    mhtml.gsub %r{(<img[^>]*?src=")([^\"']+)(['"])}m do |m|
+      repl = "#{$1}cid:#{File.basename($2)}#{$3}"
+      /^data:|^https?:/.match($2) ? m : repl
+    end
   end
 
   # max width for Word document is 400, max height is 680
@@ -120,7 +129,7 @@ module Html2Doc
       new_filename = "#{mkuuid}.#{m2[:suffix]}"
       old_filename = %r{^([A-Z]:)?/}.match(m[:src]) ? m[:src] : File.join(localdir, m[:src])
       FileUtils.cp old_filename, File.join(dir, new_filename)
-      a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='file:///C:/Doc/#{filename}_files/#{new_filename}'")
+      a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='cid:#{new_filename}'")
     end
     a.join
   end

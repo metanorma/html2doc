@@ -36,7 +36,8 @@ MIME-Version: 1.0
 Content-Type: multipart/related; boundary="----=_NextPart_"
 
 ------=_NextPart_
-Content-Location: file:///C:/Doc/test.htm
+Content-ID: <test.htm>
+Content-Disposition: inline; filename="test.htm"
 Content-Type: text/html; charset="utf-8"
 
 <?xml version="1.0"?>
@@ -51,7 +52,7 @@ Content-Type: text/html; charset="utf-8"
 <![endif]-->
 <meta http-equiv=Content-Type content="text/html; charset=utf-8"/>
 
-  <link rel=File-List href="test_files/filelist.xml"/>
+  <link rel=File-List href="cid:filelist.xml"/>
 <title>blank</title><style><![CDATA[
   <!--
 HDR
@@ -73,7 +74,8 @@ end
 
 WORD_FTR1 = <<~FTR
   ------=_NextPart_
-Content-Location: file:///C:/Doc/test_files/filelist.xml
+Content-ID: <filelist.xml>
+Content-Disposition: inline; filename="filelist.xml"
 Content-Transfer-Encoding: base64
 Content-Type: #{Html2Doc::mime_type('filelist.xml')}
 
@@ -86,7 +88,8 @@ FTR
 
 WORD_FTR2 = <<~FTR
   ------=_NextPart_
-Content-Location: file:///C:/Doc/test_files/filelist.xml
+Content-ID: <filelist.xml>
+Content-Disposition: inline; filename="filelist.xml"
 Content-Transfer-Encoding: base64
 Content-Type: #{Html2Doc::mime_type('filelist.xml')}
 PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
@@ -97,7 +100,8 @@ FTR
 
 WORD_FTR3 = <<~FTR
 ------=_NextPart_
-Content-Location: file:///C:/Doc/test_files/filelist.xml
+Content-ID: <filelist.xml>
+Content-Disposition: inline; filename="filelist.xml"
 Content-Transfer-Encoding: base64
 Content-Type: #{Html2Doc::mime_type('filelist.xml')}
 
@@ -106,7 +110,8 @@ ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9IjFh
 YzIwNjVmLTAzZjAtNGM3YS1iOWE2LTkyZTgyMDU5MWJmMC5wbmciLz4KICA8bzpGaWxlIEhSZWY9
 ImZpbGVsaXN0LnhtbCIvPgo8L3htbD4K
 ------=_NextPart_
-Content-Location: file:///C:/Doc/test_files/cb7b0d19-891e-4634-815a-570d019d454c.png
+Content-ID: <cb7b0d19-891e-4634-815a-570d019d454c.png>
+Content-Disposition: inline; filename="cb7b0d19-891e-4634-815a-570d019d454c.png"
 Content-Transfer-Encoding: base64
 Content-Type: image/png
 ------=_NextPart_--
@@ -329,9 +334,9 @@ RSpec.describe Html2Doc do
     expect(HTMLEntities.new.encode(hdr, :hexadecimal).
            gsub(/\&#x3c;/, "<").gsub(/\&#x3e;/, ">").gsub(/\&#x27;/, "'").gsub(/\&#x22;/, '"').
            gsub(/\&#xd;/, "&#xa;").gsub(/\&#xa;/, "\n")).to match_fuzzy(HEADERHTML)
-    expect(html.sub(%r{Content-Location: file:///C:/Doc/test_files/header.html.*$}m, "")).
+    expect(html.sub(%r{Content-ID: <header.html>.*$}m, "")).
            to match_fuzzy(<<~OUTPUT)
-    #{WORD_HDR} #{DEFAULT_STYLESHEET.gsub(/FILENAME/, "test")} 
+    #{WORD_HDR} #{DEFAULT_STYLESHEET.gsub(/url\("[^"]+"\)/, "url(cid:header.html)")} 
     #{WORD_HDR_END} #{word_body("", '<div style="mso-element:footnote-list"/>')} #{WORD_FTR2}
     OUTPUT
   end
@@ -340,7 +345,7 @@ RSpec.describe Html2Doc do
     Html2Doc.process(html_input(""), filename: "test", header_file: "spec/header_img.html")
     doc = guid_clean(File.read("test.doc", encoding: "utf-8"))
     expect(doc).to match(%r{Content-Type: image/png})
-    expect(doc).to match(%r{file:///C:/Doc/test_files/[^.]+\.png})
+    expect(doc).to match(%r{iVBORw0KGgoAAAANSUhEUgAAA5cAAAN7CAYAAADRE24cAAAgAElEQVR4XuydB5gUxdaGC65gTogB})
   end
 
   it "processes a header with an image with absolute path" do
@@ -351,7 +356,7 @@ RSpec.describe Html2Doc do
     Html2Doc.process(html_input(""), filename: "test", header_file: "spec/header_img1.html")
     doc = guid_clean(File.read("test.doc", encoding: "utf-8"))
     expect(doc).to match(%r{Content-Type: image/png})
-    expect(doc).to match(%r{file:///C:/Doc/test_files/[^.]+\.png})
+    expect(doc).to match(%r{iVBORw0KGgoAAAANSUhEUgAAA5cAAAN7CAYAAADRE24cAAAgAElEQVR4XuydB5gUxdaGC65gTogB})
   end
 
 
@@ -535,7 +540,7 @@ RSpec.describe Html2Doc do
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>'))}
     #{image_clean(WORD_FTR3)}
     OUTPUT
   end
@@ -547,7 +552,7 @@ RSpec.describe Html2Doc do
     expect(testdoc).to match(%r{Content-Type: image/gif})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>'))}
     #{image_clean(WORD_FTR3).gsub(/image\.png/, "image.gif")}
     OUTPUT
   end
@@ -559,7 +564,7 @@ RSpec.describe Html2Doc do
     expect(testdoc).to match(%r{Content-Type: image/jpeg})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>'))}
     #{image_clean(WORD_FTR3).gsub(/image\.png/, "image.jpg")}
     OUTPUT
   end
@@ -613,7 +618,7 @@ RSpec.describe Html2Doc do
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
     #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-    #{image_clean(word_body('<img src="test_files/cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>'))}
+    #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>'))}
     #{image_clean(WORD_FTR3)}
     OUTPUT
   end
@@ -790,7 +795,7 @@ RSpec.describe Html2Doc do
     Html2Doc.process(html_input(simple_body), filename: "spec/test", debug: true)
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     base64_image = testdoc[/image\/png\n\n(.*?)\n\n----/m, 1].gsub!("\n", "")
-    base64_image_basename = testdoc[%r{Content-Location: file:///C:/Doc/test_files/([0-9a-z\-]+)\.png}m, 1]
+    base64_image_basename = testdoc[%r{Content-ID: <([0-9a-z\-]+)\.png}m, 1]
     doc_bin_image = Base64.strict_decode64(base64_image)
     file_bin_image = IO.read("spec/test_files/#{base64_image_basename}.png", mode: "rb")
     expect(doc_bin_image).to eq file_bin_image
