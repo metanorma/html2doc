@@ -24,11 +24,19 @@ module Html2Doc
     File.open("#{hash[:dir1]}/header.html", "w:UTF-8") { |f| f.write(doc) }
   end
 
+  def self.clear_dir(dir)
+    Dir.foreach(dir) do |f|
+      fn = File.join(dir, f)
+      File.delete(fn) if f != '.' && f != '..'
+    end
+    dir
+  end
+
   def self.create_dir(filename, dir)
-    return dir if dir
+    dir and return clear_dir(dir)
     dir = "#{filename}_files"
     Dir.mkdir(dir) unless File.exists?(dir)
-    dir
+    clear_dir(dir)
   end
 
   def self.process_html(result, hash)
@@ -123,18 +131,19 @@ module Html2Doc
     docxml.xpath("//*[local-name() = 'head']").each do |h|
       h.children.first.add_previous_sibling <<~XML
       #{PRINT_VIEW}
-        <link rel="File-List" href="#{File.basename(dir)}/filelist.xml"/>
+        <link rel="File-List" href="cid:filelist.xml"/>
       XML
     end
   end
 
   def self.filename_substitute(stylesheet, header_filename, filename)
     if header_filename.nil?
-      stylesheet.gsub!(/\n[^\n]*FILENAME[^\n]*i\n/, "\n")
+      stylesheet
     else
-      stylesheet.gsub!(/FILENAME/, File.basename(filename))
+      stylesheet.gsub(/url\("[^"]+"\)/) do |m|
+        /FILENAME/.match(m) ? "url(cid:header.html)" : m
+      end
     end
-    stylesheet
   end
 
   def self.stylesheet(filename, header_filename, fn)
