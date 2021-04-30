@@ -7,6 +7,7 @@ require "uuidtools"
 module Html2Doc
   def self.style_list(li, level, liststyle, listnumber)
     return unless liststyle
+
     if li["style"]
       li["style"] += ";"
     else
@@ -16,37 +17,39 @@ module Html2Doc
   end
 
   def self.list_add1(li, liststyles, listtype, level)
-    if [:ul, :ol].include? listtype
-          list_add(li.xpath(".//ul") - li.xpath(".//ul//ul | .//ol//ul"),
-                   liststyles, :ul, level + 1)
-          list_add(li.xpath(".//ol") - li.xpath(".//ul//ol | .//ol//ol"),
-                   liststyles, :ol, level + 1)
-        else
-          list_add(li.xpath(".//ul") - li.xpath(".//ul//ul | .//ol//ul"),
-                   liststyles, listtype, level + 1)
-          list_add(li.xpath(".//ol") - li.xpath(".//ul//ol | .//ol//ol"),
-                   liststyles, listtype, level + 1)
-        end
+    if %i[ul ol].include? listtype
+      list_add(li.xpath(".//ul") - li.xpath(".//ul//ul | .//ol//ul"),
+               liststyles, :ul, level + 1)
+      list_add(li.xpath(".//ol") - li.xpath(".//ul//ol | .//ol//ol"),
+               liststyles, :ol, level + 1)
+    else
+      list_add(li.xpath(".//ul") - li.xpath(".//ul//ul | .//ol//ul"),
+               liststyles, listtype, level + 1)
+      list_add(li.xpath(".//ol") - li.xpath(".//ul//ol | .//ol//ol"),
+               liststyles, listtype, level + 1)
+    end
   end
 
   def self.list_add(xpath, liststyles, listtype, level)
-    xpath.each_with_index do |list, i|
+    xpath.each_with_index do |l, _i|
       @listnumber += 1 if level == 1
-      list["seen"] = true if level == 1
-      list["id"] ||= UUIDTools::UUID.random_create
-      (list.xpath(".//li") - list.xpath(".//ol//li | .//ul//li")).each do |li|
+      l["seen"] = true if level == 1
+      l["id"] ||= UUIDTools::UUID.random_create
+      (l.xpath(".//li") - l.xpath(".//ol//li | .//ul//li")).each do |li|
         style_list(li, level, liststyles[listtype], @listnumber)
         list_add1(li, liststyles, listtype, level)
       end
-      list.xpath(".//ul[not(ancestor::li/ancestor::*/@id = '#{list['id']}')] | "\
-                 ".//ol[not(ancestor::li/ancestor::*/@id = '#{list['id']}')]").each do |li|
-        list_add1(li.parent, liststyles, listtype, level-1)
+      l.xpath(".//ul[not(ancestor::li/ancestor::*/@id = '#{l['id']}')] | "\
+              ".//ol[not(ancestor::li/ancestor::*/@id = '#{l['id']}')]")
+        .each do |li|
+        list_add1(li.parent, liststyles, listtype, level - 1)
       end
     end
   end
 
   def self.list2para(u)
     return if u.xpath("./li").empty?
+
     u.xpath("./li").first["class"] ||= "MsoListParagraphCxSpFirst"
     u.xpath("./li").last["class"] ||= "MsoListParagraphCxSpLast"
     u.xpath("./li/p").each { |p| p["class"] ||= "MsoListParagraphCxSpMiddle" }
@@ -64,21 +67,25 @@ module Html2Doc
   def self.lists1(docxml, liststyles, k)
     case k
     when :ul then list_add(docxml.xpath("//ul[not(@class)]#{TOPLIST}"),
-                            liststyles, :ul, 1)
+                           liststyles, :ul, 1)
     when :ol then list_add(docxml.xpath("//ol[not(@class)]#{TOPLIST}"),
                            liststyles, :ol, 1)
     else
-      list_add(docxml.xpath("//ol[@class = '#{k.to_s}']#{TOPLIST} | "\
-                            "//ul[@class = '#{k.to_s}']#{TOPLIST}"),
+      list_add(docxml.xpath("//ol[@class = '#{k}']#{TOPLIST} | "\
+                            "//ul[@class = '#{k}']#{TOPLIST}"),
       liststyles, k, 1)
     end
   end
 
   def self.lists_unstyled(docxml, liststyles)
-    list_add(docxml.xpath("//ul#{TOPLIST}[not(@seen)]"),
-             liststyles, :ul, 1) if liststyles.has_key?(:ul)
-    list_add(docxml.xpath("//ol#{TOPLIST}[not(@seen)]"),
-             liststyles, :ul, 1) if liststyles.has_key?(:ol)
+    if liststyles.has_key?(:ul)
+      list_add(docxml.xpath("//ul#{TOPLIST}[not(@seen)]"),
+               liststyles, :ul, 1)
+    end
+    if liststyles.has_key?(:ol)
+      list_add(docxml.xpath("//ol#{TOPLIST}[not(@seen)]"),
+               liststyles, :ul, 1)
+    end
     docxml.xpath("//ul[@seen] | //ol[@seen]").each do |l|
       l.delete("seen")
     end
@@ -86,6 +93,7 @@ module Html2Doc
 
   def self.lists(docxml, liststyles)
     return if liststyles.nil?
+
     @listnumber = 0
     liststyles.each_key { |k| lists1(docxml, liststyles, k) }
     lists_unstyled(docxml, liststyles)

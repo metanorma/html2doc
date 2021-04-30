@@ -21,9 +21,8 @@ if ARGV.length < 1
 end
 
 Html2Doc.process(
-  File.read(ARGV[0], encoding: "utf-8"), 
+  File.read(ARGV[0], encoding: "utf-8"),
   filename: ARGV[0].gsub(/\.html?$/, ""),
   stylesheet: options[:stylesheet],
-  header: options[:header],
+  header: options[:header]
 )
-                 
