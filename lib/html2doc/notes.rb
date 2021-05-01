@@ -38,25 +38,25 @@ module Html2Doc
     "<span style='mso-special-character:footnote'/></span>".freeze
 
   def self.footnote_container(docxml, idx)
-    ref = docxml&.at("//a[@href='#_ftn#{idx}']")&.children&.to_xml(indent: 0).
-      gsub(/>\n</, "><") || FN
+    ref = docxml&.at("//a[@href='#_ftn#{idx}']")&.children&.to_xml(indent: 0)
+      &.gsub(/>\n</, "><") || FN
     <<~DIV
       <div style='mso-element:footnote' id='ftn#{idx}'>
         <a style='mso-footnote-id:ftn#{idx}' href='#_ftn#{idx}'
-           name='_ftnref#{i}' title='' id='_ftnref#{idx}'>#{ref.strip}</a></div>
+           name='_ftnref#{idx}' title='' id='_ftnref#{idx}'>#{ref.strip}</a></div>
     DIV
   end
 
-  def self.process_footnote_link(docxml, a, i, fn)
-    return false unless footnote?(a)
+  def self.process_footnote_link(docxml, elem, idx, footnote)
+    return false unless footnote?(elem)
 
-    href = a["href"].gsub(/^#/, "")
+    href = elem["href"].gsub(/^#/, "")
     note = docxml.at("//*[@name = '#{href}' or @id = '#{href}']")
     return false if note.nil?
 
-    set_footnote_link_attrs(a, i)
-    if a.at("./span[@class = 'MsoFootnoteReference']")
-      a.children.each do |c|
+    set_footnote_link_attrs(elem, idx)
+    if elem.at("./span[@class = 'MsoFootnoteReference']")
+      elem.children.each do |c|
         if c.name == "span" && c["class"] == "MsoFootnoteReference"
           c.replace(FN)
         else
@@ -64,9 +64,9 @@ module Html2Doc
         end
       end
     else
-      a.children = FN
+      elem.children = FN
     end
-    fn << transform_footnote_text(note)
+    footnote << transform_footnote_text(note)
   end
 
   def self.transform_footnote_text(note)
