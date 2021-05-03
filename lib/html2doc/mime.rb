@@ -7,20 +7,20 @@ require "fileutils"
 module Html2Doc
   def self.mime_preamble(boundary, filename, result)
     <<~"PREAMBLE"
-    MIME-Version: 1.0
-    Content-Type: multipart/related; boundary="#{boundary}"
+      MIME-Version: 1.0
+      Content-Type: multipart/related; boundary="#{boundary}"
 
-    --#{boundary}
-    Content-ID: <#{File.basename(filename)}>
-    Content-Disposition: inline; filename="#{File.basename(filename)}"
-    Content-Type: text/html; charset="utf-8"
+      --#{boundary}
+      Content-ID: <#{File.basename(filename)}>
+      Content-Disposition: inline; filename="#{File.basename(filename)}"
+      Content-Type: text/html; charset="utf-8"
 
-    #{result}
+      #{result}
 
     PREAMBLE
   end
 
-  def self.mime_attachment(boundary, filename, item, dir)
+  def self.mime_attachment(boundary, _filename, item, dir)
     content_type = mime_type(item)
     text_mode = %w[text application].any? { |p| content_type.start_with? p }
 
@@ -29,13 +29,13 @@ module Html2Doc
 
     encoded_file = Base64.strict_encode64(content).gsub(/(.{76})/, "\\1\n")
     <<~"FILE"
-    --#{boundary}
-    Content-ID: <#{File.basename(item)}>
-    Content-Disposition: inline; filename="#{File.basename(item)}"
-    Content-Transfer-Encoding: base64
-    Content-Type: #{content_type}
+      --#{boundary}
+      Content-ID: <#{File.basename(item)}>
+      Content-Disposition: inline; filename="#{File.basename(item)}"
+      Content-Transfer-Encoding: base64
+      Content-Type: #{content_type}
 
-    #{encoded_file}
+      #{encoded_file}
 
     FILE
   end
@@ -59,6 +59,7 @@ module Html2Doc
     Dir.foreach(dir) do |item|
       next if item == "." || item == ".." || /^\./.match(item) ||
         item == "filelist.xml"
+
       mhtml += mime_attachment(boundary, "#{filename}.htm", item, dir)
     end
     mhtml += "--#{boundary}--"
@@ -67,6 +68,9 @@ module Html2Doc
 
   def self.contentid(mhtml)
     mhtml.gsub %r{(<img[^>]*?src=")([^\"']+)(['"])}m do |m|
+      repl = "#{$1}cid:#{File.basename($2)}#{$3}"
+      /^data:|^https?:/.match($2) ? m : repl
+    end.gsub %r{(<v:imagedata[^>]*?src=")([^\"']+)(['"])}m do |m|
       repl = "#{$1}cid:#{File.basename($2)}#{$3}"
       /^data:|^https?:/.match($2) ? m : repl
     end
@@ -78,6 +82,7 @@ module Html2Doc
     s = [i["width"].to_i, i["height"].to_i]
     s = realSize if s[0].zero? && s[1].zero?
     return [nil, nil] if realSize.nil? || realSize[0].nil? || realSize[1].nil?
+
     s[1] = s[0] * realSize[1] / realSize[0] if s[1].zero? && !s[0].zero?
     s[0] = s[1] * realSize[0] / realSize[1] if s[0].zero? && !s[1].zero?
     s = [(s[0] * maxheight / s[1]).ceil, maxheight] if s[1] > maxheight
@@ -92,7 +97,7 @@ module Html2Doc
   end
 
   def self.warnsvg(src)
-    warn "#{src}: SVG not supported" if /\.svg$/i.match(src)
+    warn "#{src}: SVG not supported" if /\.svg$/i.match?(src)
   end
 
   # only processes locally stored images
@@ -101,10 +106,11 @@ module Html2Doc
       next unless i.element? && %w(img v:imagedata).include?(i.name)
       #warnsvg(i["src"])
       next if /^http/.match i["src"]
-      next if %r{^data:(image|application)/[^;]+;base64}.match i["src"]
+      next if %r{^data:(image|application)/[^;]+;base64}.match? i["src"]
+
       local_filename = %r{^([A-Z]:)?/}.match(i["src"]) ? i["src"] :
         File.join(localdir, i["src"])
-      new_filename = "#{mkuuid}#{File.extname(i["src"])}"
+      new_filename = "#{mkuuid}#{File.extname(i['src'])}"
       FileUtils.cp local_filename, File.join(dir, new_filename)
       i["width"], i["height"] = image_resize(i, local_filename, 680, 400)
       i["src"] = File.join(File.basename(dir), new_filename)
@@ -112,7 +118,7 @@ module Html2Doc
     docxml
   end
 
-  # do not parse the header through Nokogiri, since it will contain 
+  # do not parse the header through Nokogiri, since it will contain
   # non-XML like <![if !supportFootnotes]>
   def self.header_image_cleanup(doc, dir, filename, localdir)
     doc.split(%r{(<img [^>]*>|<v:imagedata [^>]*>)}).each_slice(2).map do |a|
@@ -120,14 +126,15 @@ module Html2Doc
     end.join
   end
 
-  def self.header_image_cleanup1(a, dir, filename, localdir)
+  def self.header_image_cleanup1(a, dir, _filename, localdir)
     if a.size == 2 && !(/ src="https?:/.match a[1]) &&
         !(%r{ src="data:(image|application)/[^;]+;base64}.match a[1])
       m = / src=['"](?<src>[^"']+)['"]/.match a[1]
       #warnsvg(m[:src])
       m2 = /\.(?<suffix>[a-zA-Z_0-9]+)$/.match m[:src]
       new_filename = "#{mkuuid}.#{m2[:suffix]}"
-      old_filename = %r{^([A-Z]:)?/}.match(m[:src]) ? m[:src] : File.join(localdir, m[:src])
+      old_filename = %r{^([A-Z]:)?/}.match?(m[:src]) ? m[:src] :
+        File.join(localdir, m[:src])
       FileUtils.cp old_filename, File.join(dir, new_filename)
       a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='cid:#{new_filename}'")
     end
@@ -140,6 +147,7 @@ module Html2Doc
         <o:MainFile HRef="../#{filename}.htm"/>}
       Dir.entries(dir).sort.each do |item|
         next if item == "." || item == ".." || /^\./.match(item)
+
         f.write %{  <o:File HRef="#{item}"/>\n}
       end
       f.write("</xml>\n")

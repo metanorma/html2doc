@@ -151,7 +151,6 @@ module Html2Doc
     (fn.nil? || fn.empty?) and
       fn = File.join(File.dirname(__FILE__), "wordstyle.css")
     stylesheet = File.read(fn, encoding: "UTF-8")
-    #stylesheet = filename_substitute(stylesheet, header_filename, filename)
     xml = Nokogiri::XML("<style/>")
     xml.children.first << Nokogiri::XML::Comment.new(xml, "\n#{stylesheet}\n")
     xml.root.to_s
