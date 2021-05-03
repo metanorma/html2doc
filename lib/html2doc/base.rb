@@ -2,8 +2,6 @@ require "uuidtools"
 require "asciimath"
 require "htmlentities"
 require "nokogiri"
-#require "xml/xslt"
-require "pp"
 require "fileutils"
 
 module Html2Doc
@@ -19,15 +17,17 @@ module Html2Doc
 
   def self.process_header(headerfile, hash)
     return if headerfile.nil?
+
     doc = File.read(headerfile, encoding: "utf-8")
-    doc = header_image_cleanup(doc, hash[:dir1], hash[:filename], File.dirname(hash[:filename]))
+    doc = header_image_cleanup(doc, hash[:dir1], hash[:filename],
+                               File.dirname(hash[:filename]))
     File.open("#{hash[:dir1]}/header.html", "w:UTF-8") { |f| f.write(doc) }
   end
 
   def self.clear_dir(dir)
     Dir.foreach(dir) do |f|
       fn = File.join(dir, f)
-      File.delete(fn) if f != '.' && f != '..'
+      File.delete(fn) if f != "." && f != ".."
     end
     dir
   end
@@ -72,7 +72,7 @@ module Html2Doc
 
   def self.to_xhtml(xml)
     xml.gsub!(/<\?xml[^>]*>/, "")
-    unless /<!DOCTYPE /.match xml
+    unless /<!DOCTYPE /.match? xml
       xml = '<!DOCTYPE html SYSTEM
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' + xml
     end
@@ -84,34 +84,34 @@ module Html2Doc
   DOCTYPE
 
   def self.from_xhtml(xml)
-    xml.to_xml.sub(%{ xmlns="http://www.w3.org/1999/xhtml"}, "").
-      sub(DOCTYPE, "").
-      gsub(%{ />}, "/>")
+    xml.to_xml.sub(%{ xmlns="http://www.w3.org/1999/xhtml"}, "")
+      .sub(DOCTYPE, "")
+      .gsub(%{ />}, "/>")
   end
 
-  def self.msword_fix(r)
+  def self.msword_fix(doc)
     # brain damage in MSWord parser
-    r.gsub!(%r{<span style="mso-special-character:footnote"/>},
-            '<span style="mso-special-character:footnote"></span>')
-    r.gsub!(%r{<div style="mso-element:footnote-list"></div>},
-            '<div style="mso-element:footnote-list"/>')
-    r.gsub!(%r{(<a style="mso-comment-reference:[^>/]+)/>}, "\\1></a>")
-    r.gsub!(%r{<link rel="File-List"}, "<link rel=File-List")
-    r.gsub!(%r{<meta http-equiv="Content-Type"},
-            "<meta http-equiv=Content-Type")
-    r.gsub!(%r{></m:jc>}, "/>")
-    r.gsub!(%r{></v:stroke>}, "/>")
-    r.gsub!(%r{></v:f>}, "/>")
-    r.gsub!(%r{></v:path>}, "/>")
-    r.gsub!(%r{></o:lock>}, "/>")
-    r.gsub!(%r{></v:imagedata>}, "/>")
-    r.gsub!(%r{></w:wrap>}, "/>")
-    r.gsub!(%r{&tab;|&amp;tab;}, '<span style="mso-tab-count:1">&#xA0; </span>')
-    r = r.split(%r{(<m:oMath>|</m:oMath>)}).each_slice(4).map do |a|
+    doc.gsub!(%r{<span style="mso-special-character:footnote"/>},
+              '<span style="mso-special-character:footnote"></span>')
+    doc.gsub!(%r{<div style="mso-element:footnote-list"></div>},
+              '<div style="mso-element:footnote-list"/>')
+    doc.gsub!(%r{(<a style="mso-comment-reference:[^>/]+)/>}, "\\1></a>")
+    doc.gsub!(%r{<link rel="File-List"}, "<link rel=File-List")
+    doc.gsub!(%r{<meta http-equiv="Content-Type"},
+              "<meta http-equiv=Content-Type")
+    doc.gsub!(%r{></m:jc>}, "/>")
+    doc.gsub!(%r{></v:stroke>}, "/>")
+    doc.gsub!(%r{></v:f>}, "/>")
+    doc.gsub!(%r{></v:path>}, "/>")
+    doc.gsub!(%r{></o:lock>}, "/>")
+    doc.gsub!(%r{></v:imagedata>}, "/>")
+    doc.gsub!(%r{></w:wrap>}, "/>")
+    doc.gsub!(%r{&tab;|&amp;tab;},
+              '<span style="mso-tab-count:1">&#xA0; </span>')
+    doc.split(%r{(<m:oMath>|</m:oMath>)}).each_slice(4).map do |a|
       a.size > 2 and a[2] = a[2].gsub(/>\s+</, "><")
       a
     end.join
-    r
   end
 
   PRINT_VIEW = <<~XML.freeze
@@ -130,27 +130,28 @@ module Html2Doc
   def self.define_head1(docxml, dir)
     docxml.xpath("//*[local-name() = 'head']").each do |h|
       h.children.first.add_previous_sibling <<~XML
-      #{PRINT_VIEW}
-        <link rel="File-List" href="cid:filelist.xml"/>
+        #{PRINT_VIEW}
+          <link rel="File-List" href="cid:filelist.xml"/>
       XML
     end
   end
 
-  def self.filename_substitute(stylesheet, header_filename, filename)
-    if header_filename.nil?
-      stylesheet
-    else
-      stylesheet.gsub(/url\("[^"]+"\)/) do |m|
-        /FILENAME/.match(m) ? "url(cid:header.html)" : m
+  def self.filename_substitute(head, header_filename)
+    return if header_filename.nil?
+
+    head.xpath(".//*[local-name() = 'style']").each do |s|
+      s1 = s.to_xml.gsub(/url\("[^"]+"\)/) do |m|
+        /FILENAME/.match?(m) ? "url(cid:header.html)" : m
       end
+      s.replace(s1)
     end
   end
 
   def self.stylesheet(filename, header_filename, fn)
-    (fn.nil? || fn.empty?) &&
+    (fn.nil? || fn.empty?) and
       fn = File.join(File.dirname(__FILE__), "wordstyle.css")
     stylesheet = File.read(fn, encoding: "UTF-8")
-    stylesheet = filename_substitute(stylesheet, header_filename, filename)
+    #stylesheet = filename_substitute(stylesheet, header_filename, filename)
     xml = Nokogiri::XML("<style/>")
     xml.children.first << Nokogiri::XML::Comment.new(xml, "\n#{stylesheet}\n")
     xml.root.to_s
@@ -161,6 +162,7 @@ module Html2Doc
     head = docxml.at("//*[local-name() = 'head']")
     css = stylesheet(hash[:filename], hash[:header_file], hash[:stylesheet])
     add_stylesheet(head, title, css)
+    filename_substitute(head, hash[:header_file])
     define_head1(docxml, hash[:dir1])
     rootnamespace(docxml.root)
   end
@@ -189,13 +191,13 @@ module Html2Doc
   end
 
   def self.bookmarks(docxml)
-    docxml.xpath("//*[@id][not(@name)][not(@style = 'mso-element:footnote')]").each do |x|
-      next if x["id"].empty?
-      next if %w(shapetype v:shapetype shape v:shape).include? x.name
-      if x.children.empty?
-        x.add_child("<a name='#{x["id"]}'></a>")
-      else
-        x.children.first.previous = "<a name='#{x["id"]}'></a>"
+    docxml.xpath("//*[@id][not(@name)][not(@style = 'mso-element:footnote')]")
+      .each do |x|
+      next if x["id"].empty? ||
+        %w(shapetype v:shapetype shape v:shape).include?(x.name)
+
+      if x.children.empty? then x.add_child("<a name='#{x['id']}'></a>")
+      else x.children.first.previous = "<a name='#{x['id']}'></a>"
       end
       x.delete("id")
     end
