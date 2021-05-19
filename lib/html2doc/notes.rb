@@ -56,17 +56,20 @@ module Html2Doc
 
     set_footnote_link_attrs(elem, idx)
     if elem.at("./span[@class = 'MsoFootnoteReference']")
-      elem.children.each do |c|
-        if c.name == "span" && c["class"] == "MsoFootnoteReference"
-          c.replace(FN)
-        else
-          c.wrap("<span class='MsoFootnoteReference'></span>")
-        end
-      end
-    else
-      elem.children = FN
+      process_footnote_link1(elem)
+    else elem.children = FN
     end
     footnote << transform_footnote_text(note)
+  end
+
+  def self.process_footnote_link1(elem)
+    elem.children.each do |c|
+      if c.name == "span" && c["class"] == "MsoFootnoteReference"
+        c.replace(FN)
+      else
+        c.wrap("<span class='MsoFootnoteReference'></span>")
+      end
+    end
   end
 
   def self.transform_footnote_text(note)
