@@ -2,30 +2,29 @@ require "uuidtools"
 require "asciimath"
 require "htmlentities"
 require "nokogiri"
-require "uuidtools"
 
 module Html2Doc
-  def self.style_list(li, level, liststyle, listnumber)
+  def self.style_list(elem, level, liststyle, listnumber)
     return unless liststyle
 
-    if li["style"]
-      li["style"] += ";"
+    if elem["style"]
+      elem["style"] += ";"
     else
-      li["style"] = ""
+      elem["style"] = ""
     end
-    li["style"] += "mso-list:#{liststyle} level#{level} lfo#{listnumber};"
+    elem["style"] += "mso-list:#{liststyle} level#{level} lfo#{listnumber};"
   end
 
-  def self.list_add1(li, liststyles, listtype, level)
+  def self.list_add1(elem, liststyles, listtype, level)
     if %i[ul ol].include? listtype
-      list_add(li.xpath(".//ul") - li.xpath(".//ul//ul | .//ol//ul"),
+      list_add(elem.xpath(".//ul") - elem.xpath(".//ul//ul | .//ol//ul"),
                liststyles, :ul, level + 1)
-      list_add(li.xpath(".//ol") - li.xpath(".//ul//ol | .//ol//ol"),
+      list_add(elem.xpath(".//ol") - elem.xpath(".//ul//ol | .//ol//ol"),
                liststyles, :ol, level + 1)
     else
-      list_add(li.xpath(".//ul") - li.xpath(".//ul//ul | .//ol//ul"),
+      list_add(elem.xpath(".//ul") - elem.xpath(".//ul//ul | .//ol//ul"),
                liststyles, listtype, level + 1)
-      list_add(li.xpath(".//ol") - li.xpath(".//ul//ol | .//ol//ol"),
+      list_add(elem.xpath(".//ol") - elem.xpath(".//ul//ol | .//ol//ol"),
                liststyles, listtype, level + 1)
     end
   end
@@ -47,45 +46,43 @@ module Html2Doc
     end
   end
 
-  def self.list2para(u)
-    return if u.xpath("./li").empty?
+  def self.list2para(list)
+    return if list.xpath("./li").empty?
 
-    u.xpath("./li").first["class"] ||= "MsoListParagraphCxSpFirst"
-    u.xpath("./li").last["class"] ||= "MsoListParagraphCxSpLast"
-    u.xpath("./li/p").each { |p| p["class"] ||= "MsoListParagraphCxSpMiddle" }
-    u.xpath("./li").each do |l|
+    list.xpath("./li").first["class"] ||= "MsoListParagraphCxSpFirst"
+    list.xpath("./li").last["class"] ||= "MsoListParagraphCxSpLast"
+    list.xpath("./li/p").each { |p| p["class"] ||= "MsoListParagraphCxSpMiddle" }
+    list.xpath("./li").each do |l|
       l.name = "p"
       l["class"] ||= "MsoListParagraphCxSpMiddle"
       l&.first_element_child&.name == "p" and
         l.first_element_child.replace(l.first_element_child.children)
     end
-    u.replace(u.children)
+    list.replace(list.children)
   end
 
   TOPLIST = "[not(ancestor::ul) and not(ancestor::ol)]".freeze
 
-  def self.lists1(docxml, liststyles, k)
-    case k
+  def self.lists1(docxml, liststyles, style)
+    case style
     when :ul then list_add(docxml.xpath("//ul[not(@class)]#{TOPLIST}"),
                            liststyles, :ul, 1)
     when :ol then list_add(docxml.xpath("//ol[not(@class)]#{TOPLIST}"),
                            liststyles, :ol, 1)
     else
-      list_add(docxml.xpath("//ol[@class = '#{k}']#{TOPLIST} | "\
-                            "//ul[@class = '#{k}']#{TOPLIST}"),
-      liststyles, k, 1)
+      list_add(docxml.xpath("//ol[@class = '#{style}']#{TOPLIST} | "\
+                            "//ul[@class = '#{style}']#{TOPLIST}"),
+      liststyles, style, 1)
     end
   end
 
   def self.lists_unstyled(docxml, liststyles)
-    if liststyles.has_key?(:ul)
+    liststyles.has_key?(:ul) and
       list_add(docxml.xpath("//ul#{TOPLIST}[not(@seen)]"),
                liststyles, :ul, 1)
-    end
-    if liststyles.has_key?(:ol)
+    liststyles.has_key?(:ol) and
       list_add(docxml.xpath("//ol#{TOPLIST}[not(@seen)]"),
                liststyles, :ul, 1)
-    end
     docxml.xpath("//ul[@seen] | //ol[@seen]").each do |l|
       l.delete("seen")
     end

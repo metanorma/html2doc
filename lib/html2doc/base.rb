@@ -127,7 +127,7 @@ module Html2Doc
     <meta http-equiv=Content-Type content="text/html; charset=utf-8"/>
   XML
 
-  def self.define_head1(docxml, dir)
+  def self.define_head1(docxml, _dir)
     docxml.xpath("//*[local-name() = 'head']").each do |h|
       h.children.first.add_previous_sibling <<~XML
         #{PRINT_VIEW}
@@ -147,7 +147,7 @@ module Html2Doc
     end
   end
 
-  def self.stylesheet(filename, header_filename, fn)
+  def self.stylesheet(_filename, _header_filename, fn)
     (fn.nil? || fn.empty?) and
       fn = File.join(File.dirname(__FILE__), "wordstyle.css")
     stylesheet = File.read(fn, encoding: "UTF-8")
