@@ -106,6 +106,7 @@ module Html2Doc
     doc.gsub!(%r{></o:lock>}, "/>")
     doc.gsub!(%r{></v:imagedata>}, "/>")
     doc.gsub!(%r{></w:wrap>}, "/>")
+    doc.gsub!(%r{<(/)?m:(span|em)\b}, "<\\1\\2")
     doc.gsub!(%r{&tab;|&amp;tab;},
               '<span style="mso-tab-count:1">&#xA0; </span>')
     doc.split(%r{(<m:oMath>|</m:oMath>)}).each_slice(4).map do |a|

@@ -74,18 +74,20 @@ module Html2Doc
     math
   end
 
+  HTML_NS = 'xmlns="http://www.w3.org/1999/xhtml"'.freeze
+
   def self.unitalic(math)
     math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'p']]").each do |x|
-      x.wrap("<span style='font-style:normal;'></span>")
+      x.wrap("<span #{HTML_NS} style='font-style:normal;'></span>")
     end
     math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'bi']]").each do |x|
-      x.wrap("<span class='nostem' style='font-weight:bold;'><em></em></span>")
+      x.wrap("<span #{HTML_NS} class='nostem' style='font-weight:bold;'><em></em></span>")
     end
     math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'i']]").each do |x|
-      x.wrap("<span class='nostem'><em></em></span>")
+      x.wrap("<span #{HTML_NS} class='nostem'><em></em></span>")
     end
     math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'b']]").each do |x|
-      x.wrap("<span style='font-style:normal;font-weight:bold;'></span>")
+      x.wrap("<span #{HTML_NS} style='font-style:normal;font-weight:bold;'></span>")
     end
     math.xpath(".//xmlns:r[xmlns:rPr/xmlns:scr[@m:val = 'monospace']]").each do |x|
       to_plane1(x, :monospace)
@@ -138,13 +140,21 @@ module Html2Doc
     end
   end
 
-  def self.mathml_to_ooml1(xml, docnamespaces)
-    doc = Nokogiri::XML::Document::new
-    doc.root = ooxml_cleanup(xml, docnamespaces)
-    ooxml = unitalic(esc_space(@xsltemplate.transform(doc))).to_s
+  # We need span and em not to be namespaced. Word can't deal with explicit 
+  # namespaces.
+  # We will end up stripping them out again under Nokogiri 1.11, which correctly
+  # insists on inheriting namespace from parent.
+  def self.ooml_clean(xml)
+    xml.to_s
       .gsub(/<\?[^>]+>\s*/, "")
       .gsub(/ xmlns(:[^=]+)?="[^"]+"/, "")
       .gsub(%r{<(/)?(?!span)(?!em)([a-z])}, "<\\1m:\\2")
+  end
+
+  def self.mathml_to_ooml1(xml, docnamespaces)
+    doc = Nokogiri::XML::Document::new
+    doc.root = ooxml_cleanup(xml, docnamespaces)
+      ooxml = ooml_clean(unitalic(esc_space(@xsltemplate.transform(doc))))
     ooxml = uncenter(xml, ooxml)
     xml.swap(ooxml)
   end
