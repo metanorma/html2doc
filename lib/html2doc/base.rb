@@ -53,7 +53,7 @@ module Html2Doc
 
   def self.cleanup(docxml, hash)
     namespace(docxml.root)
-    image_cleanup(docxml, hash[:dir1], File.dirname(hash[:filename]))
+    image_cleanup(docxml, hash[:dir1], hash[:imagedir])
     mathml_to_ooml(docxml)
     lists(docxml, hash[:liststyles])
     footnotes(docxml)

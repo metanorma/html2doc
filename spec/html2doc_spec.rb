@@ -565,7 +565,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height, in a file in a subdirectory" do
     simple_body = '<img src="19160-6.png">'
-    Html2Doc.process(html_input(simple_body), filename: "spec/test")
+    Html2Doc.process(html_input(simple_body), filename: "spec/test", imagedir: "spec")
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -577,7 +577,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for width" do
     simple_body = '<img src="spec/19160-7.gif">'
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.process(html_input(simple_body), filename: "test", imagedir: ".")
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/gif})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -589,7 +589,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height" do
     simple_body = '<img src="spec/19160-8.jpg">'
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.process(html_input(simple_body), filename: "test", imagedir: ".")
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/jpeg})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -642,7 +642,7 @@ RSpec.describe Html2Doc do
 
   it "does not move images if they are external URLs" do
     simple_body = '<img src="https://example.com/19160-6.png">'
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.process(html_input(simple_body), filename: "test", imagedir: ".")
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
       #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -653,7 +653,7 @@ RSpec.describe Html2Doc do
 
   it "deals with absolute image locations" do
     simple_body = %{<img src="#{__dir__}/19160-6.png">}
-    Html2Doc.process(html_input(simple_body), filename: "spec/test")
+    Html2Doc.process(html_input(simple_body), filename: "spec/test", imagedir: ".")
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -836,7 +836,7 @@ RSpec.describe Html2Doc do
   it "test image base64 image encoding" do
     simple_body = '<img src="19160-6.png">'
     Html2Doc.process(html_input(simple_body),
-                     filename: "spec/test", debug: true)
+                     filename: "spec/test", debug: true, imagedir: "spec")
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     base64_image = testdoc[/image\/png\n\n(.*?)\n\n----/m, 1].gsub!("\n", "")
     base64_image_basename = testdoc[%r{Content-ID: <([0-9a-z\-]+)\.png}m, 1]
