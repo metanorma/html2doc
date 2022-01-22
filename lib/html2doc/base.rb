@@ -76,6 +76,8 @@ module Html2Doc
       xml = '<!DOCTYPE html SYSTEM
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' + xml
     end
+    xml = xml.gsub(/<!--\s*\[([^]]+)\]>/, "<!-- MSWORD-COMMENT \\1 -->")
+      .gsub(/<!\s*\[endif\]\s*-->/, "<!-- MSWORD-COMMENT-END -->")
     Nokogiri::XML.parse(xml)
   end
 
@@ -85,12 +87,16 @@ module Html2Doc
 
   def self.from_xhtml(xml)
     xml.to_xml.sub(%{ xmlns="http://www.w3.org/1999/xhtml"}, "")
-      .sub(DOCTYPE, "")
-      .gsub(%{ />}, "/>")
+      .sub(DOCTYPE, "").gsub(%{ />}, "/>")
+      .gsub(/<!-- MSWORD-COMMENT (.+?) -->/, "<!--[\\1]>")
+      .gsub(/<!-- MSWORD-COMMENT-END -->/, "<![endif]-->")
+      .gsub("\n--&gt;\n", "\n-->\n")
   end
 
   def self.msword_fix(doc)
     # brain damage in MSWord parser
+    doc.gsub!(%r{<w:DoNotOptimizeForBrowser></w:DoNotOptimizeForBrowser>},
+              "<w:DoNotOptimizeForBrowser/>")
     doc.gsub!(%r{<span style="mso-special-character:footnote"/>},
               '<span style="mso-special-character:footnote"></span>')
     doc.gsub!(%r{<div style="mso-element:footnote-list"></div>},
@@ -116,7 +122,7 @@ module Html2Doc
   end
 
   PRINT_VIEW = <<~XML.freeze
-    <!--[if gte mso 9]>
+
     <xml>
     <w:WordDocument>
     <w:View>Print</w:View>
@@ -124,8 +130,7 @@ module Html2Doc
     <w:DoNotOptimizeForBrowser/>
     </w:WordDocument>
     </xml>
-    <![endif]-->
-    <meta http-equiv=Content-Type content="text/html; charset=utf-8"/>
+    <meta http-equiv='Content-Type' content="text/html; charset=utf-8"/>
   XML
 
   def self.define_head1(docxml, _dir)
@@ -148,12 +153,16 @@ module Html2Doc
     end
   end
 
-  def self.stylesheet(_filename, _header_filename, fn)
-    (fn.nil? || fn.empty?) and
-      fn = File.join(File.dirname(__FILE__), "wordstyle.css")
-    stylesheet = File.read(fn, encoding: "UTF-8")
+  def self.stylesheet(_filename, _header_filename, cssname)
+    (cssname.nil? || cssname.empty?) and
+      cssname = File.join(File.dirname(__FILE__), "wordstyle.css")
+    stylesheet = File.read(cssname, encoding: "UTF-8")
     xml = Nokogiri::XML("<style/>")
-    xml.children.first << Nokogiri::XML::Comment.new(xml, "\n#{stylesheet}\n")
+    #s = Nokogiri::XML::CDATA.new(xml, "\n#{stylesheet}\n")
+    #xml.children.first << Nokogiri::XML::Comment.new(xml, s)
+    xml.children.first << Nokogiri::XML::CDATA
+      .new(xml, "\n<!--\n#{stylesheet}\n-->\n")
+
     xml.root.to_s
   end
 
