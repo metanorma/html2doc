@@ -76,7 +76,7 @@ module Html2Doc
       xml = '<!DOCTYPE html SYSTEM
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' + xml
     end
-    xml = xml.gsub(/<!--\s*\[([^]]+)\]>/, "<!-- MSWORD-COMMENT \\1 -->")
+    xml = xml.gsub(/<!--\s*\[([^\]]+)\]>/, "<!-- MSWORD-COMMENT \\1 -->")
       .gsub(/<!\s*\[endif\]\s*-->/, "<!-- MSWORD-COMMENT-END -->")
     Nokogiri::XML.parse(xml)
   end
