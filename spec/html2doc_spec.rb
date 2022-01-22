@@ -41,7 +41,7 @@ WORD_HDR = <<~HDR.freeze
   Content-Type: text/html; charset="utf-8"
 
   <?xml version="1.0"?>
-  <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]>
+  <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40"><head>
   <xml>
   <w:WordDocument>
   <w:View>Print</w:View>
@@ -49,7 +49,6 @@ WORD_HDR = <<~HDR.freeze
   <w:DoNotOptimizeForBrowser/>
   </w:WordDocument>
   </xml>
-  <![endif]-->
   <meta http-equiv=Content-Type content="text/html; charset=utf-8"/>
 
     <link rel=File-List href="cid:filelist.xml"/>
@@ -278,6 +277,17 @@ RSpec.describe Html2Doc do
     expect(Html2Doc::VERSION).not_to be nil
   end
 
+  it "preserves Word HTML directives" do
+    Html2Doc.process(html_input(%[A<!--[if gte mso 9]>X<![endif]-->B]), filename: "test")
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+      .to match_fuzzy(<<~OUTPUT)
+        #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+        #{word_body(%{A<!--[if gte mso 9]>X<![endif]-->B},
+                   '<div style="mso-element:footnote-list"/>')}
+        #{WORD_FTR1}
+      OUTPUT
+  end
+
   it "processes a blank document" do
     Html2Doc.process(html_input(""), filename: "test")
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
@@ -367,7 +377,8 @@ RSpec.describe Html2Doc do
     File.open("spec/header_img1.html", "w:UTF-8") do |f|
       f.write(
         doc.sub(%r{spec/19160-6.png},
-                File.expand_path(File.join(File.dirname(__FILE__), "19160-6.png"))),
+                File.expand_path(File.join(File.dirname(__FILE__),
+                                           "19160-6.png"))),
       )
     end
     Html2Doc.process(html_input(""),
@@ -565,7 +576,8 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height, in a file in a subdirectory" do
     simple_body = '<img src="19160-6.png">'
-    Html2Doc.process(html_input(simple_body), filename: "spec/test", imagedir: "spec")
+    Html2Doc.process(html_input(simple_body), filename: "spec/test",
+                                              imagedir: "spec")
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -653,7 +665,8 @@ RSpec.describe Html2Doc do
 
   it "deals with absolute image locations" do
     simple_body = %{<img src="#{__dir__}/19160-6.png">}
-    Html2Doc.process(html_input(simple_body), filename: "spec/test", imagedir: ".")
+    Html2Doc.process(html_input(simple_body), filename: "spec/test",
+                                              imagedir: ".")
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
