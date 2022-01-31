@@ -461,7 +461,7 @@ RSpec.describe Html2Doc do
       OUTPUT
   end
 
-  it "unwraps accent in MathML" do
+  it "unwraps and converts accent in MathML" do
     Html2Doc.process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
                                 <mover accent='true'><mrow><mi>p</mi></mrow><mrow><mo>^</mo></mrow></mover>
 </math></div>"), filename: "test", asciimathdelims: ["{{", "}}"])
@@ -469,7 +469,7 @@ RSpec.describe Html2Doc do
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
         #{word_body('<div><m:oMath>
-                <m:acc><m:accPr><m:chr m:val="^"></m:chr></m:accPr><m:e><m:r><m:t>p</m:t></m:r></m:e></m:acc>
+                <m:acc><m:accPr><m:chr m:val="&#x302;"></m:chr></m:accPr><m:e><m:r><m:t>p</m:t></m:r></m:e></m:acc>
                 </m:oMath>
                 </div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
