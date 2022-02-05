@@ -107,12 +107,13 @@ module Html2Doc
   # only processes locally stored images
   def self.image_cleanup(docxml, dir, localdir)
     docxml.traverse do |i|
+      src = i["src"]
       next unless i.element? && %w(img v:imagedata).include?(i.name)
-      next if /^http/.match? i["src"]
-      next if %r{^data:(image|application)/[^;]+;base64}.match? i["src"]
+      next if src.nil? || src.empty? || /^http/.match?(src)
+      next if %r{^data:(image|application)/[^;]+;base64}.match? src
 
-      local_filename = localname(i["src"], localdir)
-      new_filename = "#{mkuuid}#{File.extname(i['src'])}"
+      local_filename = localname(src, localdir)
+      new_filename = "#{mkuuid}#{File.extname(src)}"
       FileUtils.cp local_filename, File.join(dir, new_filename)
       i["width"], i["height"] = image_resize(i, local_filename, 680, 400)
       i["src"] = File.join(File.basename(dir), new_filename)
