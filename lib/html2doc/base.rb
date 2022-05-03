@@ -14,6 +14,7 @@ class Html2Doc
     @imagedir = hash[:imagedir]
     @debug = hash[:debug]
     @liststyles = hash[:liststyles]
+    @stylesheet = hash[:stylesheet]
     @xsltemplate =
       Nokogiri::XSLT(File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"),
                                encoding: "utf-8"))
