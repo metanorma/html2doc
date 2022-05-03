@@ -1,7 +1,7 @@
 require "uuidtools"
 
-module Html2Doc
-  def self.footnotes(docxml)
+class Html2Doc
+  def footnotes(docxml)
     i = 1
     fn = []
     docxml.xpath("//a").each do |a|
@@ -12,7 +12,7 @@ module Html2Doc
     process_footnote_texts(docxml, fn)
   end
 
-  def self.process_footnote_texts(docxml, footnotes)
+  def process_footnote_texts(docxml, footnotes)
     body = docxml.at("//body")
     list = body.add_child("<div style='mso-element:footnote-list'/>")
     footnotes.each_with_index do |f, i|
@@ -23,7 +23,7 @@ module Html2Doc
     footnote_cleanup(docxml)
   end
 
-  def self.footnote_div_to_p(elem)
+  def footnote_div_to_p(elem)
     if %w{div aside}.include? elem.name
       if elem.at(".//p")
         elem.replace(elem.children)
@@ -37,7 +37,7 @@ module Html2Doc
   FN = "<span class='MsoFootnoteReference'>"\
     "<span style='mso-special-character:footnote'/></span>".freeze
 
-  def self.footnote_container(docxml, idx)
+  def footnote_container(docxml, idx)
     ref = docxml&.at("//a[@href='#_ftn#{idx}']")&.children&.to_xml(indent: 0)
       &.gsub(/>\n</, "><") || FN
     <<~DIV
@@ -47,7 +47,7 @@ module Html2Doc
     DIV
   end
 
-  def self.process_footnote_link(docxml, elem, idx, footnote)
+  def process_footnote_link(docxml, elem, idx, footnote)
     return false unless footnote?(elem)
 
     href = elem["href"].gsub(/^#/, "")
@@ -62,7 +62,7 @@ module Html2Doc
     footnote << transform_footnote_text(note)
   end
 
-  def self.process_footnote_link1(elem)
+  def process_footnote_link1(elem)
     elem.children.each do |c|
       if c.name == "span" && c["class"] == "MsoFootnoteReference"
         c.replace(FN)
@@ -72,7 +72,7 @@ module Html2Doc
     end
   end
 
-  def self.transform_footnote_text(note)
+  def transform_footnote_text(note)
     note["id"] = ""
     note.xpath(".//div").each { |div| div.replace(div.children) }
     note.xpath(".//aside | .//p").each do |p|
@@ -82,12 +82,12 @@ module Html2Doc
     note.remove
   end
 
-  def self.footnote?(elem)
+  def footnote?(elem)
     elem["epub:type"]&.casecmp("footnote")&.zero? ||
       elem["class"]&.casecmp("footnote")&.zero?
   end
 
-  def self.set_footnote_link_attrs(elem, idx)
+  def set_footnote_link_attrs(elem, idx)
     elem["style"] = "mso-footnote-id:ftn#{idx}"
     elem["href"] = "#_ftn#{idx}"
     elem["name"] = "_ftnref#{idx}"
@@ -99,7 +99,7 @@ module Html2Doc
   # to p). We do not expect any <a name> or links back to text; if they
   # are present in the HTML, they need to have been cleaned out before
   # passing to this gem
-  def self.footnote_cleanup(docxml)
+  def footnote_cleanup(docxml)
     docxml.xpath('//div[@style="mso-element:footnote"]/a')
       .each do |x|
       n = x.next_element

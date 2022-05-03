@@ -1,3 +1,3 @@
-module Html2Doc
-  VERSION = "1.3.0.1".freeze
+class Html2Doc
+  VERSION = "1.4.0".freeze
 end
