@@ -3,8 +3,8 @@ require "asciimath"
 require "htmlentities"
 require "nokogiri"
 
-module Html2Doc
-  def self.style_list(elem, level, liststyle, listnumber)
+class Html2Doc
+  def style_list(elem, level, liststyle, listnumber)
     return unless liststyle
 
     if elem["style"]
@@ -15,7 +15,7 @@ module Html2Doc
     elem["style"] += "mso-list:#{liststyle} level#{level} lfo#{listnumber};"
   end
 
-  def self.list_add1(elem, liststyles, listtype, level)
+  def list_add1(elem, liststyles, listtype, level)
     if %i[ul ol].include? listtype
       list_add(elem.xpath(".//ul") - elem.xpath(".//ul//ul | .//ol//ul"),
                liststyles, :ul, level + 1)
@@ -29,7 +29,7 @@ module Html2Doc
     end
   end
 
-  def self.list_add(xpath, liststyles, listtype, level)
+  def list_add(xpath, liststyles, listtype, level)
     xpath.each_with_index do |l, _i|
       @listnumber += 1 if level == 1
       l["seen"] = true if level == 1
@@ -46,7 +46,7 @@ module Html2Doc
     end
   end
 
-  def self.list2para(list)
+  def list2para(list)
     return if list.xpath("./li").empty?
 
     list.xpath("./li").first["class"] ||= "MsoListParagraphCxSpFirst"
@@ -63,7 +63,7 @@ module Html2Doc
 
   TOPLIST = "[not(ancestor::ul) and not(ancestor::ol)]".freeze
 
-  def self.lists1(docxml, liststyles, style)
+  def lists1(docxml, liststyles, style)
     case style
     when :ul then list_add(docxml.xpath("//ul[not(@class)]#{TOPLIST}"),
                            liststyles, :ul, 1)
@@ -76,7 +76,7 @@ module Html2Doc
     end
   end
 
-  def self.lists_unstyled(docxml, liststyles)
+  def lists_unstyled(docxml, liststyles)
     liststyles.has_key?(:ul) and
       list_add(docxml.xpath("//ul#{TOPLIST}[not(@seen)]"),
                liststyles, :ul, 1)
@@ -88,7 +88,7 @@ module Html2Doc
     end
   end
 
-  def self.lists(docxml, liststyles)
+  def lists(docxml, liststyles)
     return if liststyles.nil?
 
     @listnumber = 0

@@ -4,8 +4,8 @@ require "mime/types"
 require "image_size"
 require "fileutils"
 
-module Html2Doc
-  def self.mime_preamble(boundary, filename, result)
+class Html2Doc
+  def mime_preamble(boundary, filename, result)
     <<~"PREAMBLE"
       MIME-Version: 1.0
       Content-Type: multipart/related; boundary="#{boundary}"
@@ -20,7 +20,7 @@ module Html2Doc
     PREAMBLE
   end
 
-  def self.mime_attachment(boundary, _filename, item, dir)
+  def mime_attachment(boundary, _filename, item, dir)
     content_type = mime_type(item)
     text_mode = %w[text application].any? { |p| content_type.start_with? p }
 
@@ -40,19 +40,19 @@ module Html2Doc
     FILE
   end
 
-  def self.mime_type(item)
+  def mime_type(item)
     types = MIME::Types.type_for(item)
     type = types ? types.first.to_s : 'text/plain; charset="utf-8"'
     type = %(#{type} charset="utf-8") if /^text/.match(type) && types
     type
   end
 
-  def self.mime_boundary
+  def mime_boundary
     salt = UUIDTools::UUID.random_create.to_s.gsub(/-/, ".")[0..17]
     "----=_NextPart_#{salt}"
   end
 
-  def self.mime_package(result, filename, dir)
+  def mime_package(result, filename, dir)
     boundary = mime_boundary
     mhtml = mime_preamble(boundary, "#{filename}.htm", result)
     mhtml += mime_attachment(boundary, "#{filename}.htm", "filelist.xml", dir)
@@ -66,7 +66,7 @@ module Html2Doc
     File.open("#{filename}.doc", "w:UTF-8") { |f| f.write contentid(mhtml) }
   end
 
-  def self.contentid(mhtml)
+  def contentid(mhtml)
     mhtml.gsub %r{(<img[^>]*?src=")([^\"']+)(['"])}m do |m|
       repl = "#{$1}cid:#{File.basename($2)}#{$3}"
       /^data:|^https?:/.match($2) ? m : repl
@@ -77,7 +77,7 @@ module Html2Doc
   end
 
   # max width for Word document is 400, max height is 680
-  def self.image_resize(img, path, maxheight, maxwidth)
+  def image_resize(img, path, maxheight, maxwidth)
     realsize = ImageSize.path(path).size
     s = [img["width"].to_i, img["height"].to_i]
     s = realsize if s[0].zero? && s[1].zero?
@@ -92,20 +92,20 @@ module Html2Doc
 
   IMAGE_PATH = "//*[local-name() = 'img' or local-name() = 'imagedata']".freeze
 
-  def self.mkuuid
+  def mkuuid
     UUIDTools::UUID.random_create.to_s
   end
 
-  def self.warnsvg(src)
+  def warnsvg(src)
     warn "#{src}: SVG not supported" if /\.svg$/i.match?(src)
   end
 
-  def self.localname(src, localdir)
+  def localname(src, localdir)
     %r{^([A-Z]:)?/}.match?(src) ? src : File.join(localdir, src)
   end
 
   # only processes locally stored images
-  def self.image_cleanup(docxml, dir, localdir)
+  def image_cleanup(docxml, dir, localdir)
     docxml.traverse do |i|
       src = i["src"]
       next unless i.element? && %w(img v:imagedata).include?(i.name)
@@ -123,13 +123,13 @@ module Html2Doc
 
   # do not parse the header through Nokogiri, since it will contain
   # non-XML like <![if !supportFootnotes]>
-  def self.header_image_cleanup(doc, dir, filename, localdir)
+  def header_image_cleanup(doc, dir, filename, localdir)
     doc.split(%r{(<img [^>]*>|<v:imagedata [^>]*>)}).each_slice(2).map do |a|
       header_image_cleanup1(a, dir, filename, localdir)
     end.join
   end
 
-  def self.header_image_cleanup1(a, dir, _filename, localdir)
+  def header_image_cleanup1(a, dir, _filename, localdir)
     if a.size == 2 && !(/ src="https?:/.match a[1]) &&
         !(%r{ src="data:(image|application)/[^;]+;base64}.match a[1])
       m = / src=['"](?<src>[^"']+)['"]/.match a[1]
@@ -141,7 +141,7 @@ module Html2Doc
     a.join
   end
 
-  def self.generate_filelist(filename, dir)
+  def generate_filelist(filename, dir)
     File.open(File.join(dir, "filelist.xml"), "w") do |f|
       f.write %{<xml xmlns:o="urn:schemas-microsoft-com:office:office">
         <o:MainFile HRef="../#{filename}.htm"/>}

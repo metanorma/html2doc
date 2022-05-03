@@ -4,27 +4,40 @@ require "htmlentities"
 require "nokogiri"
 require "fileutils"
 
-module Html2Doc
-  def self.process(result, hash)
-    hash[:dir1] = create_dir(hash[:filename], hash[:dir])
-    result = process_html(result, hash)
-    process_header(hash[:header_file], hash)
-    generate_filelist(hash[:filename], hash[:dir1])
-    File.open("#{hash[:filename]}.htm", "w:UTF-8") { |f| f.write(result) }
-    mime_package result, hash[:filename], hash[:dir1]
-    rm_temp_files(hash[:filename], hash[:dir], hash[:dir1]) unless hash[:debug]
+class Html2Doc
+  def initialize(hash)
+    @filename = hash[:filename]
+    @dir = hash[:dir]
+    @dir1 = create_dir(@filename, @dir)
+    @header_file = hash[:header_file]
+    @asciimathdelims = hash[:asciimathdelims]
+    @imagedir = hash[:imagedir]
+    @debug = hash[:debug]
+    @liststyles = hash[:liststyles]
+    @xsltemplate =
+      Nokogiri::XSLT(File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"),
+                               encoding: "utf-8"))
   end
 
-  def self.process_header(headerfile, hash)
+  def process(result)
+    result = process_html(result)
+    process_header(@header_file)
+    generate_filelist(@filename, @dir1)
+    File.open("#{@filename}.htm", "w:UTF-8") { |f| f.write(result) }
+    mime_package result, @filename, @dir1
+    rm_temp_files(@filename, @dir, @dir1) unless @debug
+  end
+
+  def process_header(headerfile)
     return if headerfile.nil?
 
     doc = File.read(headerfile, encoding: "utf-8")
-    doc = header_image_cleanup(doc, hash[:dir1], hash[:filename],
-                               File.dirname(hash[:filename]))
-    File.open("#{hash[:dir1]}/header.html", "w:UTF-8") { |f| f.write(doc) }
+    doc = header_image_cleanup(doc, @dir1, @filename,
+                               File.dirname(@filename))
+    File.open("#{@dir1}/header.html", "w:UTF-8") { |f| f.write(doc) }
   end
 
-  def self.clear_dir(dir)
+  def clear_dir(dir)
     Dir.foreach(dir) do |f|
       fn = File.join(dir, f)
       File.delete(fn) if f != "." && f != ".."
@@ -32,30 +45,30 @@ module Html2Doc
     dir
   end
 
-  def self.create_dir(filename, dir)
+  def create_dir(filename, dir)
     dir and return clear_dir(dir)
     dir = "#{filename}_files"
     Dir.mkdir(dir) unless File.exists?(dir)
     clear_dir(dir)
   end
 
-  def self.process_html(result, hash)
-    docxml = to_xhtml(asciimath_to_mathml(result, hash[:asciimathdelims]))
-    define_head(cleanup(docxml, hash), hash)
+  def process_html(result)
+    docxml = to_xhtml(asciimath_to_mathml(result, @asciimathdelims))
+    define_head(cleanup(docxml))
     msword_fix(from_xhtml(docxml))
   end
 
-  def self.rm_temp_files(filename, dir, dir1)
+  def rm_temp_files(filename, dir, dir1)
     FileUtils.rm "#{filename}.htm"
     FileUtils.rm_f "#{dir1}/header.html"
     FileUtils.rm_r dir1 unless dir
   end
 
-  def self.cleanup(docxml, hash)
+  def cleanup(docxml)
     namespace(docxml.root)
-    image_cleanup(docxml, hash[:dir1], hash[:imagedir])
+    image_cleanup(docxml, @dir1, @imagedir)
     mathml_to_ooml(docxml)
-    lists(docxml, hash[:liststyles])
+    lists(docxml, @liststyles)
     footnotes(docxml)
     bookmarks(docxml)
     msonormal(docxml)
@@ -70,7 +83,7 @@ module Html2Doc
     <body> </body> </html>
   HERE
 
-  def self.to_xhtml(xml)
+  def to_xhtml(xml)
     xml.gsub!(/<\?xml[^>]*>/, "")
     unless /<!DOCTYPE /.match? xml
       xml = '<!DOCTYPE html SYSTEM
@@ -85,7 +98,7 @@ module Html2Doc
     <!DOCTYPE html SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
   DOCTYPE
 
-  def self.from_xhtml(xml)
+  def from_xhtml(xml)
     xml.to_xml.sub(%{ xmlns="http://www.w3.org/1999/xhtml"}, "")
       .sub(DOCTYPE, "").gsub(%{ />}, "/>")
       .gsub(/<!-- MSWORD-COMMENT (.+?) -->/, "<!--[\\1]>")
@@ -93,7 +106,7 @@ module Html2Doc
       .gsub("\n--&gt;\n", "\n-->\n")
   end
 
-  def self.msword_fix(doc)
+  def msword_fix(doc)
     # brain damage in MSWord parser
     doc.gsub!(%r{<w:DoNotOptimizeForBrowser></w:DoNotOptimizeForBrowser>},
               "<w:DoNotOptimizeForBrowser/>")
@@ -133,7 +146,7 @@ module Html2Doc
     <meta http-equiv='Content-Type' content="text/html; charset=utf-8"/>
   XML
 
-  def self.define_head1(docxml, _dir)
+  def define_head1(docxml, _dir)
     docxml.xpath("//*[local-name() = 'head']").each do |h|
       h.children.first.add_previous_sibling <<~XML
         #{PRINT_VIEW}
@@ -142,7 +155,7 @@ module Html2Doc
     end
   end
 
-  def self.filename_substitute(head, header_filename)
+  def filename_substitute(head, header_filename)
     return if header_filename.nil?
 
     head.xpath(".//*[local-name() = 'style']").each do |s|
@@ -153,30 +166,30 @@ module Html2Doc
     end
   end
 
-  def self.stylesheet(_filename, _header_filename, cssname)
+  def stylesheet(_filename, _header_filename, cssname)
     (cssname.nil? || cssname.empty?) and
       cssname = File.join(File.dirname(__FILE__), "wordstyle.css")
     stylesheet = File.read(cssname, encoding: "UTF-8")
     xml = Nokogiri::XML("<style/>")
-    #s = Nokogiri::XML::CDATA.new(xml, "\n#{stylesheet}\n")
-    #xml.children.first << Nokogiri::XML::Comment.new(xml, s)
+    # s = Nokogiri::XML::CDATA.new(xml, "\n#{stylesheet}\n")
+    # xml.children.first << Nokogiri::XML::Comment.new(xml, s)
     xml.children.first << Nokogiri::XML::CDATA
       .new(xml, "\n<!--\n#{stylesheet}\n-->\n")
 
     xml.root.to_s
   end
 
-  def self.define_head(docxml, hash)
+  def define_head(docxml)
     title = docxml.at("//*[local-name() = 'head']/*[local-name() = 'title']")
     head = docxml.at("//*[local-name() = 'head']")
-    css = stylesheet(hash[:filename], hash[:header_file], hash[:stylesheet])
+    css = stylesheet(@filename, @header_file, @stylesheet)
     add_stylesheet(head, title, css)
-    filename_substitute(head, hash[:header_file])
-    define_head1(docxml, hash[:dir1])
+    filename_substitute(head, @header_file)
+    define_head1(docxml, @dir1)
     rootnamespace(docxml.root)
   end
 
-  def self.add_stylesheet(head, title, css)
+  def add_stylesheet(head, title, css)
     if head.children.empty?
       head.add_child css
     elsif title.nil?
@@ -186,7 +199,7 @@ module Html2Doc
     end
   end
 
-  def self.namespace(root)
+  def namespace(root)
     {
       o: "urn:schemas-microsoft-com:office:office",
       w: "urn:schemas-microsoft-com:office:word",
@@ -195,11 +208,11 @@ module Html2Doc
     }.each { |k, v| root.add_namespace_definition(k.to_s, v) }
   end
 
-  def self.rootnamespace(root)
+  def rootnamespace(root)
     root.add_namespace(nil, "http://www.w3.org/TR/REC-html40")
   end
 
-  def self.bookmarks(docxml)
+  def bookmarks(docxml)
     docxml.xpath("//*[@id][not(@name)][not(@style = 'mso-element:footnote')]")
       .each do |x|
       next if x["id"].empty? ||
@@ -212,7 +225,7 @@ module Html2Doc
     end
   end
 
-  def self.msonormal(docxml)
+  def msonormal(docxml)
     docxml.xpath("//*[local-name() = 'p'][not(self::*[@class])]").each do |p|
       p["class"] = "MsoNormal"
     end

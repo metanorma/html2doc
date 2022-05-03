@@ -76,7 +76,7 @@ WORD_FTR1 = <<~FTR.freeze
   Content-ID: <filelist.xml>
   Content-Disposition: inline; filename="filelist.xml"
   Content-Transfer-Encoding: base64
-  Content-Type: #{Html2Doc::mime_type('filelist.xml')}
+  Content-Type: #{Html2Doc.new({}).mime_type('filelist.xml')}
 
   PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
   ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9ImZp
@@ -90,7 +90,7 @@ WORD_FTR2 = <<~FTR.freeze
   Content-ID: <filelist.xml>
   Content-Disposition: inline; filename="filelist.xml"
   Content-Transfer-Encoding: base64
-  Content-Type: #{Html2Doc::mime_type('filelist.xml')}
+  Content-Type: #{Html2Doc.new({}).mime_type('filelist.xml')}
   PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
   ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9ImZp
   bGVsaXN0LnhtbCIvPgogIDxvOkZpbGUgSFJlZj0iaGVhZGVyLmh0bWwiLz4KPC94bWw+Cg==
@@ -102,7 +102,7 @@ WORD_FTR3 = <<~FTR.freeze
   Content-ID: <filelist.xml>
   Content-Disposition: inline; filename="filelist.xml"
   Content-Transfer-Encoding: base64
-  Content-Type: #{Html2Doc::mime_type('filelist.xml')}
+  Content-Type: #{Html2Doc.new({}).mime_type('filelist.xml')}
 
   PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
   ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9IjFh
@@ -278,18 +278,18 @@ RSpec.describe Html2Doc do
   end
 
   it "preserves Word HTML directives" do
-    Html2Doc.process(html_input(%[A<!--[if gte mso 9]>X<![endif]-->B]), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(%[A<!--[if gte mso 9]>X<![endif]-->B]))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
         #{word_body(%{A<!--[if gte mso 9]>X<![endif]-->B},
-                   '<div style="mso-element:footnote-list"/>')}
+                    '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end
 
   it "processes a blank document" do
-    Html2Doc.process(html_input(""), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(""))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -299,15 +299,15 @@ RSpec.describe Html2Doc do
 
   it "removes any temp files" do
     File.delete("test.doc")
-    Html2Doc.process(html_input(""), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(""))
     expect(File.exist?("test.doc")).to be true
     expect(File.exist?("test.htm")).to be false
     expect(File.exist?("test_files")).to be false
   end
 
   it "processes a stylesheet in an HTML document with a title" do
-    Html2Doc.process(html_input(""),
-                     filename: "test", stylesheet: "lib/html2doc/wordstyle.css")
+    Html2Doc.new(filename: "test", stylesheet: "lib/html2doc/wordstyle.css")
+      .process(html_input(""))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -316,9 +316,11 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a stylesheet in an HTML document without a title" do
-    Html2Doc.process(html_input_no_title(""),
-                     filename: "test", stylesheet: "lib/html2doc/wordstyle.css")
-    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+    Html2Doc.new(filename: "test",
+                 stylesheet: "lib/html2doc/wordstyle.css")
+      .process(html_input_no_title(""))
+    expect(guid_clean(File.read("test.doc",
+                                encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR.sub('<title>blank</title>', '')}
         #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -327,12 +329,14 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a stylesheet in an HTML document with an empty head" do
-    Html2Doc.process(html_input_empty_head(""),
-                     filename: "test", stylesheet: "lib/html2doc/wordstyle.css")
+    Html2Doc.new(filename: "test",
+                 stylesheet: "lib/html2doc/wordstyle.css")
+      .process(html_input_empty_head(""))
     word_hdr_end = WORD_HDR_END
       .sub(%(<meta name="Originator" content="Me"/>\n), "")
       .sub("</style>\n</head>", "</style></head>")
-    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+    expect(guid_clean(File.read("test.doc",
+                                encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR.sub('<title>blank</title>', '')}
         #{DEFAULT_STYLESHEET}
@@ -342,8 +346,9 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a header" do
-    Html2Doc.process(html_input(""),
-                     filename: "test", header_file: "spec/header.html")
+    Html2Doc.new(filename: "test",
+                 header_file: "spec/header.html")
+      .process(html_input(""))
     html = guid_clean(File.read("test.doc", encoding: "utf-8"))
     hdr = Base64.decode64(
       html
@@ -365,8 +370,9 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a header with an image" do
-    Html2Doc.process(html_input(""),
-                     filename: "test", header_file: "spec/header_img.html")
+    Html2Doc.new(filename: "test",
+                 header_file: "spec/header_img.html")
+      .process(html_input(""))
     doc = guid_clean(File.read("test.doc", encoding: "utf-8"))
     expect(doc).to match(%r{Content-Type: image/png})
     expect(doc).to match(%r{iVBORw0KGgoAAAANSUhEUgAAA5cAAAN7CAYAAADRE24cAAAgAElEQVR4XuydB5gUxdaGC65gTogB})
@@ -381,8 +387,9 @@ RSpec.describe Html2Doc do
                                            "19160-6.png"))),
       )
     end
-    Html2Doc.process(html_input(""),
-                     filename: "test", header_file: "spec/header_img1.html")
+    Html2Doc.new(filename: "test",
+                 header_file: "spec/header_img1.html")
+      .process(html_input(""))
     doc = guid_clean(File.read("test.doc", encoding: "utf-8"))
     expect(doc).to match(%r{Content-Type: image/png})
     expect(doc).to match(%r{iVBORw0KGgoAAAANSUhEUgAAA5cAAAN7CAYAAADRE24cAAAgAElEQVR4XuydB5gUxdaGC65gTogB})
@@ -391,7 +398,7 @@ RSpec.describe Html2Doc do
   it "processes a populated document" do
     simple_body = "<h1>Hello word!</h1>
     <div>This is a very simple document</div>"
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -401,9 +408,11 @@ RSpec.describe Html2Doc do
   end
 
   it "processes AsciiMath" do
-    Html2Doc.process(html_input(%[<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2 text("integer"))}}</div>]),
-                     filename: "test", asciimathdelims: ["{{", "}}"])
-    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+    Html2Doc.new(filename: "test",
+                 asciimathdelims: ["{{", "}}"])
+      .process(html_input(%[<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2 text("integer"))}}</div>]))
+    expect(guid_clean(File.read("test.doc",
+                                encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
         #{word_body(%{
@@ -416,8 +425,8 @@ RSpec.describe Html2Doc do
   end
 
   it "processes mstyle" do
-    Html2Doc.process(html_input(%[<div>{{bb (-log_2 (p_u)) bb "BB" bbb "BBB" cc "CC" bcc "BCC" tt "TT" fr "FR" bfr "BFR" sf "SF" bsf "BSFα" sfi "SFI" sfbi "SFBIα" bii "BII" ii "II"}}</div>]),
-                     filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+      .process(html_input(%[<div>{{bb (-log_2 (p_u)) bb "BB" bbb "BBB" cc "CC" bcc "BCC" tt "TT" fr "FR" bfr "BFR" sf "SF" bsf "BSFα" sfi "SFI" sfbi "SFBIα" bii "BII" ii "II"}}</div>]))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -431,8 +440,8 @@ RSpec.describe Html2Doc do
   end
 
   it "processes spaces in AsciiMath" do
-    Html2Doc.process(html_input(%[<div>{{text " integer ")}}</div>]),
-                     filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+      .process(html_input(%[<div>{{text " integer ")}}</div>]))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -446,10 +455,10 @@ RSpec.describe Html2Doc do
   end
 
   it "processes spaces in MathML mtext" do
-    Html2Doc.process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
+    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+      .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
                                 <mrow><mi>H</mi><mtext> original </mtext><mi>J</mi></mrow>
-                                </math></div>"),
-                     filename: "test", asciimathdelims: ["{{", "}}"])
+                                </math></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -462,9 +471,10 @@ RSpec.describe Html2Doc do
   end
 
   it "unwraps and converts accent in MathML" do
-    Html2Doc.process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
+    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+      .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
                                 <mover accent='true'><mrow><mi>p</mi></mrow><mrow><mo>^</mo></mrow></mover>
-</math></div>"), filename: "test", asciimathdelims: ["{{", "}}"])
+</math></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -477,8 +487,8 @@ RSpec.describe Html2Doc do
   end
 
   it "left-aligns AsciiMath" do
-    Html2Doc.process(html_input("<div style='text-align:left;'>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"),
-                     filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+      .process(html_input("<div style='text-align:left;'>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -492,9 +502,11 @@ RSpec.describe Html2Doc do
   end
 
   it "right-aligns AsciiMath" do
-    Html2Doc.process(html_input("<div style='text-align:right;'>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"),
-                     filename: "test", asciimathdelims: ["{{", "}}"])
-    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+    Html2Doc.new(filename: "test",
+                 asciimathdelims: ["{{", "}}"])
+      .process(html_input("<div style='text-align:right;'>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"))
+    expect(guid_clean(File.read("test.doc",
+                                encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
         #{word_body(%{
@@ -509,21 +521,21 @@ RSpec.describe Html2Doc do
   it "raises error in processing of broken AsciiMath" do
     begin
       expect do
-        Html2Doc.process(html_input(%[<div style='text-align:right;'>{{u_c = 6.6"unitsml(kHz)}}</div>]),
-                         filename: "test", asciimathdelims: ["{{", "}}"])
+        Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+          .process(html_input(%[<div style='text-align:right;'>{{u_c = 6.6"unitsml(kHz)}}</div>]))
       end.to output('parsing: u_c = 6.6"unitsml(kHz)').to_stderr
     rescue StandardError
     end
     expect do
-      Html2Doc.process(html_input(%[<div style='text-align:right;'>{{u_c = 6.6"unitsml(kHz)}}</div>]),
-                       filename: "test", asciimathdelims: ["{{", "}}"])
+      Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+        .process(html_input(%[<div style='text-align:right;'>{{u_c = 6.6"unitsml(kHz)}}</div>]))
     end.to raise_error(StandardError)
   end
 
   it "wraps msup after munderover in MathML" do
-    Html2Doc.process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
-<munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi></mrow></munderover><msup><mn>2</mn><mrow><mi>i</mi></mrow></msup></math></div>"),
-                     filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+      .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
+<munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi></mrow></munderover><msup><mn>2</mn><mrow><mi>i</mi></mrow></msup></math></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -537,7 +549,7 @@ RSpec.describe Html2Doc do
   it "processes tabs" do
     simple_body = "<h1>Hello word!</h1>
     <div>This is a very &tab; simple document</div>"
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -550,7 +562,7 @@ RSpec.describe Html2Doc do
     simple_body = '<h1>Hello word!</h1>
     <p>This is a very simple document</p>
     <p class="x">This style stays</p>'
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -565,7 +577,7 @@ RSpec.describe Html2Doc do
     <li>This is a very simple document</li>
     <li class="x">This style stays</li>
     </ul>'
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -576,8 +588,8 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height, in a file in a subdirectory" do
     simple_body = '<img src="19160-6.png">'
-    Html2Doc.process(html_input(simple_body), filename: "spec/test",
-                                              imagedir: "spec")
+    Html2Doc.new(filename: "spec/test", imagedir: "spec")
+      .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -589,7 +601,8 @@ RSpec.describe Html2Doc do
 
   it "resizes images for width" do
     simple_body = '<img src="spec/19160-7.gif">'
-    Html2Doc.process(html_input(simple_body), filename: "test", imagedir: ".")
+    Html2Doc.new(filename: "test", imagedir: ".")
+      .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/gif})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -601,7 +614,8 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height" do
     simple_body = '<img src="spec/19160-8.jpg">'
-    Html2Doc.process(html_input(simple_body), filename: "test", imagedir: ".")
+    Html2Doc.new(filename: "test", imagedir: ".")
+      .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/jpeg})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -613,48 +627,49 @@ RSpec.describe Html2Doc do
 
   it "resizes images with missing or auto sizes" do
     image = { "src" => "spec/19160-8.jpg" }
-    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100))
+    expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [30, 100]
     image["width"] = "20"
-    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100))
+    expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [20, 65]
     image.delete("width")
     image["height"] = "50"
-    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100))
+    expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [15, 50]
     image.delete("height")
     image["width"] = "500"
-    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100))
+    expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [30, 100]
     image.delete("width")
     image["height"] = "500"
-    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100))
+    expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [30, 100]
     image["width"] = "20"
     image["height"] = "auto"
-    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100))
+    expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [20, 65]
     image["width"] = "auto"
     image["height"] = "50"
-    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100))
+    expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [15, 50]
     image["width"] = "500"
     image["height"] = "auto"
-    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100))
+    expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [30, 100]
     image["width"] = "auto"
     image["height"] = "500"
-    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100))
+    expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [30, 100]
     image["width"] = "auto"
     image["height"] = "auto"
-    expect(Html2Doc.image_resize(image, "spec/19160-8.jpg", 100, 100))
+    expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [30, 100]
   end
 
   it "does not move images if they are external URLs" do
     simple_body = '<img src="https://example.com/19160-6.png">'
-    Html2Doc.process(html_input(simple_body), filename: "test", imagedir: ".")
+    Html2Doc.new(filename: "test", imagedir: ".")
+      .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
       #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -665,8 +680,8 @@ RSpec.describe Html2Doc do
 
   it "deals with absolute image locations" do
     simple_body = %{<img src="#{__dir__}/19160-6.png">}
-    Html2Doc.process(html_input(simple_body), filename: "spec/test",
-                                              imagedir: ".")
+    Html2Doc.new(filename: "spec/test", imagedir: ".")
+      .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -687,7 +702,7 @@ RSpec.describe Html2Doc do
      document<a epub:type="footnote" href="#a1">1</a> allegedly<a epub:type="footnote" href="#a2">2</a></div>
      <aside id="a1">Footnote</aside>
      <aside id="a2">Other Footnote</aside>'
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -707,7 +722,7 @@ RSpec.describe Html2Doc do
      document<a class="footnote" href="#a1">1</a> allegedly<a class="footnote" href="#a2">2</a></div>
      <aside id="a1">Footnote</aside>
      <aside id="a2">Other Footnote</aside>'
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -727,7 +742,7 @@ RSpec.describe Html2Doc do
      document<a class="footnote" href="#a1">(<span class="MsoFootnoteReference">1</span>)</a> allegedly<a class="footnote" href="#a2">2</a></div>
      <aside id="a1">Footnote</aside>
      <aside id="a2">Other Footnote</aside>'
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -747,7 +762,7 @@ RSpec.describe Html2Doc do
      document<a class="footnote" href="#a1">1</a> allegedly<a class="footnote" href="#a2">2</a></div>
      <aside id="a1"><p>Footnote</p></aside>
      <div id="a2"><p>Other Footnote</p></div>'
-    Html2Doc.process(html_input(simple_body), filename: "test")
+    Html2Doc.new(filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -767,8 +782,8 @@ RSpec.describe Html2Doc do
       <div><ul id="0">
       <li><div><p><ol id="1"><li><ul id="2"><li><p><ol id="3"><li><ol id="4"><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li><div><ul id="5"><li>C</li></ul></div>
     BODY
-    Html2Doc.process(html_input(simple_body),
-                     filename: "test", liststyles: { ul: "l1", ol: "l2" })
+    Html2Doc.new(filename: "test", liststyles: { ul: "l1", ol: "l2" })
+      .process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -786,8 +801,8 @@ RSpec.describe Html2Doc do
       <ol id="1"><li><div><p><ol id="2"><li><ul id="3"><li><p><ol id="4"><li><ol id="5"><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
       <ol id="6"><li><div><p><ol id="7"><li><ul id="8"><li><p><ol id="9"><li><ol id="10"><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>
     BODY
-    Html2Doc.process(html_input(simple_body),
-                     filename: "test", liststyles: { ul: "l1", ol: "l2" })
+    Html2Doc.new(filename: "test", liststyles: { ul: "l1", ol: "l2" })
+      .process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -808,9 +823,10 @@ RSpec.describe Html2Doc do
       <div><ul class="other" id="10">
       <li><div><p><ol id="11"><li><ul id="12"><li><p><ol id="13"><li><ol id="14"><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
     BODY
-    Html2Doc.process(html_input(simple_body),
-                     filename: "test",
-                     liststyles: { ul: "l1", ol: "l2", steps: "l3" })
+    Html2Doc.new(filename: "test",
+                 liststyles: { ul: "l1", ol: "l2",
+                               steps: "l3" })
+      .process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -832,8 +848,8 @@ RSpec.describe Html2Doc do
         <p id="b"/>
       </div>
     BODY
-    Html2Doc.process(html_input(simple_body),
-                     filename: "test", liststyles: { ul: "l1", ol: "l2" })
+    Html2Doc.new(filename: "test", liststyles: { ul: "l1", ol: "l2" })
+      .process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -848,8 +864,8 @@ RSpec.describe Html2Doc do
 
   it "test image base64 image encoding" do
     simple_body = '<img src="19160-6.png">'
-    Html2Doc.process(html_input(simple_body),
-                     filename: "spec/test", debug: true, imagedir: "spec")
+    Html2Doc.new(filename: "spec/test", debug: true, imagedir: "spec")
+      .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     base64_image = testdoc[/image\/png\n\n(.*?)\n\n----/m, 1].gsub!("\n", "")
     base64_image_basename = testdoc[%r{Content-ID: <([0-9a-z\-]+)\.png}m, 1]
