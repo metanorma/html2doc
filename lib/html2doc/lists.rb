@@ -30,35 +30,46 @@ class Html2Doc
   end
 
   def list_add(xpath, liststyles, listtype, level)
-    xpath.each_with_index do |l, _i|
-      @listnumber += 1 if level == 1
-      l["seen"] = true if level == 1
+    xpath.each do |l|
+      level == 1 and l["seen"] = true and @listnumber += 1
       l["id"] ||= UUIDTools::UUID.random_create
       (l.xpath(".//li") - l.xpath(".//ol//li | .//ul//li")).each do |li|
         style_list(li, level, liststyles[listtype], @listnumber)
         list_add1(li, liststyles, listtype, level)
       end
-      l.xpath(".//ul[not(ancestor::li/ancestor::*/@id = '#{l['id']}')] | "\
-              ".//ol[not(ancestor::li/ancestor::*/@id = '#{l['id']}')]")
-        .each do |li|
-        list_add1(li.parent, liststyles, listtype, level - 1)
-      end
+      list_add_tail(l, liststyles, listtype, level)
+    end
+  end
+
+  def list_add_tail(list, liststyles, listtype, level)
+    list.xpath(".//ul[not(ancestor::li/ancestor::*/@id = '#{list['id']}')] | "\
+               ".//ol[not(ancestor::li/ancestor::*/@id = '#{list['id']}')]")
+      .each do |li|
+      list_add1(li.parent, liststyles, listtype, level - 1)
     end
   end
 
   def list2para(list)
     return if list.xpath("./li").empty?
 
-    list.xpath("./li").first["class"] ||= "MsoListParagraphCxSpFirst"
-    list.xpath("./li").last["class"] ||= "MsoListParagraphCxSpLast"
-    list.xpath("./li/p").each { |p| p["class"] ||= "MsoListParagraphCxSpMiddle" }
+    list2para_position(list)
     list.xpath("./li").each do |l|
       l.name = "p"
       l["class"] ||= "MsoListParagraphCxSpMiddle"
-      l&.first_element_child&.name == "p" and
-        l.first_element_child.replace(l.first_element_child.children)
+      next unless l.first_element_child&.name == "p"
+
+      l["style"] += (l.first_element_child["style"] || "")
+      l.first_element_child.replace(l.first_element_child.children)
     end
     list.replace(list.children)
+  end
+
+  def list2para_position(list)
+    list.xpath("./li").first["class"] ||= "MsoListParagraphCxSpFirst"
+    list.xpath("./li").last["class"] ||= "MsoListParagraphCxSpLast"
+    list.xpath("./li/p").each do |p|
+      p["class"] ||= "MsoListParagraphCxSpMiddle"
+    end
   end
 
   TOPLIST = "[not(ancestor::ul) and not(ancestor::ol)]".freeze
@@ -72,7 +83,7 @@ class Html2Doc
     else
       list_add(docxml.xpath("//ol[@class = '#{style}']#{TOPLIST} | "\
                             "//ul[@class = '#{style}']#{TOPLIST}"),
-      liststyles, style, 1)
+               liststyles, style, 1)
     end
   end
 
