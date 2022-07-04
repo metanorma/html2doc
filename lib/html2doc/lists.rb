@@ -58,6 +58,7 @@ class Html2Doc
       l["class"] ||= "MsoListParagraphCxSpMiddle"
       next unless l.first_element_child&.name == "p"
 
+      l["style"] ||= ""
       l["style"] += (l.first_element_child["style"]&.sub(/mso-list[^;]+;/, "") || "")
       l.first_element_child.replace(l.first_element_child.children)
     end
