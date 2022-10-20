@@ -626,7 +626,7 @@ RSpec.describe Html2Doc do
   end
 
   it "resizes images with missing or auto sizes" do
-    image = { "src" => "spec/19160-8.jpg" }
+    image = Nokogiri::XML("<img src='spec/19160-8.jpg'/>").root
     expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [30, 100]
     image["width"] = "20"
@@ -664,6 +664,12 @@ RSpec.describe Html2Doc do
     image["height"] = "auto"
     expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [30, 100]
+  end
+
+  it "resizes SVG with missing or auto sizes" do
+    image = Nokogiri::XML(File.read("spec/odf.svg")).root
+    Html2Doc.new({}).image_resize(image, "spec/odf.svg", 100, 100)
+    expect(image.to_xml).to match_fuzzy '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"/>'
   end
 
   it "does not move images if they are external URLs" do

@@ -67,27 +67,36 @@ class Html2Doc
   end
 
   def contentid(mhtml)
-    mhtml.gsub %r{(<img[^>]*?src=")([^\"']+)(['"])}m do |m|
+    mhtml.gsub %r{(<img[^>]*?src=")([^"']+)(['"])}m do |m|
       repl = "#{$1}cid:#{File.basename($2)}#{$3}"
-      /^data:|^https?:/.match($2) ? m : repl
-    end.gsub %r{(<v:imagedata[^>]*?src=")([^\"']+)(['"])}m do |m|
+      /^data:|^https?:/ =~ $2 ? m : repl
+    end.gsub %r{(<v:imagedata[^>]*?src=")([^"']+)(['"])}m do |m|
       repl = "#{$1}cid:#{File.basename($2)}#{$3}"
-      /^data:|^https?:/.match($2) ? m : repl
+      /^data:|^https?:/ =~ $2 ? m : repl
     end
   end
 
   # max width for Word document is 400, max height is 680
   def image_resize(img, path, maxheight, maxwidth)
-    realsize = ImageSize.path(path).size
-    s = [img["width"].to_i, img["height"].to_i]
-    s = realsize if s[0].zero? && s[1].zero?
-    return [nil, nil] if realsize.nil? || realsize[0].nil? || realsize[1].nil?
+    s, realsize = get_image_size(img, path)
+    return s if s[0] == nil && s[1] == nil
 
+    if img.name == "svg" && !img["viewBox"]
+      img["viewBox"] = "0 0 #{s[0]} #{s[1]}"
+    end
     s[1] = s[0] * realsize[1] / realsize[0] if s[1].zero? && !s[0].zero?
     s[0] = s[1] * realsize[0] / realsize[1] if s[0].zero? && !s[1].zero?
     s = [(s[0] * maxheight / s[1]).ceil, maxheight] if s[1] > maxheight
     s = [maxwidth, (s[1] * maxwidth / s[0]).ceil] if s[0] > maxwidth
     s
+  end
+
+  def get_image_size(img, path)
+    realsize = ImageSize.path(path).size
+    s = [img["width"].to_i, img["height"].to_i]
+    s = realsize if s[0].zero? && s[1].zero?
+    s = [nil, nil]  if realsize.nil? || realsize[0].nil? || realsize[1].nil?
+    [s, realsize]
   end
 
   IMAGE_PATH = "//*[local-name() = 'img' or local-name() = 'imagedata']".freeze
