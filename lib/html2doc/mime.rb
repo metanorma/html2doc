@@ -92,8 +92,10 @@ class Html2Doc
   end
 
   def get_image_size(img, path)
-    realsize = ImageSize.path(path).size
+    realsize = ImageSize.path(path).size # does not support emf
     s = [img["width"].to_i, img["height"].to_i]
+    return [s, s] if /\.emf$/.match?(path)
+
     s = realsize if s[0].zero? && s[1].zero?
     s = [nil, nil]  if realsize.nil? || realsize[0].nil? || realsize[1].nil?
     [s, realsize]
