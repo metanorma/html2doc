@@ -424,6 +424,17 @@ RSpec.describe Html2Doc do
       OUTPUT
   end
 
+  it "processes AsciiMath retaining asciimath" do
+    input = <<~INPUT
+      abc{{sum_(i=1)^n i^3=((n(n+1))/2)^2 text("integer"))}}def{{x<y}}ghi
+    INPUT
+    x = Html2Doc.new({})
+      .asciimath_to_mathml(input, ["{{", "}}"], retain_asciimath: true)
+    expect(x).to match_fuzzy(<<~OUTPUT)
+      abc<math xmlns='http://www.w3.org/1998/Math/MathML'><munderover><mrow><mo>&#x2211;</mo></mrow><mrow><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow></mrow><mrow><mi>n</mi></mrow></munderover><msup><mrow><mi>i</mi></mrow><mrow><mn>3</mn></mrow></msup><mo>=</mo><msup><mrow><mfenced open="(" close=")"><mrow><mfrac><mrow><mrow><mi>n</mi><mfenced open="(" close=")"><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow></mfenced></mrow></mrow><mrow><mn>2</mn></mrow></mfrac></mrow></mfenced></mrow><mrow><mn>2</mn></mrow></msup><mtext>"integer"</mtext><mo>)</mo></math><asciimath>sum_(i=1)^n i^3=((n(n+1))/2)^2 text(&quot;integer&quot;))</asciimath>def<math xmlns='http://www.w3.org/1998/Math/MathML'><mi>x</mi><mo>&lt;</mo><mi>y</mi></math><asciimath>x&lt;y</asciimath>ghi
+    OUTPUT
+  end
+
   it "processes mstyle" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input(%[<div>{{bb (-log_2 (p_u)) bb "BB" bbb "BBB" cc "CC" bcc "BCC" tt "TT" fr "FR" bfr "BFR" sf "SF" bsf "BSFα" sfi "SFI" sfbi "SFBIα" bii "BII" ii "II"}}</div>]))

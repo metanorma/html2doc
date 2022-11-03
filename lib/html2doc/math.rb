@@ -5,24 +5,26 @@ require "nokogiri"
 require "plane1converter"
 
 class Html2Doc
-  def asciimath_to_mathml1(expr)
-    AsciiMath::MathMLBuilder.new(msword: true).append_expression(
-      AsciiMath.parse(HTMLEntities.new.decode(expr)).ast,
-    ).to_s
-      .gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+  def asciimath_to_mathml1(expr, retain_asciimath)
+    ret = AsciiMath::MathMLBuilder.new(msword: true).append_expression(
+      AsciiMath.parse(@c.decode(expr)).ast,
+    ).to_s.gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+    retain_asciimath and
+      ret += "<asciimath>#{@c.encode(@c.decode(expr), :basic)}</asciimath>"
+    ret
   rescue StandardError => e
     puts "parsing: #{expr}"
     puts e.message
     raise e
   end
 
-  def asciimath_to_mathml(doc, delims)
+  def asciimath_to_mathml(doc, delims, retain_asciimath: false)
     return doc if delims.nil? || delims.size < 2
 
     m = doc.split(/(#{Regexp.escape(delims[0])}|#{Regexp.escape(delims[1])})/)
     m.each_slice(4).map.with_index do |(*a), i|
       progress_conv(i, 500, (m.size / 4).floor, 1000, "AsciiMath")
-      a[2].nil? || a[2] = asciimath_to_mathml1(a[2])
+      a[2].nil? or a[2] = asciimath_to_mathml1(a[2], retain_asciimath)
       a.size > 1 ? a[0] + a[2] : a[0]
     end.join
   end
@@ -122,7 +124,7 @@ class Html2Doc
     xml.traverse do |n|
       next unless n.text?
 
-      n.replace(Plane1Converter.conv(HTMLEntities.new.decode(n.text), font))
+      n.replace(Plane1Converter.conv(@c.decode(n.text), font))
     end
     xml
   end
