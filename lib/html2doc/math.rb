@@ -1,14 +1,16 @@
 require "uuidtools"
-require "asciimath"
+require "plurimath"
 require "htmlentities"
 require "nokogiri"
 require "plane1converter"
 
 class Html2Doc
   def asciimath_to_mathml1(expr)
-    AsciiMath::MathMLBuilder.new(msword: true).append_expression(
-      AsciiMath.parse(HTMLEntities.new.decode(expr)).ast,
-    ).to_s
+    #AsciiMath::MathMLBuilder.new(msword: true).append_expression(
+      #AsciiMath.parse(HTMLEntities.new.decode(expr)).ast,
+    #).to_s
+    warn HTMLEntities.new.decode(expr)
+    Plurimath::Math.parse(HTMLEntities.new.decode(expr), "asciimath").to_mathml
       .gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
   rescue StandardError => e
     puts "parsing: #{expr}"

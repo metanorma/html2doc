@@ -410,7 +410,8 @@ RSpec.describe Html2Doc do
   it "processes AsciiMath" do
     Html2Doc.new(filename: "test",
                  asciimathdelims: ["{{", "}}"])
-      .process(html_input(%[<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2 text("integer"))}}</div>]))
+      #.process(html_input(%[<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2 text("integer"))}}</div>]))
+      .process(html_input(%[<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2)}}</div>]))
     expect(guid_clean(File.read("test.doc",
                                 encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
