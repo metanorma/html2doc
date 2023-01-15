@@ -425,6 +425,17 @@ RSpec.describe Html2Doc do
       OUTPUT
   end
 
+  it "processes AsciiMath retaining asciimath" do
+    input = <<~INPUT
+      abc{{sum_(i=1)^n i^3=((n(n+1))/2)^2 text("integer"))}}def{{x<y}}ghi
+    INPUT
+    x = Html2Doc.new({})
+      .asciimath_to_mathml(input, ["{{", "}}"], retain_asciimath: true)
+    expect(x).to match_fuzzy(<<~OUTPUT)
+      abc<math xmlns='http://www.w3.org/1998/Math/MathML'><munderover><mrow><mo>&#x2211;</mo></mrow><mrow><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow></mrow><mrow><mi>n</mi></mrow></munderover><msup><mrow><mi>i</mi></mrow><mrow><mn>3</mn></mrow></msup><mo>=</mo><msup><mrow><mfenced open="(" close=")"><mrow><mfrac><mrow><mrow><mi>n</mi><mfenced open="(" close=")"><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow></mfenced></mrow></mrow><mrow><mn>2</mn></mrow></mfrac></mrow></mfenced></mrow><mrow><mn>2</mn></mrow></msup><mtext>"integer"</mtext><mo>)</mo></math><asciimath>sum_(i=1)^n i^3=((n(n+1))/2)^2 text(&quot;integer&quot;))</asciimath>def<math xmlns='http://www.w3.org/1998/Math/MathML'><mi>x</mi><mo>&lt;</mo><mi>y</mi></math><asciimath>x&lt;y</asciimath>ghi
+    OUTPUT
+  end
+
   it "processes mstyle" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input(%[<div>{{bb (-log_2 (p_u)) bb "BB" bbb "BBB" cc "CC" bcc "BCC" tt "TT" fr "FR" bfr "BFR" sf "SF" bsf "BSFα" sfi "SFI" sfbi "SFBIα" bii "BII" ii "II"}}</div>]))
@@ -627,7 +638,7 @@ RSpec.describe Html2Doc do
   end
 
   it "resizes images with missing or auto sizes" do
-    image = { "src" => "spec/19160-8.jpg" }
+    image = Nokogiri::XML("<img src='spec/19160-8.jpg'/>").root
     expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [30, 100]
     image["width"] = "20"
@@ -665,6 +676,12 @@ RSpec.describe Html2Doc do
     image["height"] = "auto"
     expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
       .to eq [30, 100]
+  end
+
+  it "resizes SVG with missing or auto sizes" do
+    image = Nokogiri::XML(File.read("spec/odf.svg")).root
+    Html2Doc.new({}).image_resize(image, "spec/odf.svg", 100, 100)
+    expect(image.to_xml).to match_fuzzy '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"/>'
   end
 
   it "does not move images if they are external URLs" do

@@ -15,6 +15,7 @@ class Html2Doc
     @debug = hash[:debug]
     @liststyles = hash[:liststyles]
     @stylesheet = hash[:stylesheet]
+    @c = HTMLEntities.new
     @xsltemplate =
       Nokogiri::XSLT(File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"),
                                encoding: "utf-8"))
@@ -49,7 +50,7 @@ class Html2Doc
   def create_dir(filename, dir)
     dir and return clear_dir(dir)
     dir = "#{filename}_files"
-    Dir.mkdir(dir) unless File.exists?(dir)
+    FileUtils.mkdir_p(dir)
     clear_dir(dir)
   end
 
