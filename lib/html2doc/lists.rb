@@ -1,5 +1,4 @@
 require "uuidtools"
-require "asciimath"
 require "htmlentities"
 require "nokogiri"
 
