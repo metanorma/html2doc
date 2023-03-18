@@ -7,7 +7,7 @@ require "plane1converter"
 class Html2Doc
   def asciimath_to_mathml1(expr, retain_asciimath)
     ret = Plurimath::Math.parse(HTMLEntities.new.decode(expr), "asciimath").to_mathml
-      .gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>")
+      .gsub(/<math>/, "<math xmlns='http://www.w3.org/1998/Math/MathML'>").strip
     retain_asciimath and
       ret += "<asciimath>#{@c.encode(@c.decode(expr), :basic)}</asciimath>"
     ret
