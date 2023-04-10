@@ -31,6 +31,12 @@ def html_input_empty_head(xml)
   HTML
 end
 
+def mock_plurimath_error
+  expect(Plurimath::Math).to receive(:parse) do
+  raise "Syntax error"
+  end.exactly(2).times
+end
+
 WORD_HDR = <<~HDR.freeze
   MIME-Version: 1.0
   Content-Type: multipart/related; boundary="----=_NextPart_"
@@ -573,6 +579,7 @@ RSpec.describe Html2Doc do
   end
 
   it "raises error in processing of broken AsciiMath" do
+    mock_plurimath_error
     begin
       expect do
         Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
