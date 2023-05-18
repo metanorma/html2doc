@@ -168,9 +168,7 @@ class Html2Doc
   end
 
   def stylesheet(_filename, _header_filename, cssname)
-    (cssname.nil? || cssname.empty?) and
-      cssname = File.join(File.dirname(__FILE__), "wordstyle.css")
-    stylesheet = File.read(cssname, encoding: "UTF-8")
+    stylesheet = read_stylesheet(cssname)
     xml = Nokogiri::XML("<style/>")
     # s = Nokogiri::XML::CDATA.new(xml, "\n#{stylesheet}\n")
     # xml.children.first << Nokogiri::XML::Comment.new(xml, s)
@@ -178,6 +176,12 @@ class Html2Doc
       .new(xml, "\n<!--\n#{stylesheet}\n-->\n")
 
     xml.root.to_s
+  end
+
+  def read_stylesheet(cssname)
+    (cssname.nil? || cssname.empty?) and
+      cssname = File.join(File.dirname(__FILE__), "wordstyle.css")
+    File.read(cssname, encoding: "UTF-8")
   end
 
   def define_head(docxml)
