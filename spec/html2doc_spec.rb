@@ -649,40 +649,71 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height, in a file in a subdirectory" do
     simple_body = '<img src="19160-6.png">'
-    Html2Doc.new(filename: "spec/test", imagedir: "spec")
+    Html2Doc.new(filename: "spec/test", imagedir: "spec", stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
-    expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
-      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>'))}
-      #{image_clean(WORD_FTR3)}
+    expect(image_clean(guid_clean(testdoc))
+      .sub(/^.*<body/m, "<body")
+      .sub(%r{</body>.*$}m, "</body>")
+    ).to match_fuzzy(<<~OUTPUT)
+      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
     OUTPUT
   end
 
   it "resizes images for width" do
     simple_body = '<img src="spec/19160-7.gif">'
-    Html2Doc.new(filename: "test", imagedir: ".")
+    Html2Doc.new(filename: "test", imagedir: ".", stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/gif})
-    expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
-      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>'))}
-      #{image_clean(WORD_FTR3).gsub(/image\.png/, 'image.gif')}
+    expect(image_clean(guid_clean(testdoc))
+      .sub(/^.*<body/m, "<body")
+      .sub(%r{</body>.*$}m, "</body>")
+    ).to match_fuzzy(<<~OUTPUT)
+      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
     OUTPUT
   end
 
   it "resizes images for height" do
     simple_body = '<img src="spec/19160-8.jpg">'
-    Html2Doc.new(filename: "test", imagedir: ".")
+    Html2Doc.new(filename: "test", imagedir: ".", stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/jpeg})
-    expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
-      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>'))}
-      #{image_clean(WORD_FTR3).gsub(/image\.png/, 'image.jpg')}
+    expect(image_clean(guid_clean(testdoc))
+      .sub(/^.*<body/m, "<body")
+      .sub(%r{</body>.*$}m, "</body>")
+    ).to match_fuzzy(<<~OUTPUT)
+      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
+    OUTPUT
+  end
+
+  it "resizes images for width with custom page size" do
+    simple_body = '<img src="spec/19160-7.gif">'
+    Html2Doc.new(filename: "test", imagedir: ".", stylesheet: "spec/wordstyle-custom.css")
+      .process(html_input(simple_body))
+    testdoc = File.read("test.doc", encoding: "utf-8")
+    expect(testdoc).to match(%r{Content-Type: image/gif})
+    expect(image_clean(guid_clean(testdoc))
+      .sub(/^.*<body/m, "<body")
+      .sub(%r{</body>.*$}m, "</body>")
+    ).to match_fuzzy(<<~OUTPUT)
+      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
+    OUTPUT
+  end
+
+  it "resizes images for height with custom page size" do
+    simple_body = '<img src="spec/19160-8.jpg">'
+    Html2Doc.new(filename: "test", imagedir: ".", stylesheet: "spec/wordstyle-custom.css")
+      .process(html_input(simple_body))
+    testdoc = File.read("test.doc", encoding: "utf-8")
+    expect(testdoc).to match(%r{Content-Type: image/jpeg})
+    expect(image_clean(guid_clean(testdoc))
+      .sub(/^.*<body/m, "<body")
+      .sub(%r{</body>.*$}m, "</body>")
+    ).to match_fuzzy(<<~OUTPUT)
+      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
     OUTPUT
   end
 
@@ -747,14 +778,15 @@ RSpec.describe Html2Doc do
 
   it "deals with absolute image locations" do
     simple_body = %{<img src="#{__dir__}/19160-6.png">}
-    Html2Doc.new(filename: "spec/test", imagedir: ".")
+    Html2Doc.new(filename: "spec/test", imagedir: ".", stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
-    expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
-      #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>'))}
-      #{image_clean(WORD_FTR3)}
+    expect(image_clean(guid_clean(testdoc))
+      .sub(/^.*<body/m, "<body")
+      .sub(%r{</body>.*$}m, "</body>")
+    ).to match_fuzzy(<<~OUTPUT)
+      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
     OUTPUT
   end
 

@@ -76,7 +76,6 @@ class Html2Doc
     end
   end
 
-  # max width for Word document is 400, max height is 680
   def image_resize(img, path, maxheight, maxwidth)
     s, realsize = get_image_size(img, path)
     return s if s[0] == nil && s[1] == nil
@@ -115,19 +114,87 @@ class Html2Doc
 
   # only processes locally stored images
   def image_cleanup(docxml, dir, localdir)
+    maxheight, maxwidth = page_dimensions(docxml)
     docxml.traverse do |i|
-      src = i["src"]
-      next unless i.element? && %w(img v:imagedata).include?(i.name)
-      next if src.nil? || src.empty? || /^http/.match?(src)
-      next if %r{^data:(image|application)/[^;]+;base64}.match? src
-
-      local_filename = localname(src, localdir)
-      new_filename = "#{mkuuid}#{File.extname(src)}"
-      FileUtils.cp local_filename, File.join(dir, new_filename)
-      i["width"], i["height"] = image_resize(i, local_filename, 680, 400)
-      i["src"] = File.join(File.basename(dir), new_filename)
+      skip_image_cleanup?(i) and next
+      local_filename = rename_image(i, dir, localdir)
+      i["width"], i["height"] = image_resize(i, local_filename, maxheight,
+                                             maxwidth)
     end
     docxml
+  end
+
+  def rename_image(img, dir, localdir)
+    local_filename = localname(img["src"], localdir)
+    new_filename = "#{mkuuid}#{File.extname(img['src'])}"
+    FileUtils.cp local_filename, File.join(dir, new_filename)
+    img["src"] = File.join(File.basename(dir), new_filename)
+    local_filename
+  end
+
+  def skip_image_cleanup?(img)
+    src = img["src"]
+    return true unless img.element? && %w(img v:imagedata).include?(img.name)
+    return true if src.nil? || src.empty? || /^http/.match?(src) ||
+      %r{^data:(image|application)/[^;]+;base64}.match?(src)
+
+    false
+  end
+
+  # we are going to use the 2nd instance of @page in the Word CSS,
+  # skipping the cover page. Currently doesn't deal with Landscape.
+  # Scan both @stylesheet and docxml.to_xml (where @standardstylesheet has ended up)
+  # Allow 0.9 * height to fit caption
+  def page_dimensions(docxml)
+    stylesheet = read_stylesheet(@stylesheet)
+    page_size = find_page_size_in_doc(stylesheet, docxml.to_xml) or
+      return [680, 400]
+    m_size = /size:\s*(\S+)\s+(\S+)\s*;/.match(page_size) or return [680, 400]
+    m_marg = /margin:\s*(\S+)\s+(\S+)\s*(\S+)\s*(\S+)\s*;/.match(page_size) or
+      return [680, 400]
+    [0.9 * (units_to_px(m_size[2]) - units_to_px(m_marg[1]) - units_to_px(m_marg[3])),
+     units_to_px(m_size[1]) - units_to_px(m_marg[2]) - units_to_px(m_marg[4])]
+  rescue StandardError
+    [680, 400]
+  end
+
+  def find_page_size_in_doc(stylesheet, doc)
+    find_page_size(stylesheet, "WordSection2", false) ||
+      find_page_size(stylesheet, "WordSection3", false) ||
+      find_page_size(doc, "WordSection2", true) ||
+      find_page_size(doc, "WordSection3", true) ||
+      find_page_size(stylesheet, "", false) || find_page_size(doc, "", true)
+  end
+
+  # if in_xml, CSS is embedded in XML <style> tag
+  def find_page_size(stylesheet, klass, in_xml)
+    xml_found = false
+    found = false
+    ret = ""
+    stylesheet&.lines&.each do |l|
+      in_xml && l.include?("<style") and xml_found = true and found = false
+      in_xml && l.include?("</style>") and xml_found = false
+      /^\s*@page\s+#{klass}/.match?(l) and found = true
+      found && /^\s*\{?size:/.match?(l) and ret += l
+      found && /^\s*\{?margin:/.match?(l) and ret += l
+      if found && /}/.match?(l)
+        !ret.blank? && (!in_xml || xml_found) and return ret
+        ret = ""
+        found = false
+      end
+    end
+    nil
+  end
+
+  def units_to_px(measure)
+    m = /^(\S+)(pt|cm)/.match(measure)
+    ret = case m[2]
+          when "px" then (m[1].to_f * 0.75)
+          when "pt" then m[1].to_f
+          when "cm" then (m[1].to_f * 28.346456693)
+          when "in" then (m[1].to_f * 72)
+          end
+    ret.to_i
   end
 
   # do not parse the header through Nokogiri, since it will contain
