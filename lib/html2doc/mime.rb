@@ -78,8 +78,7 @@ class Html2Doc
 
   def image_resize(img, path, maxheight, maxwidth)
     s, realsize = get_image_size(img, path)
-    return s if s[0] == nil && s[1] == nil
-
+    s[0] == nil && s[1] == nil and return s
     if img.name == "svg" && !img["viewBox"]
       img["viewBox"] = "0 0 #{s[0]} #{s[1]}"
     end
@@ -118,10 +117,22 @@ class Html2Doc
     docxml.traverse do |i|
       skip_image_cleanup?(i) and next
       local_filename = rename_image(i, dir, localdir)
-      i["width"], i["height"] = image_resize(i, local_filename, maxheight,
-                                             maxwidth)
+      i["width"], i["height"] =
+        if landscape?(i)
+          image_resize(i, local_filename, maxwidth, maxheight)
+        else
+          image_resize(i, local_filename, maxheight, maxwidth)
+        end
     end
     docxml
+  end
+
+  def landscape?(img)
+    img.ancestors.each do |a|
+      a.name == "div" or next
+      @landscape.include?(a["class"]) and return true
+    end
+    false
   end
 
   def rename_image(img, dir, localdir)
@@ -134,10 +145,9 @@ class Html2Doc
 
   def skip_image_cleanup?(img)
     src = img["src"]
-    return true unless img.element? && %w(img v:imagedata).include?(img.name)
-    return true if src.nil? || src.empty? || /^http/.match?(src) ||
-      %r{^data:(image|application)/[^;]+;base64}.match?(src)
-
+    (img.element? && %w(img v:imagedata).include?(img.name)) or return true
+    (src.nil? || src.empty? || /^http/.match?(src) ||
+      %r{^data:(image|application)/[^;]+;base64}.match?(src)) and return true
     false
   end
 
@@ -222,8 +232,7 @@ class Html2Doc
       f.write %{<xml xmlns:o="urn:schemas-microsoft-com:office:office">
         <o:MainFile HRef="../#{filename}.htm"/>}
       Dir.entries(dir).sort.each do |item|
-        next if item == "." || item == ".." || /^\./.match(item)
-
+        (item == "." || item == ".." || /^\./.match(item)) and next
         f.write %{  <o:File HRef="#{item}"/>\n}
       end
       f.write("</xml>\n")

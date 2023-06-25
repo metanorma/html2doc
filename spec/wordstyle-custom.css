@@ -996,3 +996,11 @@ br.section
 br.pagebreak
     {page-break-before:always;
     mso-special-character:line-break;}
+
+div.WordSection1 {
+  page: WordSection1; }
+
+div.WordSectionA {
+  page: WordSection1L; }
+
+
