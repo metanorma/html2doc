@@ -717,6 +717,23 @@ RSpec.describe Html2Doc do
     OUTPUT
   end
 
+  it "resizes images for height with landscape page" do
+    simple_body = <<~DIV
+      <div class="WordSection1"><div class="figure"><img src="spec/19160-8.jpg"></div></div>
+      <div class="WordSectionA"><div class="figure"><img src="spec/19160-8.jpg"></div></div>
+    DIV
+    Html2Doc.new(filename: "test", imagedir: ".", stylesheet: "spec/wordstyle-custom.css")
+      .process(html_input(simple_body))
+    testdoc = File.read("test.doc", encoding: "utf-8")
+    expect(testdoc).to match(%r{Content-Type: image/jpeg})
+    expect(image_clean(guid_clean(testdoc))
+      .sub(/^.*<body/m, "<body")
+      .sub(%r{</body>.*$}m, "</body>")
+    ).to match_fuzzy(<<~OUTPUT)
+      #{image_clean(word_body(%{<div class="WordSection1"><div class="figure"><img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"/></div>\n<div class="WordSectionA"><div class="figure"><img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="122" height="400"/></div>\n</div></div>}, '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
+    OUTPUT
+  end
+
   it "resizes images with missing or auto sizes" do
     image = Nokogiri::XML("<img src='spec/19160-8.jpg'/>").root
     expect(Html2Doc.new({}).image_resize(image, "spec/19160-8.jpg", 100, 100))
