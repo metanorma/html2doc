@@ -413,82 +413,9 @@ RSpec.describe Html2Doc do
       OUTPUT
   end
 
-  it "processes AsciiMath" do
-    Html2Doc.new(filename: "test",
-                 asciimathdelims: ["{{", "}}"])
-      #.process(html_input(%[<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2 text("integer"))}}</div>]))
-      .process(html_input(%[<div>{{sum_(i=1)^n i^3=((n(n+1))/2)^2)}}</div>]))
-    expect(guid_clean(File.read("test.doc",
-                                encoding: "utf-8")))
-      .to match_fuzzy(<<~OUTPUT)
-        #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body(%{<div><m:oMath>
-<m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup></m:e></m:nary><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>=</m:t></m:r></span><m:sSup><m:e><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>(</m:t></m:r></span><m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num><m:r><m:t>n</m:t></m:r><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>(</m:t></m:r></span><m:r><m:t>n+1)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>)</m:t></m:r></span></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>)</m:t></m:r></span>
-</m:oMath>
-</div>}, '<div style="mso-element:footnote-list"/>')}
-        #{WORD_FTR1}
-      OUTPUT
-  end
-
-  it "processes AsciiMath retaining asciimath" do
-    input = <<~INPUT
-      abc{{sum_(i=1)^n i^3=((n(n+1))/2)^2 text("integer"))}}def{{x<y}}ghi
-    INPUT
-    x = Html2Doc.new({})
-      .asciimath_to_mathml(input, ["{{", "}}"], retain_asciimath: true)
-    expect(x).to match_fuzzy(<<~OUTPUT)
-    abc<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-<mstyle displaystyle="true">
-<munderover>
-<mo>&#x2211;</mo>
-<mrow>
-<mi>i</mi>
-<mo>=</mo>
-<mn>1</mn>
-</mrow>
-<mi>n</mi>
-</munderover>
-<msup>
-<mi>i</mi>
-<mn>3</mn>
-</msup>
-<mo>=</mo>
-<msup>
-<mrow>
-<mo>(</mo>
-<mfrac>
-<mrow>
-<mi>n</mi>
-<mrow>
-<mo>(</mo>
-<mi>n</mi>
-<mo>+</mo>
-<mn>1</mn>
-<mo>)</mo>
-</mrow>
-</mrow>
-<mn>2</mn>
-</mfrac>
-<mo>)</mo>
-</mrow>
-<mn>2</mn>
-</msup>
-<mtext>"integer"</mtext>
-<mo>)</mo>
-</mstyle>
-</math><asciimath>sum_(i=1)^n i^3=((n(n+1))/2)^2 text(&quot;integer&quot;))</asciimath>def<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-<mstyle displaystyle="true">
-<mi>x</mi>
-<mo>&#x3c;</mo>
-<mi>y</mi>
-</mstyle>
-</math><asciimath>x&lt;y</asciimath>ghi
-    OUTPUT
-  end
-
   it "processes mstyle" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-      .process(html_input(%[<div>{{bb (-log_2 (p_u)) bb "BB" bbb "BBB" cc "CC" bcc "BCC" tt "TT" fr "FR" bfr "BFR" sf "SF" bsf "BSFα" sfi "SFI" sfbi "SFBIα" bii "BII" ii "II"}}</div>]))
+      .process(html_input(%[<div><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mstyle displaystyle=\"true\">\n    <mstyle mathvariant=\"bold\">\n      <mrow>\n        <mo>&#x2212;</mo>\n        <msubsup>\n          <mi>log</mi>\n          <mn>2</mn>\n        </msubsup>\n        <mrow>\n          <mo>(</mo>\n          <msub>\n            <mi>p</mi>\n            <mi>u</mi>\n          </msub>\n          <mo>)</mo>\n        </mrow>\n      </mrow>\n    </mstyle>\n    <mstyle mathvariant=\"bold\">\n      <mtext>BB</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"double-struck\">\n      <mtext>BBB</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"script\">\n      <mtext>CC</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant=\"script\">\n      <mtext>BCC</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"monospace\">\n      <mtext>TT</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"fraktur\">\n      <mtext>FR</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant=\"fraktur\">\n      <mtext>BFR</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"sans-serif\">\n      <mtext>SF</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant=\"sans-serif\">\n      <mtext>BSFα</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"sans-serif\">\n      <mi>i</mi>\n    </mstyle>\n    <mtext>SFI</mtext>\n    <mstyle mathvariant=\"sans-serif\">\n      <mi>b</mi>\n    </mstyle>\n    <mi>i</mi>\n    <mtext>SFBIα</mtext>\n    <mi>b</mi>\n    <mstyle mathvariant=\"italic\">\n      <mtext>BII</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"italic\">\n      <mtext>II</mtext>\n    </mstyle>\n  </mstyle>\n</math></div>]))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -497,21 +424,6 @@ RSpec.describe Html2Doc do
 <span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x2212;</m:t></m:r></span><m:sSubSup><m:e><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>log</m:t></m:r></span></m:e><m:sub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>2</m:t></m:r></span></m:sub><m:sup></m:sup></m:sSubSup><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>(</m:t></m:r></span><m:sSub><m:e><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>p</m:t></m:r></span></m:e><m:sub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>u</m:t></m:r></span></m:sub></m:sSub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>)</m:t></m:r></span><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:nor></m:nor><m:sty m:val="b"></m:sty></m:rPr><m:t>BB</m:t></m:r></span><m:r><m:rPr><m:nor></m:nor><m:scr m:val="double-struck"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D539;&#x1D539;&#x1D539;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="script"></m:scr></m:rPr><m:t>&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="script"></m:scr></m:rPr><m:t>&#x212C;&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="monospace"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D683;&#x1D683;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D509;&#x211C;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D505;&#x1D509;&#x211C;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5B2;&#x1D5A5;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5A1;&#x1D5B2;&#x1D5A5;&#x3B1;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5C2;</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>SFI</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5BB;</m:t></m:r><m:r><m:t>i</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>SFBI&#x3B1;</m:t></m:r><m:r><m:t>b</m:t></m:r><span class="nostem"><em></em><m:r><m:rPr><m:nor></m:nor><m:sty m:val="i"></m:sty></m:rPr><m:t>BII</m:t></m:r></span><span class="nostem"><em></em><m:r><m:rPr><m:nor></m:nor><m:sty m:val="i"></m:sty></m:rPr><m:t>II</m:t></m:r></span>
 </m:oMath>
 </div>}, '<div style="mso-element:footnote-list"/>')}
-        #{WORD_FTR1}
-      OUTPUT
-  end
-
-  it "processes spaces in AsciiMath" do
-    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-      .process(html_input(%[<div>{{text(" integer ")}}</div>]))
-    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
-      .to match_fuzzy(<<~OUTPUT)
-        #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body('
-<div><m:oMath>
-<m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>" integer "</m:t></m:r>
-</m:oMath>
-</div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end
@@ -546,51 +458,6 @@ RSpec.describe Html2Doc do
                 </div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
-  end
-
-  it "left-aligns AsciiMath" do
-    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-      .process(html_input("<div style='text-align:left;'>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"))
-    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
-      .to match_fuzzy(<<~OUTPUT)
-        #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body(%{<div style="text-align:left;"><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
-<m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup></m:e></m:nary><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>=</m:t></m:r></span><m:sSup><m:e><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>(</m:t></m:r></span><m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num><m:r><m:t>n</m:t></m:r><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>(</m:t></m:r></span><m:r><m:t>n+1)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>)</m:t></m:r></span></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>
-</m:oMath>
-</m:oMathPara></div>}, '<div style="mso-element:footnote-list"/>')}
-        #{WORD_FTR1}
-      OUTPUT
-  end
-
-  it "right-aligns AsciiMath" do
-    Html2Doc.new(filename: "test",
-                 asciimathdelims: ["{{", "}}"])
-      .process(html_input("<div style='text-align:right;'>{{sum_(i=1)^n i^3=((n(n+1))/2)^2}}</div>"))
-    expect(guid_clean(File.read("test.doc",
-                                encoding: "utf-8")))
-      .to match_fuzzy(<<~OUTPUT)
-        #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body(%{<div style="text-align:right;"><m:oMathPara><m:oMathParaPr><m:jc m:val="right"/></m:oMathParaPr><m:oMath>
-<m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>i</m:t></m:r></m:e><m:sup><m:r><m:t>3</m:t></m:r></m:sup></m:sSup></m:e></m:nary><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>=</m:t></m:r></span><m:sSup><m:e><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>(</m:t></m:r></span><m:f><m:fPr><m:type m:val="bar"></m:type></m:fPr><m:num><m:r><m:t>n</m:t></m:r><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>(</m:t></m:r></span><m:r><m:t>n+1)</m:t></m:r></m:num><m:den><m:r><m:t>2</m:t></m:r></m:den></m:f><span style="font-style:normal;"><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t>)</m:t></m:r></span></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>
-</m:oMath>
-</m:oMathPara></div>}, '<div style="mso-element:footnote-list"/>')}
-        #{WORD_FTR1}
-      OUTPUT
-  end
-
-  it "raises error in processing of broken AsciiMath" do
-    mock_plurimath_error
-    begin
-      expect do
-        Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-          .process(html_input(%[<div style='text-align:right;'>{{u_c = 6.6"unitsml(kHz)}}</div>]))
-      end.to output('parsing: u_c = 6.6"unitsml(kHz)').to_stderr
-    rescue StandardError
-    end
-    expect do
-      Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-        .process(html_input(%[<div style='text-align:right;'>{{u_c = 6.6"unitsml(kHz)}}</div>]))
-    end.to raise_error(StandardError)
   end
 
   it "wraps msup after munderover in MathML" do

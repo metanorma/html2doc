@@ -53,7 +53,7 @@ class Html2Doc
   end
 
   def process_html(result)
-    docxml = to_xhtml(asciimath_to_mathml(result, @asciimathdelims))
+    docxml = to_xhtml(result)
     define_head(cleanup(docxml))
     msword_fix(from_xhtml(docxml))
   end
