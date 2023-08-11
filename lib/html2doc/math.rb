@@ -3,6 +3,20 @@ require "plurimath"
 require "htmlentities"
 require "nokogiri"
 require "plane1converter"
+require "metanorma-utils"
+
+module Nokogiri
+  module XML
+    class Node
+      OOXML_NS = "http://schemas.openxmlformats.org/officeDocument/2006/".freeze
+
+      def ooxml_xpath(path)
+        p = Metanorma::Utils::ns(path).gsub("xmlns:", "m:")
+        xpath(p, "m" => OOXML_NS)
+      end
+    end
+  end
+end
 
 class Html2Doc
   def progress_conv(idx, step, total, threshold, msg)
@@ -22,7 +36,7 @@ class Html2Doc
 
   # random fixes to MathML input that OOXML needs to render properly
   def ooxml_cleanup(math, docnamespaces)
-    math = unwrap_accents(
+    unwrap_accents(
       mathml_preserve_space(
         mathml_insert_rows(math, docnamespaces), docnamespaces
       ),
@@ -51,46 +65,46 @@ class Html2Doc
   HTML_NS = 'xmlns="http://www.w3.org/1999/xhtml"'.freeze
 
   def unitalic(math)
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'p']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(scr)]/sty[@m:val = 'p']]").each do |x|
       x.wrap("<span #{HTML_NS} style='font-style:normal;'></span>")
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'bi']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(scr)]/sty[@m:val = 'bi']]").each do |x|
       x.wrap("<span #{HTML_NS} class='nostem' style='font-weight:bold;'><em></em></span>")
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'i']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(scr)]/sty[@m:val = 'i']]").each do |x|
       x.wrap("<span #{HTML_NS} class='nostem'><em></em></span>")
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'b']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(scr)]/sty[@m:val = 'b']]").each do |x|
       x.wrap("<span #{HTML_NS} style='font-style:normal;font-weight:bold;'></span>")
     end
-    math.xpath(".//xmlns:r[xmlns:rPr/xmlns:scr[@m:val = 'monospace']]").each do |x|
+    math.ooxml_xpath(".//r[rPr/scr[@m:val = 'monospace']]").each do |x|
       to_plane1(x, :monospace)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr/xmlns:scr[@m:val = 'double-struck']]").each do |x|
+    math.ooxml_xpath(".//r[rPr/scr[@m:val = 'double-struck']]").each do |x|
       to_plane1(x, :doublestruck)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:sty) or xmlns:sty/@m:val = 'p']/xmlns:scr[@m:val = 'script']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(sty) or sty/@m:val = 'p']/scr[@m:val = 'script']]").each do |x|
       to_plane1(x, :script)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'b']/xmlns:scr[@m:val = 'script']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[sty/@m:val = 'b']/scr[@m:val = 'script']]").each do |x|
       to_plane1(x, :scriptbold)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:sty) or xmlns:sty/@m:val = 'p']/xmlns:scr[@m:val = 'fraktur']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(sty) or sty/@m:val = 'p']/scr[@m:val = 'fraktur']]").each do |x|
       to_plane1(x, :fraktur)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'b']/xmlns:scr[@m:val = 'fraktur']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[sty/@m:val = 'b']/scr[@m:val = 'fraktur']]").each do |x|
       to_plane1(x, :frakturbold)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:sty) or xmlns:sty/@m:val = 'p']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(sty) or sty/@m:val = 'p']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sans)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'b']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[sty/@m:val = 'b']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sansbold)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'i']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[sty/@m:val = 'i']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sansitalic)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'bi']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[sty/@m:val = 'bi']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sansbolditalic)
     end
     math
@@ -122,19 +136,24 @@ class Html2Doc
     xml.to_s
       .gsub(/<\?[^>]+>\s*/, "")
       .gsub(/ xmlns(:[^=]+)?="[^"]+"/, "")
-      .gsub(%r{<(/)?(?!span)(?!em)([a-z])}, "<\\1m:\\2")
+      .gsub(/<\/?m:oMathPara>/, "")
+      #.gsub(%r{<(/)?(?!span)(?!em)([a-z])}, "<\\1m:\\2")
   end
 
   def mathml_to_ooml1(xml, docnamespaces)
     doc = Nokogiri::XML::Document::new
     doc.root = ooxml_cleanup(xml, docnamespaces)
-    ooxml = ooml_clean(unitalic(esc_space(accent_tr(@xsltemplate.transform(doc)))))
+    # ooxml = @xsltemplate.transform(doc)
+    d = xml.parent["block"] != "false" # display_style
+    ooxml = Nokogiri::XML(Plurimath::Math.parse(doc.to_xml, :mathml)
+      .to_omml)
+    ooxml = ooml_clean(unitalic(esc_space(accent_tr(ooxml))))
     ooxml = uncenter(xml, ooxml)
     xml.swap(ooxml)
   end
 
   def accent_tr(xml)
-    xml.xpath(".//*[local-name()='accPr']/*[local-name()='chr']").each do |x|
+    xml.ooxml_xpath(".//accPr/chr").each do |x|
       x["m:val"] &&= accent_tr1(x["m:val"])
       x["val"] &&= accent_tr1(x["val"])
     end
@@ -164,13 +183,13 @@ class Html2Doc
   # if oomml has no siblings, by default it is centered; override this with
   # left/right if parent is so tagged
   def uncenter(math, ooxml)
-    alignnode = math.at(".//ancestor::*[@style][local-name() = 'p' or "\
+    alignnode = math.at(".//ancestor::*[@style][local-name() = 'p' or " \
                         "local-name() = 'div' or local-name() = 'td']/@style")
     return ooxml unless alignnode && (math.next == nil && math.previous == nil)
 
     %w(left right).each do |dir|
       if alignnode.text.include? ("text-align:#{dir}")
-        ooxml = "<m:oMathPara><m:oMathParaPr><m:jc "\
+        ooxml = "<m:oMathPara><m:oMathParaPr><m:jc " \
                 "m:val='#{dir}'/></m:oMathParaPr>#{ooxml}</m:oMathPara>"
       end
     end

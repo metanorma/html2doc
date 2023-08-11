@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "htmlentities", "~> 4.3.4"
   spec.add_dependency "image_size", ">= 3.2.0"
+  spec.add_dependency "metanorma-utils"
   spec.add_dependency "mime-types"
   spec.add_dependency "nokogiri", "~> 1.14"
   spec.add_dependency "plane1converter", "~> 0.0.1"
