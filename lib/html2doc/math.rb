@@ -34,6 +34,8 @@ class Html2Doc
     doc
   end
 
+  MATHML_NS = "http://www.w3.org/1998/Math/MathML".freeze
+
   # random fixes to MathML input that OOXML needs to render properly
   def ooxml_cleanup(math, docnamespaces)
     unwrap_accents(
@@ -41,7 +43,7 @@ class Html2Doc
         mathml_insert_rows(math, docnamespaces), docnamespaces
       ),
     )
-    math.add_namespace(nil, "http://www.w3.org/1998/Math/MathML")
+    math.add_namespace(nil, MATHML_NS)
     math
   end
 
@@ -180,8 +182,25 @@ class Html2Doc
     xml
   end
 
+  OOXML_NS = "http://schemas.microsoft.com/office/2004/12/omml".freeze
+
+  def math_only_para?(node)
+    x = node.dup
+    x.xpath(".//m:math", "m" => MATHML_NS).each(&:remove)
+    x.xpath(".//m:oMathPara | .//m:oMath", "m" => OOXML_NS).each(&:remove)
+    x.text.strip.empty?
+  end
+
+  def math_block?(ooxml, mathml)
+    ooxml.name == "oMathPara" || mathml["displaystyle"] == "true"
+  end
+
+  STYLE_BEARING_NODE =
+    %w(p div td th li).map { |x| ".//ancestor::#{x}" }.join(" | ").freeze
+
   # if oomml has no siblings, by default it is centered; override this with
   # left/right if parent is so tagged
+  # also if ooml has mathPara already, or is in para with only oMath content
   def uncenter(math, ooxml)
     alignnode = math.at(".//ancestor::*[@style][local-name() = 'p' or " \
                         "local-name() = 'div' or local-name() = 'td']/@style")

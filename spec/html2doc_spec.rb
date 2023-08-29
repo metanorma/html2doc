@@ -33,7 +33,7 @@ end
 
 def mock_plurimath_error
   expect(Plurimath::Math).to receive(:parse) do
-  raise "Syntax error"
+    raise "Syntax error"
   end.exactly(2).times
 end
 
@@ -364,9 +364,9 @@ RSpec.describe Html2Doc do
     ).force_encoding("UTF-8")
     # expect(hdr.gsub(/\xa0/, " ")).to match_fuzzy(HEADERHTML)
     expect(HTMLEntities.new.encode(hdr, :hexadecimal)
-      .gsub(/&#x3c;/, "<").gsub(/&#x3e;/, ">")
-      .gsub(/&#x27;/, "'").gsub(/&#x22;/, '"')
-      .gsub(/&#xd;/, "&#xa;").gsub(/&#xa;/, "\n"))
+      .gsub("&#x3c;", "<").gsub("&#x3e;", ">")
+      .gsub("&#x27;", "'").gsub("&#x22;", '"')
+      .gsub("&#xd;", "&#xa;").gsub("&#xa;", "\n"))
       .to match_fuzzy(HEADERHTML)
     expect(html.sub(%r{Content-ID: <header.html>.*$}m, ""))
       .to match_fuzzy(<<~OUTPUT)
@@ -415,22 +415,21 @@ RSpec.describe Html2Doc do
 
   it "processes mstyle" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-      .process(html_input(%[<div><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mstyle displaystyle=\"true\">\n    <mstyle mathvariant=\"bold\">\n      <mrow>\n        <mo>&#x2212;</mo>\n        <msubsup>\n          <mi>log</mi>\n          <mn>2</mn>\n        </msubsup>\n        <mrow>\n          <mo>(</mo>\n          <msub>\n            <mi>p</mi>\n            <mi>u</mi>\n          </msub>\n          <mo>)</mo>\n        </mrow>\n      </mrow>\n    </mstyle>\n    <mstyle mathvariant=\"bold\">\n      <mtext>BB</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"double-struck\">\n      <mtext>BBB</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"script\">\n      <mtext>CC</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant=\"script\">\n      <mtext>BCC</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"monospace\">\n      <mtext>TT</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"fraktur\">\n      <mtext>FR</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant=\"fraktur\">\n      <mtext>BFR</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"sans-serif\">\n      <mtext>SF</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant=\"sans-serif\">\n      <mtext>BSFα</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"sans-serif\">\n      <mi>i</mi>\n    </mstyle>\n    <mtext>SFI</mtext>\n    <mstyle mathvariant=\"sans-serif\">\n      <mi>b</mi>\n    </mstyle>\n    <mi>i</mi>\n    <mtext>SFBIα</mtext>\n    <mi>b</mi>\n    <mstyle mathvariant=\"italic\">\n      <mtext>BII</mtext>\n    </mstyle>\n    <mstyle mathvariant=\"italic\">\n      <mtext>II</mtext>\n    </mstyle>\n  </mstyle>\n</math></div>]))
+      .process(html_input(%[<div><math xmlns="http://www.w3.org/1998/Math/MathML" displaystyle="true">\n  <mstyle displaystyle="true">\n    <mstyle mathvariant="bold">\n      <mrow>\n        <mo>&#x2212;</mo>\n        <msubsup>\n          <mi>log</mi>\n          <mn>2</mn>\n        </msubsup>\n        <mrow>\n          <mo>(</mo>\n          <msub>\n            <mi>p</mi>\n            <mi>u</mi>\n          </msub>\n          <mo>)</mo>\n        </mrow>\n      </mrow>\n    </mstyle>\n    <mstyle mathvariant="bold">\n      <mtext>BB</mtext>\n    </mstyle>\n    <mstyle mathvariant="double-struck">\n      <mtext>BBB</mtext>\n    </mstyle>\n    <mstyle mathvariant="script">\n      <mtext>CC</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant="script">\n      <mtext>BCC</mtext>\n    </mstyle>\n    <mstyle mathvariant="monospace">\n      <mtext>TT</mtext>\n    </mstyle>\n    <mstyle mathvariant="fraktur">\n      <mtext>FR</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant="fraktur">\n      <mtext>BFR</mtext>\n    </mstyle>\n    <mstyle mathvariant="sans-serif">\n      <mtext>SF</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant="sans-serif">\n      <mtext>BSFα</mtext>\n    </mstyle>\n    <mstyle mathvariant="sans-serif">\n      <mi>i</mi>\n    </mstyle>\n    <mtext>SFI</mtext>\n    <mstyle mathvariant="sans-serif">\n      <mi>b</mi>\n    </mstyle>\n    <mi>i</mi>\n    <mtext>SFBIα</mtext>\n    <mi>b</mi>\n    <mstyle mathvariant="italic">\n      <mtext>BII</mtext>\n    </mstyle>\n    <mstyle mathvariant="italic">\n      <mtext>II</mtext>\n    </mstyle>\n  </mstyle>\n</math></div>]))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
-        #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body(%{
-<div><m:oMath>
-<span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x2212;</m:t></m:r></span><m:sSubSup><m:e><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>log</m:t></m:r></span></m:e><m:sub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>2</m:t></m:r></span></m:sub><m:sup></m:sup></m:sSubSup><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>(</m:t></m:r></span><m:sSub><m:e><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>p</m:t></m:r></span></m:e><m:sub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>u</m:t></m:r></span></m:sub></m:sSub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>)</m:t></m:r></span><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:nor></m:nor><m:sty m:val="b"></m:sty></m:rPr><m:t>BB</m:t></m:r></span><m:r><m:rPr><m:nor></m:nor><m:scr m:val="double-struck"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D539;&#x1D539;&#x1D539;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="script"></m:scr></m:rPr><m:t>&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="script"></m:scr></m:rPr><m:t>&#x212C;&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="monospace"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D683;&#x1D683;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D509;&#x211C;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D505;&#x1D509;&#x211C;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5B2;&#x1D5A5;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5A1;&#x1D5B2;&#x1D5A5;&#x3B1;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5C2;</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>SFI</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5BB;</m:t></m:r><m:r><m:t>i</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>SFBI&#x3B1;</m:t></m:r><m:r><m:t>b</m:t></m:r><span class="nostem"><em></em><m:r><m:rPr><m:nor></m:nor><m:sty m:val="i"></m:sty></m:rPr><m:t>BII</m:t></m:r></span><span class="nostem"><em></em><m:r><m:rPr><m:nor></m:nor><m:sty m:val="i"></m:sty></m:rPr><m:t>II</m:t></m:r></span>
-</m:oMath>
-</div>}, '<div style="mso-element:footnote-list"/>')}
-        #{WORD_FTR1}
+                #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+                #{word_body(%{
+        <div><m:oMath>
+        <span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x2212;</m:t></m:r></span><m:sSubSup><m:e><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>log</m:t></m:r></span></m:e><m:sub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>2</m:t></m:r></span></m:sub><m:sup></m:sup></m:sSubSup><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>(</m:t></m:r></span><m:sSub><m:e><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>p</m:t></m:r></span></m:e><m:sub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>u</m:t></m:r></span></m:sub></m:sSub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>)</m:t></m:r></span><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:nor></m:nor><m:sty m:val="b"></m:sty></m:rPr><m:t>BB</m:t></m:r></span><m:r><m:rPr><m:nor></m:nor><m:scr m:val="double-struck"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D539;&#x1D539;&#x1D539;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="script"></m:scr></m:rPr><m:t>&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="script"></m:scr></m:rPr><m:t>&#x212C;&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="monospace"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D683;&#x1D683;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D509;&#x211C;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D505;&#x1D509;&#x211C;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5B2;&#x1D5A5;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5A1;&#x1D5B2;&#x1D5A5;&#x3B1;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5C2;</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>SFI</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5BB;</m:t></m:r><m:r><m:t>i</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>SFBI&#x3B1;</m:t></m:r><m:r><m:t>b</m:t></m:r><span class="nostem"><em></em><m:r><m:rPr><m:nor></m:nor><m:sty m:val="i"></m:sty></m:rPr><m:t>BII</m:t></m:r></span><span class="nostem"><em></em><m:r><m:rPr><m:nor></m:nor><m:sty m:val="i"></m:sty></m:rPr><m:t>II</m:t></m:r></span>
+        </m:oMath></div>}, '<div style="mso-element:footnote-list"/>')}
+                #{WORD_FTR1}
       OUTPUT
   end
 
   it "processes spaces in MathML mtext" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-      .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
+      .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
                                 <mrow><mi>H</mi><mtext> original </mtext><mi>J</mi></mrow>
                                 </math></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
@@ -438,15 +437,14 @@ RSpec.describe Html2Doc do
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
         #{word_body('<div><m:oMath>
                 <m:r><m:t>H</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>&#xA0;original&#xA0;</m:t></m:r><m:r><m:t>J</m:t></m:r>
-                </m:oMath>
-                </div>', '<div style="mso-element:footnote-list"/>')}
+                </m:oMath></div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end
 
   it "unwraps and converts accent in MathML" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-      .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
+      .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
                                 <mover accent='true'><mrow><mi>p</mi></mrow><mrow><mo>^</mo></mrow></mover>
 </math></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
@@ -454,23 +452,123 @@ RSpec.describe Html2Doc do
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
         #{word_body('<div><m:oMath>
                 <m:acc><m:accPr><m:chr m:val="&#x302;"></m:chr></m:accPr><m:e><m:r><m:t>p</m:t></m:r></m:e></m:acc>
-                </m:oMath>
-                </div>', '<div style="mso-element:footnote-list"/>')}
+                </m:oMath></div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end
 
   it "wraps msup after munderover in MathML" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-      .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML'>
+      .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
 <munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi></mrow></munderover><msup><mn>2</mn><mrow><mi>i</mi></mrow></msup></math></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
         #{word_body('<div><m:oMath>
-                   <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=0</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>2</m:t></m:r></m:e><m:sup><m:r><m:t>i</m:t></m:r></m:sup></m:sSup></m:e></m:nary></m:oMath>
-                </div>', '<div style="mso-element:footnote-list"/>')}
+                   <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=0</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>2</m:t></m:r></m:e><m:sup><m:r><m:t>i</m:t></m:r></m:sup></m:sSup></m:e></m:nary></m:oMath></div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
+      OUTPUT
+  end
+
+  it "uncenters paras with just inline maths" do
+    Html2Doc.new(filename: "test")
+      .process(html_input("<div><p><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+      .to match_fuzzy(<<~OUTPUT)
+                #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+                #{word_body('<div><p class="MsoNormal"><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i=0</m:t></m:r>
+        </m:oMath></m:oMathPara></p></div>',
+                            '<div style="mso-element:footnote-list"/>')}
+                #{WORD_FTR1}
+      OUTPUT
+
+    Html2Doc.new(filename: "test")
+      .process(html_input("<div><p style='vertical-align:center;text-align:right;'><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+      .to match_fuzzy(<<~OUTPUT)
+                #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+                #{word_body('<div><p style="vertical-align:center;text-align:right;" class="MsoNormal"><m:oMathPara><m:oMathParaPr><m:jc m:val="right"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i=0</m:t></m:r>
+        </m:oMath></m:oMathPara></p></div>',
+                            '<div style="mso-element:footnote-list"/>')}
+                #{WORD_FTR1}
+      OUTPUT
+
+    Html2Doc.new(filename: "test")
+      .process(html_input("<div><p style='vertical-align:center;text-align:left;'><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+      .to match_fuzzy(<<~OUTPUT)
+                #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+                #{word_body('<div><p style="vertical-align:center;text-align:left;" class="MsoNormal"><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i=0</m:t></m:r>
+        </m:oMath></m:oMathPara></p></div>',
+                            '<div style="mso-element:footnote-list"/>')}
+                #{WORD_FTR1}
+      OUTPUT
+
+    Html2Doc.new(filename: "test")
+      .process(html_input("<div><table><tr><th><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></tr></th></table></div>"))
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+      .to match_fuzzy(<<~OUTPUT)
+                #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+                #{word_body('<div><table><tr><th><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i=0</m:t></m:r>
+        </m:oMath></m:oMathPara></th></tr></table></div>',
+                            '<div style="mso-element:footnote-list"/>')}
+                #{WORD_FTR1}
+      OUTPUT
+
+    Html2Doc.new(filename: "test")
+      .process(html_input("<div><p><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+      .to match_fuzzy(<<~OUTPUT)
+                #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+                #{word_body('<div><p class="MsoNormal"><m:oMath>
+        <m:r><m:t>i=0</m:t></m:r>
+        </m:oMath></p></div>',
+                            '<div style="mso-element:footnote-list"/>')}
+                #{WORD_FTR1}
+      OUTPUT
+
+    Html2Doc.new(filename: "test")
+      .process(html_input("<div><p><i>a</i><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+      .to match_fuzzy(<<~OUTPUT)
+                #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+                #{word_body('<div><p class="MsoNormal"><i>a</i><m:oMath>
+        <m:r><m:t>i=0</m:t></m:r>
+        </m:oMath></p></div>',
+                            '<div style="mso-element:footnote-list"/>')}
+                #{WORD_FTR1}
+      OUTPUT
+
+    Html2Doc.new(filename: "test")
+      .process(html_input("<div><p><span>     </span><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+      .to match_fuzzy(<<~OUTPUT)
+                #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+                #{word_body('<div><p class="MsoNormal"><span> </span><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i=0</m:t></m:r>
+        </m:oMath></m:oMathPara></p></div>',
+                            '<div style="mso-element:footnote-list"/>')}
+                #{WORD_FTR1}
+      OUTPUT
+
+    Html2Doc.new(filename: "test")
+      .process(html_input("<div><p><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math><br/>
+                          <math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+      .to match_fuzzy(<<~OUTPUT)
+                #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+                #{word_body('<div><p class="MsoNormal"><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i=0</m:t></m:r>
+        </m:oMath></m:oMathPara><br/>
+        <m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i=0</m:t></m:r>
+        </m:oMath></m:oMathPara></p></div>',
+                            '<div style="mso-element:footnote-list"/>')}
+                #{WORD_FTR1}
       OUTPUT
   end
 
@@ -481,7 +579,7 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body(simple_body.gsub(/&tab;/, %[<span style="mso-tab-count:1">&#xA0; </span>]), '<div style="mso-element:footnote-list"/>')}
+        #{word_body(simple_body.gsub('&tab;', %[<span style="mso-tab-count:1">&#xA0; </span>]), '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end
@@ -494,7 +592,7 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body(simple_body.gsub(/<p>/, %[<p class="MsoNormal">]), '<div style="mso-element:footnote-list"/>')}
+        #{word_body(simple_body.gsub('<p>', %[<p class="MsoNormal">]), '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end
@@ -509,79 +607,79 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body(simple_body.gsub(/<li>/, %[<li class="MsoNormal">]), '<div style="mso-element:footnote-list"/>')}
+        #{word_body(simple_body.gsub('<li>', %[<li class="MsoNormal">]), '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end
 
   it "resizes images for height, in a file in a subdirectory" do
     simple_body = '<img src="19160-6.png">'
-    Html2Doc.new(filename: "spec/test", imagedir: "spec", stylesheet: "spec/wordstyle-nopagesize.css")
+    Html2Doc.new(filename: "spec/test", imagedir: "spec",
+                 stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))
       .sub(/^.*<body/m, "<body")
-      .sub(%r{</body>.*$}m, "</body>")
-    ).to match_fuzzy(<<~OUTPUT)
-      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
-    OUTPUT
+      .sub(%r{</body>.*$}m, "</body>")).to match_fuzzy(<<~OUTPUT)
+        #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, '')}
+      OUTPUT
   end
 
   it "resizes images for width" do
     simple_body = '<img src="spec/19160-7.gif">'
-    Html2Doc.new(filename: "test", imagedir: ".", stylesheet: "spec/wordstyle-nopagesize.css")
+    Html2Doc.new(filename: "test", imagedir: ".",
+                 stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/gif})
     expect(image_clean(guid_clean(testdoc))
       .sub(/^.*<body/m, "<body")
-      .sub(%r{</body>.*$}m, "</body>")
-    ).to match_fuzzy(<<~OUTPUT)
-      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
-    OUTPUT
+      .sub(%r{</body>.*$}m, "</body>")).to match_fuzzy(<<~OUTPUT)
+        #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, '')}
+      OUTPUT
   end
 
   it "resizes images for height" do
     simple_body = '<img src="spec/19160-8.jpg">'
-    Html2Doc.new(filename: "test", imagedir: ".", stylesheet: "spec/wordstyle-nopagesize.css")
+    Html2Doc.new(filename: "test", imagedir: ".",
+                 stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/jpeg})
     expect(image_clean(guid_clean(testdoc))
       .sub(/^.*<body/m, "<body")
-      .sub(%r{</body>.*$}m, "</body>")
-    ).to match_fuzzy(<<~OUTPUT)
-      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
-    OUTPUT
+      .sub(%r{</body>.*$}m, "</body>")).to match_fuzzy(<<~OUTPUT)
+        #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, '')}
+      OUTPUT
   end
 
   it "resizes images for width with custom page size" do
     simple_body = '<img src="spec/19160-7.gif">'
-    Html2Doc.new(filename: "test", imagedir: ".", stylesheet: "spec/wordstyle-custom.css")
+    Html2Doc.new(filename: "test", imagedir: ".",
+                 stylesheet: "spec/wordstyle-custom.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/gif})
     expect(image_clean(guid_clean(testdoc))
       .sub(/^.*<body/m, "<body")
-      .sub(%r{</body>.*$}m, "</body>")
-    ).to match_fuzzy(<<~OUTPUT)
-      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
-    OUTPUT
+      .sub(%r{</body>.*$}m, "</body>")).to match_fuzzy(<<~OUTPUT)
+        #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.gif" width="400" height="118"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, '')}
+      OUTPUT
   end
 
   it "resizes images for height with custom page size" do
     simple_body = '<img src="spec/19160-8.jpg">'
-    Html2Doc.new(filename: "test", imagedir: ".", stylesheet: "spec/wordstyle-custom.css")
+    Html2Doc.new(filename: "test", imagedir: ".",
+                 stylesheet: "spec/wordstyle-custom.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/jpeg})
     expect(image_clean(guid_clean(testdoc))
       .sub(/^.*<body/m, "<body")
-      .sub(%r{</body>.*$}m, "</body>")
-    ).to match_fuzzy(<<~OUTPUT)
-      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
-    OUTPUT
+      .sub(%r{</body>.*$}m, "</body>")).to match_fuzzy(<<~OUTPUT)
+        #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, '')}
+      OUTPUT
   end
 
   it "resizes images for height with landscape page" do
@@ -589,16 +687,16 @@ RSpec.describe Html2Doc do
       <div class="WordSection1"><div class="figure"><img src="spec/19160-8.jpg"></div></div>
       <div class="WordSectionA"><div class="figure"><img src="spec/19160-8.jpg"></div></div>
     DIV
-    Html2Doc.new(filename: "test", imagedir: ".", stylesheet: "spec/wordstyle-custom.css")
+    Html2Doc.new(filename: "test", imagedir: ".",
+                 stylesheet: "spec/wordstyle-custom.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/jpeg})
     expect(image_clean(guid_clean(testdoc))
       .sub(/^.*<body/m, "<body")
-      .sub(%r{</body>.*$}m, "</body>")
-    ).to match_fuzzy(<<~OUTPUT)
-      #{image_clean(word_body(%{<div class="WordSection1"><div class="figure"><img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"/></div>\n<div class="WordSectionA"><div class="figure"><img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="122" height="400"/></div>\n</div></div>}, '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
-    OUTPUT
+      .sub(%r{</body>.*$}m, "</body>")).to match_fuzzy(<<~OUTPUT)
+        #{image_clean(word_body(%{<div class="WordSection1"><div class="figure"><img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="208" height="680"/></div>\n<div class="WordSectionA"><div class="figure"><img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.jpg" width="122" height="400"/></div>\n</div></div>}, '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, '')}
+      OUTPUT
   end
 
   it "resizes images with missing or auto sizes" do
@@ -662,16 +760,16 @@ RSpec.describe Html2Doc do
 
   it "deals with absolute image locations" do
     simple_body = %{<img src="#{__dir__}/19160-6.png">}
-    Html2Doc.new(filename: "spec/test", imagedir: ".", stylesheet: "spec/wordstyle-nopagesize.css")
+    Html2Doc.new(filename: "spec/test", imagedir: ".",
+                 stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     expect(testdoc).to match(%r{Content-Type: image/png})
     expect(image_clean(guid_clean(testdoc))
       .sub(/^.*<body/m, "<body")
-      .sub(%r{</body>.*$}m, "</body>")
-    ).to match_fuzzy(<<~OUTPUT)
-      #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, "")}
-    OUTPUT
+      .sub(%r{</body>.*$}m, "</body>")).to match_fuzzy(<<~OUTPUT)
+        #{image_clean(word_body('<img src="cid:cb7b0d19-891e-4634-815a-570d019d454c.png" width="400" height="388"></img>', '<div style="mso-element:footnote-list"/>')).sub(%r{</html>}, '')}
+      OUTPUT
   end
 
   #   it "warns about SVG" do
