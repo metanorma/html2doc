@@ -202,16 +202,13 @@ class Html2Doc
   # left/right if parent is so tagged
   # also if ooml has mathPara already, or is in para with only oMath content
   def uncenter(math, ooxml)
-    alignnode = math.at(".//ancestor::*[@style][local-name() = 'p' or " \
-                        "local-name() = 'div' or local-name() = 'td']/@style")
-    return ooxml unless alignnode && (math.next == nil && math.previous == nil)
-
-    %w(left right).each do |dir|
-      if alignnode.text.include? ("text-align:#{dir}")
-        ooxml = "<m:oMathPara><m:oMathParaPr><m:jc " \
-                "m:val='#{dir}'/></m:oMathParaPr>#{ooxml}</m:oMathPara>"
-      end
-    end
-    ooxml
+    alignnode = math.xpath(STYLE_BEARING_NODE).last
+    ret = ooxml.root.to_xml(indent: 0)
+    (math_block?(ooxml, math) ||
+      !alignnode) || !math_only_para?(alignnode) and return ret
+    dir = "left"
+    alignnode["style"]&.include?("text-align:right") and dir = "right"
+    "<oMathPara><oMathParaPr><jc " \
+      "m:val='#{dir}'/></oMathParaPr>#{ret}</oMathPara>"
   end
 end
