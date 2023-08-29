@@ -135,11 +135,10 @@ class Html2Doc
   # We will end up stripping them out again under Nokogiri 1.11, which correctly
   # insists on inheriting namespace from parent.
   def ooml_clean(xml)
-    xml.to_s
+    xml.to_xml(indent: 0)
       .gsub(/<\?[^>]+>\s*/, "")
       .gsub(/ xmlns(:[^=]+)?="[^"]+"/, "")
-      .gsub(/<\/?m:oMathPara>/, "")
-      #.gsub(%r{<(/)?(?!span)(?!em)([a-z])}, "<\\1m:\\2")
+    # .gsub(%r{<(/)?(?!span)(?!em)([a-z])}, "<\\1m:\\2")
   end
 
   def mathml_to_ooml1(xml, docnamespaces)
@@ -149,8 +148,8 @@ class Html2Doc
     d = xml.parent["block"] != "false" # display_style
     ooxml = Nokogiri::XML(Plurimath::Math.parse(doc.to_xml, :mathml)
       .to_omml)
-    ooxml = ooml_clean(unitalic(esc_space(accent_tr(ooxml))))
-    ooxml = uncenter(xml, ooxml)
+    ooxml = unitalic(esc_space(accent_tr(ooxml)))
+    ooxml = ooml_clean(uncenter(xml, ooxml))
     xml.swap(ooxml)
   end
 
@@ -191,8 +190,9 @@ class Html2Doc
     x.text.strip.empty?
   end
 
-  def math_block?(ooxml, mathml)
-    ooxml.name == "oMathPara" || mathml["displaystyle"] == "true"
+  def math_block?(_ooxml, mathml)
+    # ooxml.name == "oMathPara" || mathml["displaystyle"] == "true"
+    mathml["displaystyle"] == "true"
   end
 
   STYLE_BEARING_NODE =
@@ -203,12 +203,24 @@ class Html2Doc
   # also if ooml has mathPara already, or is in para with only oMath content
   def uncenter(math, ooxml)
     alignnode = math.xpath(STYLE_BEARING_NODE).last
-    ret = ooxml.root.to_xml(indent: 0)
-    (math_block?(ooxml, math) ||
-      !alignnode) || !math_only_para?(alignnode) and return ret
+    ooxml.document? and ooxml = ooxml.root
+    ret = uncenter_unneeded(math, ooxml, alignnode) and return ret
     dir = "left"
     alignnode["style"]&.include?("text-align:right") and dir = "right"
-    "<oMathPara><oMathParaPr><jc " \
-      "m:val='#{dir}'/></oMathParaPr>#{ret}</oMathPara>"
+    ooxml.name == "oMathPara" or
+      ooxml.wrap("<m:oMathPara></m:oMathPara>")
+    ooxml.elements.first.previous =
+      "<m:oMathParaPr><m:jc m:val='#{dir}'/></m:oMathParaPr>"
+    ooxml
+  end
+
+  def uncenter_unneeded(math, ooxml, alignnode)
+    (math_block?(ooxml, math) || !alignnode) and return ooxml
+    if !math_only_para?(alignnode)
+      ooxml.name == "oMathPara" and
+        ooxml = ooxml.elements.detect { |x| x.name == "oMath" }
+      return ooxml
+    end
+    nil
   end
 end
