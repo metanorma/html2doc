@@ -499,7 +499,7 @@ RSpec.describe Html2Doc do
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
         #{word_body('<div><m:oMathPara>
                 <m:oMath>
-                <m:r><m:t>H</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>&#xA0;original&#xA0;</m:t></m:r><m:r><m:t>J</m:t></m:r>
+                <m:r><m:t>H</m:t></m:r><m:r><m:t>&#xA0;original&#xA0;</m:t></m:r><m:r><m:t>J</m:t></m:r>
                 </m:oMath>
                 </m:oMathPara></div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
@@ -530,8 +530,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body('<div><m:oMath>
-                   <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>2</m:t></m:r></m:e><m:sup><m:r><m:t>i</m:t></m:r></m:sup></m:sSup></m:e></m:nary></m:oMath></div>', '<div style="mso-element:footnote-list"/>')}
+        #{word_body('<div><m:oMathPara>
+                   <m:oMath>
+                   <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:subHide m:val="0"></m:subHide><m:supHide m:val="0"></m:supHide></m:naryPr><m:sub><m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:r><m:t>&#x200B;</m:t></m:r></m:e></m:nary><m:sSup><m:sSupPr><m:ctrlPr><w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"></w:rFonts><w:i></w:i></w:rPr></m:ctrlPr></m:sSupPr><m:e><m:r><m:t>2</m:t></m:r></m:e><m:sup><m:r><m:t>i</m:t></m:r></m:sup></m:sSup>
+                  </m:oMath>
+                  </m:oMathPara></div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end

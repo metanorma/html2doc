@@ -8,7 +8,7 @@ require "metanorma-utils"
 module Nokogiri
   module XML
     class Node
-      OOXML_NS = "http://schemas.openxmlformats.org/officeDocument/2006/".freeze
+      OOXML_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math".freeze
 
       def ooxml_xpath(path)
         p = Metanorma::Utils::ns(path).gsub("xmlns:", "m:")
@@ -170,12 +170,14 @@ class Html2Doc
     end
   end
 
-  OOXML_NS = "http://schemas.microsoft.com/office/2004/12/omml".freeze
+  OOXML_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math".freeze
 
   def math_only_para?(node)
     x = node.dup
     x.xpath(".//m:math", "m" => MATHML_NS).each(&:remove)
     x.xpath(".//m:oMathPara | .//m:oMath", "m" => OOXML_NS).each(&:remove)
+    x.xpath(".//m:oMathPara | .//m:oMath").each(&:remove)
+    # namespace can go missing during processing
     x.text.strip.empty?
   end
 
