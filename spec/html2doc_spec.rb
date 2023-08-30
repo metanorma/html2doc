@@ -415,7 +415,67 @@ RSpec.describe Html2Doc do
 
   it "processes mstyle" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-      .process(html_input(%[<div><math xmlns="http://www.w3.org/1998/Math/MathML" displaystyle="true">\n  <mstyle displaystyle="true">\n    <mstyle mathvariant="bold">\n      <mrow>\n        <mo>&#x2212;</mo>\n        <msubsup>\n          <mi>log</mi>\n          <mn>2</mn>\n        </msubsup>\n        <mrow>\n          <mo>(</mo>\n          <msub>\n            <mi>p</mi>\n            <mi>u</mi>\n          </msub>\n          <mo>)</mo>\n        </mrow>\n      </mrow>\n    </mstyle>\n    <mstyle mathvariant="bold">\n      <mtext>BB</mtext>\n    </mstyle>\n    <mstyle mathvariant="double-struck">\n      <mtext>BBB</mtext>\n    </mstyle>\n    <mstyle mathvariant="script">\n      <mtext>CC</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant="script">\n      <mtext>BCC</mtext>\n    </mstyle>\n    <mstyle mathvariant="monospace">\n      <mtext>TT</mtext>\n    </mstyle>\n    <mstyle mathvariant="fraktur">\n      <mtext>FR</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant="fraktur">\n      <mtext>BFR</mtext>\n    </mstyle>\n    <mstyle mathvariant="sans-serif">\n      <mtext>SF</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant="sans-serif">\n      <mtext>BSFα</mtext>\n    </mstyle>\n    <mstyle mathvariant="sans-serif">\n      <mi>i</mi>\n    </mstyle>\n    <mtext>SFI</mtext>\n    <mstyle mathvariant="sans-serif">\n      <mi>b</mi>\n    </mstyle>\n    <mi>i</mi>\n    <mtext>SFBIα</mtext>\n    <mi>b</mi>\n    <mstyle mathvariant="italic">\n      <mtext>BII</mtext>\n    </mstyle>\n    <mstyle mathvariant="italic">\n      <mtext>II</mtext>\n    </mstyle>\n  </mstyle>\n</math></div>]))
+      .process(html_input(%[<div><math xmlns="http://www.w3.org/1998/Math/MathML" displaystyle="true">
+  <mstyle displaystyle="true">
+    <mstyle mathvariant="bold">
+      <mrow>
+        <mo>&#x2212;</mo>
+        <msubsup>
+          <mo>&#x222B;</mo>
+          <mi>log</mi>
+          <mn>2</mn>
+        </msubsup>
+        <mrow>
+          <mo>(</mo>
+          <msub>
+            <mi>p</mi>
+            <mi>u</mi>
+          </msub>
+          <mo>)</mo>
+        </mrow>
+      </mrow>
+    </mstyle>
+    <mstyle mathvariant="bold">
+      <mtext>BB</mtext>
+    </mstyle>
+    <mstyle mathvariant="double-struck">
+      <mtext>BBB</mtext>
+    </mstyle>
+    <mstyle mathvariant="script">
+      <mtext>CC</mtext>
+    </mstyle>
+    <mstyle mathvariant="bold-script">
+      <mtext>BCC</mtext>
+    </mstyle>
+    <mstyle mathvariant="monospace">
+      <mtext>TT</mtext>
+    </mstyle>
+    <mstyle mathvariant="fraktur">
+      <mtext>FR</mtext>
+    </mstyle>
+    <mstyle mathvariant="bold-fraktur">
+      <mtext>BFR</mtext>
+    </mstyle>
+    <mstyle mathvariant="sans-serif">
+      <mtext>SF</mtext>
+    </mstyle>
+    <mstyle mathvariant="bold-sans-serif">
+      <mtext>BSFα</mtext>
+    </mstyle>
+    <mstyle mathvariant="sans-serif-italic">
+      <mtext>SFI</mtext>
+    </mstyle>
+    <mstyle mathvariant="sans-serif-bold-italic">
+      <mtext>SFBIα</mtext>
+    </mstyle>
+    <mstyle mathvariant="bold-italic">
+      <mtext>BII</mtext>
+    </mstyle>
+    <mstyle mathvariant="italic">
+      <mtext>II</mtext>
+    </mstyle>
+  </mstyle>
+</math></div>]))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
                 #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -432,7 +492,7 @@ RSpec.describe Html2Doc do
   it "processes spaces in MathML mtext" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
-                                <mrow><mi>H</mi><mtext> original </mtext><mi>J</mi></mrow>
+                                <mrow><mi>H</mi><mtext>&#xa0;original&#xa0;</mtext><mi>J</mi></mrow>
                                 </math></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
