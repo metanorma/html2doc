@@ -67,6 +67,7 @@ class Html2Doc
   HTML_NS = 'xmlns="http://www.w3.org/1999/xhtml"'.freeze
 
   def unitalic(math)
+    require "debug"; binding.b
     math.ooxml_xpath(".//r[rPr[not(scr)]/sty[@m:val = 'p']]").each do |x|
       x.wrap("<span #{HTML_NS} style='font-style:normal;'></span>")
     end
