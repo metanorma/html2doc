@@ -67,7 +67,6 @@ class Html2Doc
   HTML_NS = 'xmlns="http://www.w3.org/1999/xhtml"'.freeze
 
   def unitalic(math)
-    require "debug"; binding.b
     math.ooxml_xpath(".//r[rPr[not(scr)]/sty[@m:val = 'p']]").each do |x|
       x.wrap("<span #{HTML_NS} style='font-style:normal;'></span>")
     end
@@ -147,9 +146,7 @@ class Html2Doc
     doc.root = ooxml_cleanup(xml, docnamespaces)
     # ooxml = @xsltemplate.transform(doc)
     d = xml.parent["block"] != "false" # display_style
-    warn doc.to_xml
     ooxml = Nokogiri::XML(Plurimath::Math.parse(doc.to_xml(indent: 0), :mathml).to_omml)
-    warn ooxml.to_xml
     ooxml = unitalic(accent_tr(ooxml))
     ooxml = ooml_clean(uncenter(xml, ooxml))
     xml.swap(ooxml)
