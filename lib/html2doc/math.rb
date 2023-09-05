@@ -38,13 +38,24 @@ class Html2Doc
 
   # random fixes to MathML input that OOXML needs to render properly
   def ooxml_cleanup(math, docnamespaces)
-    unwrap_accents(
-      mathml_preserve_space(
-        mathml_insert_rows(math, docnamespaces), docnamespaces
-      ),
-    )
+    #encode_math(
+      unwrap_accents(
+        mathml_preserve_space(
+          mathml_insert_rows(math, docnamespaces), docnamespaces
+        ),
+      )
+    #)
     math.add_namespace(nil, MATHML_NS)
     math
+  end
+
+  def encode_math(elem)
+    elem.traverse do |e|
+      e.text? or next
+      e.text.strip.empty? and next
+      e.replace(@c.encode(e.text, :hexadecimal))
+    end
+    elem
   end
 
   def mathml_insert_rows(math, docnamespaces)
@@ -66,18 +77,28 @@ class Html2Doc
 
   HTML_NS = 'xmlns="http://www.w3.org/1999/xhtml"'.freeze
 
+  def wrap_text(elem, wrapper)
+    elem.traverse do |e|
+      e.text? or next
+      e.text.strip.empty? and next
+      e.wrap(wrapper)
+    end
+  end
+
   def unitalic(math)
-    math.ooxml_xpath(".//r[rPr[not(scr)]/sty[@m:val = 'p']]").each do |x|
-      x.wrap("<span #{HTML_NS} style='font-style:normal;'></span>")
+    math.ooxml_xpath(".//r[rPr[not(m:scr)]/sty[@m:val = 'p']]").each do |x|
+      wrap_text(x, "<span #{HTML_NS} style='font-style:normal;'></span>")
     end
-    math.ooxml_xpath(".//r[rPr[not(scr)]/sty[@m:val = 'bi']]").each do |x|
-      x.wrap("<span #{HTML_NS} class='nostem' style='font-weight:bold;'><em></em></span>")
+    math.ooxml_xpath(".//r[rPr[not(m:scr)]/sty[@m:val = 'bi']]").each do |x|
+      wrap_text(x,
+                "<span #{HTML_NS} class='nostem' style='font-weight:bold;'><em></em></span>")
     end
-    math.ooxml_xpath(".//r[rPr[not(scr)]/sty[@m:val = 'i']]").each do |x|
-      x.wrap("<span #{HTML_NS} class='nostem'><em></em></span>")
+    math.ooxml_xpath(".//r[rPr[not(m:scr)]/sty[@m:val = 'i']]").each do |x|
+      wrap_text(x, "<span #{HTML_NS} class='nostem'><em></em></span>")
     end
-    math.ooxml_xpath(".//r[rPr[not(scr)]/sty[@m:val = 'b']]").each do |x|
-      x.wrap("<span #{HTML_NS} style='font-style:normal;font-weight:bold;'></span>")
+    math.ooxml_xpath(".//r[rPr[not(m:scr)]/sty[@m:val = 'b']]").each do |x|
+      wrap_text(x,
+                "<span #{HTML_NS} style='font-style:normal;font-weight:bold;'></span>")
     end
     math.ooxml_xpath(".//r[rPr/scr[@m:val = 'monospace']]").each do |x|
       to_plane1(x, :monospace)
@@ -85,28 +106,28 @@ class Html2Doc
     math.ooxml_xpath(".//r[rPr/scr[@m:val = 'double-struck']]").each do |x|
       to_plane1(x, :doublestruck)
     end
-    math.ooxml_xpath(".//r[rPr[not(sty) or sty/@m:val = 'p']/scr[@m:val = 'script']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(m:sty) or m:sty/@m:val = 'p']/scr[@m:val = 'script']]").each do |x|
       to_plane1(x, :script)
     end
-    math.ooxml_xpath(".//r[rPr[sty/@m:val = 'b']/scr[@m:val = 'script']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[m:sty/@m:val = 'b']/scr[@m:val = 'script']]").each do |x|
       to_plane1(x, :scriptbold)
     end
-    math.ooxml_xpath(".//r[rPr[not(sty) or sty/@m:val = 'p']/scr[@m:val = 'fraktur']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(m:sty) or m:sty/@m:val = 'p']/scr[@m:val = 'fraktur']]").each do |x|
       to_plane1(x, :fraktur)
     end
-    math.ooxml_xpath(".//r[rPr[sty/@m:val = 'b']/scr[@m:val = 'fraktur']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[m:sty/@m:val = 'b']/scr[@m:val = 'fraktur']]").each do |x|
       to_plane1(x, :frakturbold)
     end
-    math.ooxml_xpath(".//r[rPr[not(sty) or sty/@m:val = 'p']/scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(m:sty) or m:sty/@m:val = 'p']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sans)
     end
-    math.ooxml_xpath(".//r[rPr[sty/@m:val = 'b']/scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[m:sty/@m:val = 'b']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sansbold)
     end
-    math.ooxml_xpath(".//r[rPr[sty/@m:val = 'i']/scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[m:sty/@m:val = 'i']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sansitalic)
     end
-    math.ooxml_xpath(".//r[rPr[sty/@m:val = 'bi']/scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[m:sty/@m:val = 'bi']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sansbolditalic)
     end
     math
@@ -141,17 +162,17 @@ class Html2Doc
     # .gsub(%r{<(/)?(?!span)(?!em)([a-z])}, "<\\1m:\\2")
   end
 
-    def mathml_to_ooml1(xml, docnamespaces)
+  def mathml_to_ooml1(xml, docnamespaces)
     doc = Nokogiri::XML::Document::new
     doc.root = ooxml_cleanup(xml, docnamespaces)
     # ooxml = @xsltemplate.transform(doc)
     d = xml.parent["block"] != "false" # display_style
-    ooxml = Nokogiri::XML(Plurimath::Math.parse(doc.to_xml(indent: 0), :mathml).to_omml)
+    ooxml = Nokogiri::XML(Plurimath::Math.parse(doc.to_xml(indent: 0),
+                                                :mathml).to_omml)
     ooxml = unitalic(accent_tr(ooxml))
     ooxml = ooml_clean(uncenter(xml, ooxml))
     xml.swap(ooxml)
   end
-
 
   def accent_tr(xml)
     xml.ooxml_xpath(".//accPr/chr").each do |x|
