@@ -3,6 +3,20 @@ require "plurimath"
 require "htmlentities"
 require "nokogiri"
 require "plane1converter"
+require "metanorma-utils"
+
+module Nokogiri
+  module XML
+    class Node
+      OOXML_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math".freeze
+
+      def ooxml_xpath(path)
+        p = Metanorma::Utils::ns(path).gsub("xmlns:", "m:")
+        xpath(p, "m" => OOXML_NS)
+      end
+    end
+  end
+end
 
 class Html2Doc
   def progress_conv(idx, step, total, threshold, msg)
@@ -24,13 +38,24 @@ class Html2Doc
 
   # random fixes to MathML input that OOXML needs to render properly
   def ooxml_cleanup(math, docnamespaces)
-    math = unwrap_accents(
-      mathml_preserve_space(
-        mathml_insert_rows(math, docnamespaces), docnamespaces
-      ),
-    )
+    #encode_math(
+      unwrap_accents(
+        mathml_preserve_space(
+          mathml_insert_rows(math, docnamespaces), docnamespaces
+        ),
+      )
+    #)
     math.add_namespace(nil, MATHML_NS)
     math
+  end
+
+  def encode_math(elem)
+    elem.traverse do |e|
+      e.text? or next
+      e.text.strip.empty? and next
+      e.replace(@c.encode(e.text, :hexadecimal))
+    end
+    elem
   end
 
   def mathml_insert_rows(math, docnamespaces)
@@ -52,47 +77,57 @@ class Html2Doc
 
   HTML_NS = 'xmlns="http://www.w3.org/1999/xhtml"'.freeze
 
+  def wrap_text(elem, wrapper)
+    elem.traverse do |e|
+      e.text? or next
+      e.text.strip.empty? and next
+      e.wrap(wrapper)
+    end
+  end
+
   def unitalic(math)
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'p']]").each do |x|
-      x.wrap("<span #{HTML_NS} style='font-style:normal;'></span>")
+    math.ooxml_xpath(".//r[rPr[not(m:scr)]/sty[@m:val = 'p']]").each do |x|
+      wrap_text(x, "<span #{HTML_NS} style='font-style:normal;'></span>")
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'bi']]").each do |x|
-      x.wrap("<span #{HTML_NS} class='nostem' style='font-weight:bold;'><em></em></span>")
+    math.ooxml_xpath(".//r[rPr[not(m:scr)]/sty[@m:val = 'bi']]").each do |x|
+      wrap_text(x,
+                "<span #{HTML_NS} class='nostem' style='font-weight:bold;'><em></em></span>")
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'i']]").each do |x|
-      x.wrap("<span #{HTML_NS} class='nostem'><em></em></span>")
+    math.ooxml_xpath(".//r[rPr[not(m:scr)]/sty[@m:val = 'i']]").each do |x|
+      wrap_text(x, "<span #{HTML_NS} class='nostem'><em></em></span>")
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:scr)]/xmlns:sty[@m:val = 'b']]").each do |x|
-      x.wrap("<span #{HTML_NS} style='font-style:normal;font-weight:bold;'></span>")
+    math.ooxml_xpath(".//r[rPr[not(m:scr)]/sty[@m:val = 'b']]").each do |x|
+      wrap_text(x,
+                "<span #{HTML_NS} style='font-style:normal;font-weight:bold;'></span>")
     end
-    math.xpath(".//xmlns:r[xmlns:rPr/xmlns:scr[@m:val = 'monospace']]").each do |x|
+    math.ooxml_xpath(".//r[rPr/scr[@m:val = 'monospace']]").each do |x|
       to_plane1(x, :monospace)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr/xmlns:scr[@m:val = 'double-struck']]").each do |x|
+    math.ooxml_xpath(".//r[rPr/scr[@m:val = 'double-struck']]").each do |x|
       to_plane1(x, :doublestruck)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:sty) or xmlns:sty/@m:val = 'p']/xmlns:scr[@m:val = 'script']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(m:sty) or m:sty/@m:val = 'p']/scr[@m:val = 'script']]").each do |x|
       to_plane1(x, :script)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'b']/xmlns:scr[@m:val = 'script']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[m:sty/@m:val = 'b']/scr[@m:val = 'script']]").each do |x|
       to_plane1(x, :scriptbold)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:sty) or xmlns:sty/@m:val = 'p']/xmlns:scr[@m:val = 'fraktur']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(m:sty) or m:sty/@m:val = 'p']/scr[@m:val = 'fraktur']]").each do |x|
       to_plane1(x, :fraktur)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'b']/xmlns:scr[@m:val = 'fraktur']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[m:sty/@m:val = 'b']/scr[@m:val = 'fraktur']]").each do |x|
       to_plane1(x, :frakturbold)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[not(xmlns:sty) or xmlns:sty/@m:val = 'p']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[not(m:sty) or m:sty/@m:val = 'p']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sans)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'b']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[m:sty/@m:val = 'b']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sansbold)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'i']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[m:sty/@m:val = 'i']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sansitalic)
     end
-    math.xpath(".//xmlns:r[xmlns:rPr[xmlns:sty/@m:val = 'bi']/xmlns:scr[@m:val = 'sans-serif']]").each do |x|
+    math.ooxml_xpath(".//r[rPr[m:sty/@m:val = 'bi']/scr[@m:val = 'sans-serif']]").each do |x|
       to_plane1(x, :sansbolditalic)
     end
     math
@@ -121,22 +156,26 @@ class Html2Doc
   # We will end up stripping them out again under Nokogiri 1.11, which correctly
   # insists on inheriting namespace from parent.
   def ooml_clean(xml)
-    xml.to_s
+    xml.to_xml(indent: 0)
       .gsub(/<\?[^>]+>\s*/, "")
       .gsub(/ xmlns(:[^=]+)?="[^"]+"/, "")
-      .gsub(%r{<(/)?(?!span)(?!em)([a-z])}, "<\\1m:\\2")
+    # .gsub(%r{<(/)?(?!span)(?!em)([a-z])}, "<\\1m:\\2")
   end
 
   def mathml_to_ooml1(xml, docnamespaces)
     doc = Nokogiri::XML::Document::new
     doc.root = ooxml_cleanup(xml, docnamespaces)
-    ooxml = unitalic(esc_space(accent_tr(@xsltemplate.transform(doc))))
+    # ooxml = @xsltemplate.transform(doc)
+    d = xml.parent["block"] != "false" # display_style
+    ooxml = Nokogiri::XML(Plurimath::Math.parse(doc.to_xml(indent: 0),
+                                                :mathml).to_omml)
+    ooxml = unitalic(accent_tr(ooxml))
     ooxml = ooml_clean(uncenter(xml, ooxml))
     xml.swap(ooxml)
   end
 
   def accent_tr(xml)
-    xml.xpath(".//*[local-name()='accPr']/*[local-name()='chr']").each do |x|
+    xml.ooxml_xpath(".//accPr/chr").each do |x|
       x["m:val"] &&= accent_tr1(x["m:val"])
       x["val"] &&= accent_tr1(x["val"])
     end
@@ -152,28 +191,20 @@ class Html2Doc
     end
   end
 
-  # escape space as &#x32;; we are removing any spaces generated by
-  # XML indentation
-  def esc_space(xml)
-    xml.traverse do |n|
-      next unless n.text?
-
-      n = n.text.gsub(/ /, "&#x32;")
-    end
-    xml
-  end
-
-  OOXML_NS = "http://schemas.microsoft.com/office/2004/12/omml".freeze
+  OOXML_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math".freeze
 
   def math_only_para?(node)
     x = node.dup
     x.xpath(".//m:math", "m" => MATHML_NS).each(&:remove)
     x.xpath(".//m:oMathPara | .//m:oMath", "m" => OOXML_NS).each(&:remove)
+    x.xpath(".//m:oMathPara | .//m:oMath").each(&:remove)
+    # namespace can go missing during processing
     x.text.strip.empty?
   end
 
-  def math_block?(ooxml, mathml)
-    ooxml.name == "oMathPara" || mathml["displaystyle"] == "true"
+  def math_block?(_ooxml, mathml)
+    # ooxml.name == "oMathPara" || mathml["displaystyle"] == "true"
+    mathml["displaystyle"] == "true"
   end
 
   STYLE_BEARING_NODE =
@@ -184,12 +215,24 @@ class Html2Doc
   # also if ooml has mathPara already, or is in para with only oMath content
   def uncenter(math, ooxml)
     alignnode = math.xpath(STYLE_BEARING_NODE).last
-    ret = ooxml.root.to_xml(indent: 0)
-    (math_block?(ooxml, math) ||
-      !alignnode) || !math_only_para?(alignnode) and return ret
+    ooxml.document? and ooxml = ooxml.root
+    ret = uncenter_unneeded(math, ooxml, alignnode) and return ret
     dir = "left"
     alignnode["style"]&.include?("text-align:right") and dir = "right"
-    "<oMathPara><oMathParaPr><jc " \
-      "m:val='#{dir}'/></oMathParaPr>#{ret}</oMathPara>"
+    ooxml.name == "oMathPara" or
+      ooxml.wrap("<m:oMathPara></m:oMathPara>")
+    ooxml.elements.first.previous =
+      "<m:oMathParaPr><m:jc m:val='#{dir}'/></m:oMathParaPr>"
+    ooxml
+  end
+
+  def uncenter_unneeded(math, ooxml, alignnode)
+    (math_block?(ooxml, math) || !alignnode) and return ooxml
+    if !math_only_para?(alignnode)
+      ooxml.name == "oMathPara" and
+        ooxml = ooxml.elements.detect { |x| x.name == "oMath" }
+      return ooxml
+    end
+    nil
   end
 end

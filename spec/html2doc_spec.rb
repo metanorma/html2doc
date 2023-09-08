@@ -415,14 +415,76 @@ RSpec.describe Html2Doc do
 
   it "processes mstyle" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
-      .process(html_input(%[<div><math xmlns="http://www.w3.org/1998/Math/MathML" displaystyle="true">\n  <mstyle displaystyle="true">\n    <mstyle mathvariant="bold">\n      <mrow>\n        <mo>&#x2212;</mo>\n        <msubsup>\n          <mi>log</mi>\n          <mn>2</mn>\n        </msubsup>\n        <mrow>\n          <mo>(</mo>\n          <msub>\n            <mi>p</mi>\n            <mi>u</mi>\n          </msub>\n          <mo>)</mo>\n        </mrow>\n      </mrow>\n    </mstyle>\n    <mstyle mathvariant="bold">\n      <mtext>BB</mtext>\n    </mstyle>\n    <mstyle mathvariant="double-struck">\n      <mtext>BBB</mtext>\n    </mstyle>\n    <mstyle mathvariant="script">\n      <mtext>CC</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant="script">\n      <mtext>BCC</mtext>\n    </mstyle>\n    <mstyle mathvariant="monospace">\n      <mtext>TT</mtext>\n    </mstyle>\n    <mstyle mathvariant="fraktur">\n      <mtext>FR</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant="fraktur">\n      <mtext>BFR</mtext>\n    </mstyle>\n    <mstyle mathvariant="sans-serif">\n      <mtext>SF</mtext>\n    </mstyle>\n    <mi>b</mi>\n    <mstyle mathvariant="sans-serif">\n      <mtext>BSFα</mtext>\n    </mstyle>\n    <mstyle mathvariant="sans-serif">\n      <mi>i</mi>\n    </mstyle>\n    <mtext>SFI</mtext>\n    <mstyle mathvariant="sans-serif">\n      <mi>b</mi>\n    </mstyle>\n    <mi>i</mi>\n    <mtext>SFBIα</mtext>\n    <mi>b</mi>\n    <mstyle mathvariant="italic">\n      <mtext>BII</mtext>\n    </mstyle>\n    <mstyle mathvariant="italic">\n      <mtext>II</mtext>\n    </mstyle>\n  </mstyle>\n</math></div>]))
+      .process(html_input(%[<div><math xmlns="http://www.w3.org/1998/Math/MathML" displaystyle="true">
+  <mstyle displaystyle="true">
+    <mstyle mathvariant="bold">
+      <mrow>
+        <mo>&#x2212;</mo>
+        <msubsup>
+          <mo>&#x222B;</mo>
+          <mi>log</mi>
+          <mn>2</mn>
+        </msubsup>
+        <mrow>
+          <mo>(</mo>
+          <msub>
+            <mi>p</mi>
+            <mi>u</mi>
+          </msub>
+          <mo>)</mo>
+        </mrow>
+      </mrow>
+    </mstyle>
+    <mstyle mathvariant="bold">
+      <mtext>BB</mtext>
+    </mstyle>
+    <mstyle mathvariant="double-struck">
+      <mtext>BBB</mtext>
+    </mstyle>
+    <mstyle mathvariant="script">
+      <mtext>CC</mtext>
+    </mstyle>
+    <mstyle mathvariant="bold-script">
+      <mtext>BCC</mtext>
+    </mstyle>
+    <mstyle mathvariant="monospace">
+      <mtext>TT</mtext>
+    </mstyle>
+    <mstyle mathvariant="fraktur">
+      <mtext>FR</mtext>
+    </mstyle>
+    <mstyle mathvariant="bold-fraktur">
+      <mtext>BFR</mtext>
+    </mstyle>
+    <mstyle mathvariant="sans-serif">
+      <mtext>SF</mtext>
+    </mstyle>
+    <mstyle mathvariant="bold-sans-serif">
+      <mtext>BSFα</mtext>
+    </mstyle>
+    <mstyle mathvariant="sans-serif-italic">
+      <mtext>SFI</mtext>
+    </mstyle>
+    <mstyle mathvariant="sans-serif-bold-italic">
+      <mtext>SFBIα</mtext>
+    </mstyle>
+    <mstyle mathvariant="bold-italic">
+      <mtext>BII</mtext>
+    </mstyle>
+    <mstyle mathvariant="italic">
+      <mtext>II</mtext>
+    </mstyle>
+  </mstyle>
+</math></div>]))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
                 #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
                 #{word_body(%{
-        <div><m:oMath>
-        <span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x2212;</m:t></m:r></span><m:sSubSup><m:e><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>log</m:t></m:r></span></m:e><m:sub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>2</m:t></m:r></span></m:sub><m:sup></m:sup></m:sSubSup><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>(</m:t></m:r></span><m:sSub><m:e><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>p</m:t></m:r></span></m:e><m:sub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>u</m:t></m:r></span></m:sub></m:sSub><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t>)</m:t></m:r></span><span style="font-style:normal;font-weight:bold;"><m:r><m:rPr><m:nor></m:nor><m:sty m:val="b"></m:sty></m:rPr><m:t>BB</m:t></m:r></span><m:r><m:rPr><m:nor></m:nor><m:scr m:val="double-struck"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D539;&#x1D539;&#x1D539;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="script"></m:scr></m:rPr><m:t>&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="script"></m:scr></m:rPr><m:t>&#x212C;&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="monospace"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D683;&#x1D683;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D509;&#x211C;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D505;&#x1D509;&#x211C;</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5B2;&#x1D5A5;</m:t></m:r><m:r><m:t>b</m:t></m:r><m:r><m:rPr><m:nor></m:nor><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5A1;&#x1D5B2;&#x1D5A5;&#x3B1;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5C2;</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>SFI</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5BB;</m:t></m:r><m:r><m:t>i</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>SFBI&#x3B1;</m:t></m:r><m:r><m:t>b</m:t></m:r><span class="nostem"><em></em><m:r><m:rPr><m:nor></m:nor><m:sty m:val="i"></m:sty></m:rPr><m:t>BII</m:t></m:r></span><span class="nostem"><em></em><m:r><m:rPr><m:nor></m:nor><m:sty m:val="i"></m:sty></m:rPr><m:t>II</m:t></m:r></span>
-        </m:oMath></div>}, '<div style="mso-element:footnote-list"/>')}
+        <div><m:oMathPara>
+        <m:oMath>
+        <m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:r><m:t><span style="font-style:normal;font-weight:bold;">&#x2212;</span></m:t></m:r><m:nary><m:naryPr><m:chr m:val="&#x222B;"></m:chr><m:limLoc m:val="subSup"></m:limLoc><m:subHide m:val="0"></m:subHide><m:supHide m:val="0"></m:supHide></m:naryPr><m:sub><m:r><m:t><span style="font-style:normal;font-weight:bold;">log</span></m:t></m:r></m:sub><m:sup><m:r><m:t><span style="font-style:normal;font-weight:bold;">2</span></m:t></m:r></m:sup><m:e><m:d><m:dPr><m:begChr m:val="("></m:begChr><m:endChr m:val=")"></m:endChr><m:ctrlPr><w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"></w:rFonts><w:i></w:i></w:rPr></m:ctrlPr></m:dPr><m:e><m:sSub><m:sSubPr><m:ctrlPr><w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"></w:rFonts><w:i></w:i></w:rPr></m:ctrlPr></m:sSubPr><m:e><m:r><m:t><span style="font-style:normal;font-weight:bold;">p</span></m:t></m:r></m:e><m:sub><m:r><m:t><span style="font-style:normal;font-weight:bold;">u</span></m:t></m:r></m:sub></m:sSub></m:e></m:d></m:e></m:nary></m:r><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">BB</span></m:t></m:r><m:r><m:rPr><m:scr m:val="double-struck"></m:scr></m:rPr><m:t>&#x1D539;&#x1D539;&#x1D539;</m:t></m:r><m:r><m:rPr><m:scr m:val="script"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:rPr><m:scr m:val="script"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D4D1;&#x1D4D2;&#x1D4D2;</m:t></m:r><m:r><m:rPr><m:scr m:val="monospace"></m:scr></m:rPr><m:t>&#x1D683;&#x1D683;</m:t></m:r><m:r><m:rPr><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D509;&#x211C;</m:t></m:r><m:r><m:rPr><m:scr m:val="fraktur"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D56D;&#x1D571;&#x1D57D;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5B2;&#x1D5A5;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D5D5;&#x1D5E6;&#x1D5D9;&#x1D770;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="i"></m:sty></m:rPr><m:t>&#x1D61A;&#x1D60D;&#x1D610;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="bi"></m:sty></m:rPr><m:t>&#x1D64E;&#x1D641;&#x1D63D;&#x1D644;&#x1D7AA;</m:t></m:r><m:r><m:rPr><m:sty m:val="bi"></m:sty></m:rPr><m:t><span class="nostem" style="font-weight:bold;"><em></em>BII</span></m:t></m:r><m:r><m:rPr><m:sty m:val="i"></m:sty></m:rPr><m:t><span class="nostem"><em></em>II</span></m:t></m:r>
+        </m:oMath>
+        </m:oMathPara></div>}, '<div style="mso-element:footnote-list"/>')}
                 #{WORD_FTR1}
       OUTPUT
   end
@@ -430,14 +492,16 @@ RSpec.describe Html2Doc do
   it "processes spaces in MathML mtext" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
-                                <mrow><mi>H</mi><mtext> original </mtext><mi>J</mi></mrow>
+                                <mrow><mi>H</mi><mtext>&#xa0;original&#xa0;</mtext><mi>J</mi></mrow>
                                 </math></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body('<div><m:oMath>
-                <m:r><m:t>H</m:t></m:r><m:r><m:rPr><m:nor></m:nor></m:rPr><m:t>&#xA0;original&#xA0;</m:t></m:r><m:r><m:t>J</m:t></m:r>
-                </m:oMath></div>', '<div style="mso-element:footnote-list"/>')}
+        #{word_body('<div><m:oMathPara>
+                <m:oMath>
+                <m:r><m:t>H</m:t></m:r><m:r><m:t>&#xA0;original&#xA0;</m:t></m:r><m:r><m:t>J</m:t></m:r>
+                </m:oMath>
+                </m:oMathPara></div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end
@@ -450,9 +514,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body('<div><m:oMath>
+        #{word_body('<div><m:oMathPara>
+                <m:oMath>
                 <m:acc><m:accPr><m:chr m:val="&#x302;"></m:chr></m:accPr><m:e><m:r><m:t>p</m:t></m:r></m:e></m:acc>
-                </m:oMath></div>', '<div style="mso-element:footnote-list"/>')}
+                </m:oMath>
+                </m:oMathPara></div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end
@@ -464,8 +530,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-        #{word_body('<div><m:oMath>
-                   <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:grow m:val="on"></m:grow><m:subHide m:val="off"></m:subHide><m:supHide m:val="off"></m:supHide></m:naryPr><m:sub><m:r><m:t>i=0</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>2</m:t></m:r></m:e><m:sup><m:r><m:t>i</m:t></m:r></m:sup></m:sSup></m:e></m:nary></m:oMath></div>', '<div style="mso-element:footnote-list"/>')}
+        #{word_body('<div><m:oMathPara>
+                   <m:oMath>
+                   <m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val="undOvr"></m:limLoc><m:subHide m:val="0"></m:subHide><m:supHide m:val="0"></m:supHide></m:naryPr><m:sub><m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:r><m:t>&#x200B;</m:t></m:r></m:e></m:nary><m:sSup><m:sSupPr><m:ctrlPr><w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"></w:rFonts><w:i></w:i></w:rPr></m:ctrlPr></m:sSupPr><m:e><m:r><m:t>2</m:t></m:r></m:e><m:sup><m:r><m:t>i</m:t></m:r></m:sup></m:sSup>
+                  </m:oMath>
+                  </m:oMathPara></div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT
   end
@@ -476,9 +545,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
                 #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-                #{word_body('<div><p class="MsoNormal"><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
-        <m:r><m:t>i=0</m:t></m:r>
-        </m:oMath></m:oMathPara></p></div>',
+                #{word_body('<div><p class="MsoNormal"><m:oMathPara>
+        <m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r>
+        </m:oMath>
+        </m:oMathPara></p></div>',
                             '<div style="mso-element:footnote-list"/>')}
                 #{WORD_FTR1}
       OUTPUT
@@ -488,9 +559,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
                 #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-                #{word_body('<div><p style="vertical-align:center;text-align:right;" class="MsoNormal"><m:oMathPara><m:oMathParaPr><m:jc m:val="right"/></m:oMathParaPr><m:oMath>
-        <m:r><m:t>i=0</m:t></m:r>
-        </m:oMath></m:oMathPara></p></div>',
+                #{word_body('<div><p style="vertical-align:center;text-align:right;" class="MsoNormal"><m:oMathPara>
+        <m:oMathParaPr><m:jc m:val="right"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r>
+        </m:oMath>
+        </m:oMathPara></p></div>',
                             '<div style="mso-element:footnote-list"/>')}
                 #{WORD_FTR1}
       OUTPUT
@@ -500,9 +573,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
                 #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-                #{word_body('<div><p style="vertical-align:center;text-align:left;" class="MsoNormal"><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
-        <m:r><m:t>i=0</m:t></m:r>
-        </m:oMath></m:oMathPara></p></div>',
+                #{word_body('<div><p style="vertical-align:center;text-align:left;" class="MsoNormal"><m:oMathPara>
+        <m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r>
+        </m:oMath>
+        </m:oMathPara></p></div>',
                             '<div style="mso-element:footnote-list"/>')}
                 #{WORD_FTR1}
       OUTPUT
@@ -512,9 +587,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
                 #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-                #{word_body('<div><table><tr><th><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
-        <m:r><m:t>i=0</m:t></m:r>
-        </m:oMath></m:oMathPara></th></tr></table></div>',
+                #{word_body('<div><table><tr><th><m:oMathPara>
+        <m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r>
+        </m:oMath>
+        </m:oMathPara></th></tr></table></div>',
                             '<div style="mso-element:footnote-list"/>')}
                 #{WORD_FTR1}
       OUTPUT
@@ -524,9 +601,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
                 #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-                #{word_body('<div><p class="MsoNormal"><m:oMath>
-        <m:r><m:t>i=0</m:t></m:r>
-        </m:oMath></p></div>',
+                #{word_body('<div><p class="MsoNormal"><m:oMathPara>
+        <m:oMath>
+        <m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r>
+        </m:oMath>
+        </m:oMathPara></p></div>',
                             '<div style="mso-element:footnote-list"/>')}
                 #{WORD_FTR1}
       OUTPUT
@@ -537,7 +616,7 @@ RSpec.describe Html2Doc do
       .to match_fuzzy(<<~OUTPUT)
                 #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
                 #{word_body('<div><p class="MsoNormal"><i>a</i><m:oMath>
-        <m:r><m:t>i=0</m:t></m:r>
+        <m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r>
         </m:oMath></p></div>',
                             '<div style="mso-element:footnote-list"/>')}
                 #{WORD_FTR1}
@@ -548,9 +627,11 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
                 #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-                #{word_body('<div><p class="MsoNormal"><span> </span><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
-        <m:r><m:t>i=0</m:t></m:r>
-        </m:oMath></m:oMathPara></p></div>',
+                #{word_body('<div><p class="MsoNormal"><span> </span><m:oMathPara>
+        <m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r>
+        </m:oMath>
+        </m:oMathPara></p></div>',
                             '<div style="mso-element:footnote-list"/>')}
                 #{WORD_FTR1}
       OUTPUT
@@ -561,12 +642,16 @@ RSpec.describe Html2Doc do
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
                 #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-                #{word_body('<div><p class="MsoNormal"><m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
-        <m:r><m:t>i=0</m:t></m:r>
-        </m:oMath></m:oMathPara><br/>
-        <m:oMathPara><m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
-        <m:r><m:t>i=0</m:t></m:r>
-        </m:oMath></m:oMathPara></p></div>',
+                #{word_body('<div><p class="MsoNormal"><m:oMathPara>
+        <m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r>
+        </m:oMath>
+        </m:oMathPara><br/>
+        <m:oMathPara>
+        <m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
+        <m:r><m:t>i</m:t></m:r><m:r><m:t>=</m:t></m:r><m:r><m:t>0</m:t></m:r>
+        </m:oMath>
+        </m:oMathPara></p></div>',
                             '<div style="mso-element:footnote-list"/>')}
                 #{WORD_FTR1}
       OUTPUT
