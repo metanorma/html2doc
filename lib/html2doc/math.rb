@@ -38,13 +38,13 @@ class Html2Doc
 
   # random fixes to MathML input that OOXML needs to render properly
   def ooxml_cleanup(math, docnamespaces)
-    #encode_math(
-      unwrap_accents(
-        mathml_preserve_space(
-          mathml_insert_rows(math, docnamespaces), docnamespaces
-        ),
-      )
-    #)
+    # encode_math(
+    unwrap_accents(
+      mathml_preserve_space(
+        mathml_insert_rows(math, docnamespaces), docnamespaces
+      ),
+    )
+    # )
     math.add_namespace(nil, MATHML_NS)
     math
   end
@@ -165,9 +165,9 @@ class Html2Doc
   def mathml_to_ooml1(xml, docnamespaces)
     doc = Nokogiri::XML::Document::new
     doc.root = ooxml_cleanup(xml, docnamespaces)
-    d = xml.parent["block"] != "false" # display_style
-    ooxml = Nokogiri::XML(Plurimath::Math.parse(doc.to_xml(indent: 0),
-                                                :mathml).to_omml)
+    # d = xml.parent["block"] != "false" # display_style
+    ooxml = Nokogiri::XML(Plurimath::Math
+      .parse(doc.to_xml(indent: 0), :mathml).to_omml(split_on_linebreak: true))
     ooxml = unitalic(accent_tr(ooxml))
     ooxml = ooml_clean(uncenter(xml, ooxml))
     xml.swap(ooxml)
@@ -201,9 +201,10 @@ class Html2Doc
     x.text.strip.empty?
   end
 
-  def math_block?(_ooxml, mathml)
+  def math_block?(ooxml, mathml)
     # ooxml.name == "oMathPara" || mathml["displaystyle"] == "true"
-    mathml["displaystyle"] == "true"
+    mathml["displaystyle"] == "true" &&
+      ooxml.xpath("./m:oMath", "m" => OOXML_NS).size <= 1
   end
 
   STYLE_BEARING_NODE =
@@ -227,11 +228,9 @@ class Html2Doc
 
   def uncenter_unneeded(math, ooxml, alignnode)
     (math_block?(ooxml, math) || !alignnode) and return ooxml
-    if !math_only_para?(alignnode)
-      ooxml.name == "oMathPara" and
-        ooxml = ooxml.elements.detect { |x| x.name == "oMath" }
-      return ooxml
-    end
-    nil
+    math_only_para?(alignnode) and return nil
+    ooxml.name == "oMathPara" and
+      ooxml = ooxml.elements.select { |x| %w(oMath r).include?(x.name) }
+    ooxml.size > 1 ? nil : Nokogiri::XML::NodeSet.new(math.document, ooxml)
   end
 end
