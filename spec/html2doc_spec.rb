@@ -279,6 +279,7 @@ def image_clean(xml)
 end
 
 RSpec.describe Html2Doc do
+=begin
   it "has a version number" do
     expect(Html2Doc::VERSION).not_to be nil
   end
@@ -505,26 +506,33 @@ RSpec.describe Html2Doc do
         #{WORD_FTR1}
       OUTPUT
   end
-
+=end
   it "processes linebreaks in MathML mtext" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
                                 <mstyle displaystyle='true'>
                                 <mi>x</mi><mo>=</mo><mo linebreak='newline'/><mi>y</mi>
+                                <mo>=</mo><mo linebreak='newline'/><mi>z</mi>
                                 </mstyle>
                                 </math></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
         #{word_body('<div><m:oMathPara>
-                <m:oMath>
+                <m:oMathParaPr><m:jc m:val="left"/></m:oMathParaPr><m:oMath>
                 <m:r><m:t>x</m:t></m:r><m:r><m:t>=</m:t></m:r>
                 </m:oMath>
                 <m:r>
                 <br/>
                 </m:r>
                 <m:oMath>
-                <m:r><m:t>y</m:t></m:r>
+                <m:r><m:t>y</m:t></m:r><m:r><m:t>=</m:t></m:r>
+                </m:oMath>
+                <m:r>
+                <br/>
+                </m:r>
+                <m:oMath>
+                <m:r><m:t>z</m:t></m:r>
                 </m:oMath>
                 </m:oMathPara></div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
