@@ -229,8 +229,8 @@ class Html2Doc
     (math_block?(ooxml, math) || !alignnode) and return ooxml
     if !math_only_para?(alignnode)
       ooxml.name == "oMathPara" and
-        ooxml = ooxml.elements.detect { |x| x.name == "oMath" }
-      return ooxml
+        ooxml = ooxml.elements.select { |x| x.name == "oMath" }
+      return Nokogiri::XML::NodeSet.new(math.document, ooxml)
     end
     nil
   end
