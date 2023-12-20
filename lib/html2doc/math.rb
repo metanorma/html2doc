@@ -165,10 +165,9 @@ class Html2Doc
   def mathml_to_ooml1(xml, docnamespaces)
     doc = Nokogiri::XML::Document::new
     doc.root = ooxml_cleanup(xml, docnamespaces)
-    # ooxml = @xsltemplate.transform(doc)
-    d = xml.parent["block"] != "false" # display_style
-    ooxml = Nokogiri::XML(Plurimath::Math.parse(doc.to_xml(indent: 0),
-                                                :mathml).to_omml)
+    #d = xml.parent["block"] != "false" # display_style
+    ooxml = Nokogiri::XML(Plurimath::Math
+      .parse(doc.to_xml(indent: 0), :mathml).to_omml(split_on_linebreak: true))
     ooxml = unitalic(accent_tr(ooxml))
     ooxml = ooml_clean(uncenter(xml, ooxml))
     xml.swap(ooxml)
