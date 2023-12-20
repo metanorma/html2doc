@@ -279,7 +279,6 @@ def image_clean(xml)
 end
 
 RSpec.describe Html2Doc do
-=begin
   it "has a version number" do
     expect(Html2Doc::VERSION).not_to be nil
   end
@@ -506,7 +505,7 @@ RSpec.describe Html2Doc do
         #{WORD_FTR1}
       OUTPUT
   end
-=end
+
   it "processes linebreaks in MathML mtext" do
     Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
