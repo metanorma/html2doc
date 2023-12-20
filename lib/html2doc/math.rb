@@ -233,18 +233,4 @@ class Html2Doc
       ooxml = ooxml.elements.select { |x| %w(oMath r).include?(x.name) }
     ooxml.size > 1 ? nil : Nokogiri::XML::NodeSet.new(math.document, ooxml)
   end
-
-  # first = true
-  #         ooxml.reverse.map do |e|
-  #           if e.name == "oMath" && first
-  #             first = false
-  #             e
-  #           elsif e.name == "oMath"
-  #             e.wrap("<m:oMathPara><m:oMathPara>").previous = "<m:oMathParaPr><m:jc m:val='left'/></m:oMathParaPr>"
-  #             e.parent
-  #           else
-  #             e
-  #           end
-  #           e.name == "oMath" and first = false
-  #         end.reverse
 end
