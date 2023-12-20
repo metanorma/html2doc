@@ -15,9 +15,6 @@ class Html2Doc
     @liststyles = hash[:liststyles]
     @stylesheet = hash[:stylesheet]
     @c = HTMLEntities.new
-    @xsltemplate =
-      Nokogiri::XSLT(File.read(File.join(File.dirname(__FILE__), "mml2omml.xsl"),
-                               encoding: "utf-8"))
   end
 
   def process(result)

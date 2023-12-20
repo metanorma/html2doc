@@ -24,7 +24,7 @@ The gem currently does the following:
 
 * Convert any AsciiMath and MathML to Word's native mathematical formatting language, OOXML. Word supports copy-pasting MathML into Word and converting it into OOXML; however the conversion is not infallible (we have in the past found problems with `\sum`: Word claims parameters were missing, and inserting dotted squares to indicate as much), and you may need to post-edit the OOXML.
 ** The gem does attempt to repair the MathML input, to bring it in line with Word's OOXML's expectations. If you find any issues with AsciiMath or MathML input, please raise an issue.
-* Identify any footnotes in the document (defined as hyperlinks with attributes `class = "Footnote"` or `epub:type = "footnote"`), and render them as Microsoft Word footnotes. 
+* Identify any footnotes in the document (defined as hyperlinks with attributes `class = "Footnote"` or `epub:type = "footnote"`), and render them as Microsoft Word footnotes.
 ** The corresponding footnote content is any `div` or `aside` element with the same `@id` attribute as the footnote points to; e.g. `<a href="#ftn1" epub:type="footnote"><sup>3</sup></a></span>`, pointing to `<aside id="ftn3">`.
 ** By default, the footnote hyperlink contents are overwritten with the autonumbering element: `<a href="#ftn1" epub:type="footnote"><sup>1</sup></a>` is replaced with `<a style='mso-footnote-id:ftn1' href='#_ftn1' name='_ftnref1' title='' id='_ftnref1'><span class='MsoFootnoteReference'><span style='mso-special-character:footnote'/></span>`
 ** If the footnote hyperlink already contains (as a child) an element marked up as `<span class='MsoFootnoteReference'>`, only that span is replaced by the Microsoft autonumber element; any text surrounding it is preserved in both the footnote reference and the footnote target. For example, `<a href="#ftn1" epub:type="footnote"><span class='MsoFootnoteReference'>1</span>)</a>` will render as the footnote _1)_, both in the link and the target.
@@ -116,21 +116,41 @@ The bad news is that Word's understanding of HTML is HTML 4. In order for bookma
 
 The good news with generating a Word document via HTML is that Word understands CSS, and you can determine much of what the Word document looks like by manipulating that CSS. That extends to features that are not part of HTML CSS: if you want to work out how to get Word to do something in CSS, save a Word document that already does what you want as HTML, and inspect the HTML and CSS you get.
 
-The bad news is that Word's implementation of CSS is poorly documented -- even if Office HTML is documented in a 1300 page document (online at https://stigmortenmyre.no/mso/, https://www.rodriguezcommaj.com/assets/resources/microsoft-office-html-and-xml-reference.pdf), and the CSS selectors are only partially and selectively implemented. For list styles, for example, `mso-level-text` governs how the list label is displayed; but it is only recognised in a `@list` style: it is ignored in a CSS rule like `ol li`, or in a `style` attribute on a node. CSS selectors only support classes, in ancestor relations: `p.class1 ol.class2` is supported, but `#id1` is not, and neither is `p > ol`. Working out the right CSS for what you want will take some trial and error, and you are better placed to try to do things Word's way than the right way.
+The bad news is that Word's implementation of CSS is poorly documented -- even
+if Office HTML is documented in a 1300 page document (online
+https://stigmortenmyre.no/mso/[here] and
+https://www.rodriguezcommaj.com/assets/resources/microsoft-office-html-and-xml-reference.pdf[here]),
+and the CSS selectors are only partially and selectively implemented. For list
+styles, for example, `mso-level-text` governs how the list label is displayed;
+but it is only recognised in a `@list` style: it is ignored in a CSS rule like
+`ol li`, or in a `style` attribute on a node. CSS selectors only support
+classes, in ancestor relations: `p.class1 ol.class2` is supported, but `#id1` is
+not, and neither is `p > ol`. Working out the right CSS for what you want will
+take some trial and error, and you are better placed to try to do things Word's
+way than the right way.
 
-=== XSLT
+=== Math
 
-This gem is published with an early draft of the XSLT stylesheet transforming MathML into OOXML, `mml2omml.xsl`, that has published for several years now as part of the https://github.com/TEIC/Stylesheets[TEI stylesheet set]. (We have made some further minor edits to the stylesheet.) The stylesheets have been published under a dual Creative Commons Sharealike/BSD licence.
+Word uses OMML instead of W3C's MathML which is now the de-facto standard of XML
+math representation.
 
-The good news is that the stylesheet is not identical to the stylesheet `mathml2omml.xsl` that is published with Microsoft Word, so it can and has been redistributed.
+The https://github.com/plurimath/plurimath[Plurimath gem] is used to convert
+Metanorma's MathML into OMML.
 
-The bad news is that the stylesheet is not identical to the stylesheet `mathml2omml.xsl` that is published with Microsoft Word, so it isn't guaranteed to have identical output. If you want to make sure that your MathML import is identical to what Word currently uses, replace `mml2omml.xsl` with `mathml2omml.xsl`, and edit the gem accordingly for your local installation. On Windows, you will find the stylesheet in the same directory as the `winword.exe` executable. On Mac, right-click on the Word application, and select "Show Package Contents"; you will find the stylesheet under `Contents/Resources`.
+NOTE: Previously `html2doc` use a modified, early draft of the XSLT stylesheet
+`mml2omml.xsl`, published by the
+https://github.com/TEIC/Stylesheets[TEI stylesheet set] (CC/BSD licensed).
+
+=== Math Positioning
+
+By default, mathematical formulas that are the only content of their paragraph
+are rendered as centered in Word. If you want your AsciiMath or MathML to be
+left-aligned or right-aligned, add `style="text-align:left"` or
+`style="text-align:right"` to its ancestor `div`, `p` or `td` node in HTML.
+
 
 === Lists
 Natively, Word does not use `<ol>`, `<ul>`, or `<dl>` lists in its HTML exports at all: it uses paragraphs styled with list styles. If you save a Word document as HTML in order to use its CSS for Word documents generated by HTML, those styles will still work (with the caveat that you will need to extract the `@list` style specific to ordered and unordered lists, and pass it as a `liststyles` parameter to the conversion). Word HTML understands `<ol>, <ul>, <li>`, but its rendering is fragile: in particular, any instance of `<p>` within a `<li>` is treated as a new list item (so Word HTML will not let you have multi-paragraph list items if you use native HTML.) This gem now exports lists as Word HTML prefers to see them, with `MsoListParagraphCxSpFirst, MsoListParagraphCxSpMiddle, MsoListParagraphCxSpLast` styles. You will need to include these in the CSS stylesheet you supply, in order to get the right indentation for lists.
-
-=== Math Positioning
-By default, mathematical formulas that are the only content of their paragraph are rendered as centered in Word. If you want your AsciiMath or MathML to be left-aligned or right-aligned, add `style="text-align:left"` or `style="text-align:right"` to its ancestor `div`, `p` or `td` node in HTML.
 
 == Example
 
