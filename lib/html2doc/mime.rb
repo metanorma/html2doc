@@ -1,8 +1,8 @@
 require "uuidtools"
 require "base64"
 require "mime/types"
-require "image_size"
 require "fileutils"
+require "vectory"
 
 class Html2Doc
   def mime_preamble(boundary, filename, result)
@@ -98,9 +98,9 @@ class Html2Doc
       local_filename = rename_image(i, dir, localdir)
       i["width"], i["height"] =
         if landscape?(i)
-          Metanorma::Utils.image_resize(i, local_filename, maxwidth, maxheight)
+          Vectory.image_resize(i, local_filename, maxwidth, maxheight)
         else
-          Metanorma::Utils.image_resize(i, local_filename, maxheight, maxwidth)
+          Vectory.image_resize(i, local_filename, maxheight, maxwidth)
         end
     end
     docxml
