@@ -167,7 +167,7 @@ class Html2Doc
     doc.root = ooxml_cleanup(xml, docnamespaces)
     # d = xml.parent["block"] != "false" # display_style
     ooxml = Nokogiri::XML(Plurimath::Math
-      .parse(doc.to_xml(indent: 0), :mathml).to_omml(split_on_linebreak: true))
+      .parse(doc.root.to_xml(indent: 0), :mathml).to_omml(split_on_linebreak: true))
     ooxml = unitalic(accent_tr(ooxml))
     ooxml = ooml_clean(uncenter(xml, ooxml))
     xml.swap(ooxml)
