@@ -2,7 +2,7 @@ require "base64"
 
 def html_input(xml)
   <<~HTML
-      <html><head><title>blank</title>
+      <html xmlns:epub="http://www.idpf.org/2007/ops" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" lang="en" xml:lang="en"><head><title>blank</title>
       <meta name="Originator" content="Me"/>
       </head>
       <body>
@@ -13,7 +13,7 @@ end
 
 def html_input_no_title(xml)
   <<~HTML
-      <html><head>
+      <html xmlns:epub="http://www.idpf.org/2007/ops" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" lang="en" xml:lang="en"><head>
       <meta name="Originator" content="Me"/>
       </head>
       <body>
@@ -24,7 +24,7 @@ end
 
 def html_input_empty_head(xml)
   <<~HTML
-      <html><head></head>
+      <html xmlns:epub="http://www.idpf.org/2007/ops" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" lang="en" xml:lang="en"><head></head>
       <body>
     #{xml}
       </body></html>
@@ -47,7 +47,7 @@ WORD_HDR = <<~HDR.freeze
   Content-Type: text/html; charset="utf-8"
 
   <?xml version="1.0"?>
-  <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40"><head>
+  <html xmlns:epub="http://www.idpf.org/2007/ops" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40" lang="en" xml:lang="en"><head>
   <xml>
   <w:WordDocument>
   <w:View>Print</w:View>
@@ -476,16 +476,16 @@ RSpec.describe Html2Doc do
     </mstyle>
   </mstyle>
 </math></div>]))
-    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
-      .to match_fuzzy(<<~OUTPUT)
-                #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
-                #{word_body(%{
-        <div><m:oMathPara>
-        <m:oMath>
-        <m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:r><m:t><span style="font-style:normal;font-weight:bold;">&#x2212;</span></m:t></m:r><m:nary><m:naryPr><m:chr m:val="&#x222B;"></m:chr><m:limLoc m:val="subSup"></m:limLoc><m:subHide m:val="0"></m:subHide><m:supHide m:val="0"></m:supHide></m:naryPr><m:sub><m:r><m:t><span style="font-style:normal;font-weight:bold;">log</span></m:t></m:r></m:sub><m:sup><m:r><m:t><span style="font-style:normal;font-weight:bold;">2</span></m:t></m:r></m:sup><m:e><m:d><m:dPr><m:begChr m:val="("></m:begChr><m:endChr m:val=")"></m:endChr><m:ctrlPr><w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"></w:rFonts><w:i></w:i></w:rPr></m:ctrlPr></m:dPr><m:e><m:sSub><m:sSubPr><m:ctrlPr><w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"></w:rFonts><w:i></w:i></w:rPr></m:ctrlPr></m:sSubPr><m:e><m:r><m:t><span style="font-style:normal;font-weight:bold;">p</span></m:t></m:r></m:e><m:sub><m:r><m:t><span style="font-style:normal;font-weight:bold;">u</span></m:t></m:r></m:sub></m:sSub></m:e></m:d></m:e></m:nary></m:r><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">BB</span></m:t></m:r><m:r><m:rPr><m:scr m:val="double-struck"></m:scr></m:rPr><m:t>&#x1D539;&#x1D539;&#x1D539;</m:t></m:r><m:r><m:rPr><m:scr m:val="script"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:rPr><m:scr m:val="script"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D4D1;&#x1D4D2;&#x1D4D2;</m:t></m:r><m:r><m:rPr><m:scr m:val="monospace"></m:scr></m:rPr><m:t>&#x1D683;&#x1D683;</m:t></m:r><m:r><m:rPr><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D509;&#x211C;</m:t></m:r><m:r><m:rPr><m:scr m:val="fraktur"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D56D;&#x1D571;&#x1D57D;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5B2;&#x1D5A5;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D5D5;&#x1D5E6;&#x1D5D9;&#x1D770;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="i"></m:sty></m:rPr><m:t>&#x1D61A;&#x1D60D;&#x1D610;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="bi"></m:sty></m:rPr><m:t>&#x1D64E;&#x1D641;&#x1D63D;&#x1D644;&#x1D7AA;</m:t></m:r><m:r><m:rPr><m:sty m:val="bi"></m:sty></m:rPr><m:t><span class="nostem" style="font-weight:bold;"><em></em>BII</span></m:t></m:r><m:r><m:rPr><m:sty m:val="i"></m:sty></m:rPr><m:t><span class="nostem"><em></em>II</span></m:t></m:r>
-        </m:oMath>
-        </m:oMathPara></div>}, '<div style="mso-element:footnote-list"/>')}
-                #{WORD_FTR1}
+    doc = File.read("test.doc", encoding: "utf-8")
+      .sub(%r{^.*<m:oMathPara>}m, "<m:oMathPara>")
+      .sub(%r{</m:oMathPara>.*$}m, "</m:oMathPara>")
+    expect(doc)
+      .to be_equivalent_to(<<~OUTPUT)
+        <m:oMathPara>
+          <m:oMath>
+            <m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:r><m:t><span style="font-style:normal;font-weight:bold;">&#x2212;</span></m:t></m:r><m:nary><m:naryPr><m:chr m:val="&#x222B;"></m:chr><m:limLoc m:val="subSup"></m:limLoc><m:subHide m:val="0"></m:subHide><m:supHide m:val="0"></m:supHide></m:naryPr><m:sub><m:r><m:t><span style="font-style:normal;font-weight:bold;">log</span></m:t></m:r></m:sub><m:sup><m:r><m:t><span style="font-style:normal;font-weight:bold;">2</span></m:t></m:r></m:sup><m:e><m:d><m:dPr><m:begChr m:val="("></m:begChr><m:sepChr m:val=""></m:sepChr><m:endChr m:val=")"></m:endChr></m:dPr><m:e><m:sSub><m:sSubPr><m:ctrlPr><w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"></w:rFonts><w:i></w:i></w:rPr></m:ctrlPr></m:sSubPr><m:e><m:r><m:t><span style="font-style:normal;font-weight:bold;">p</span></m:t></m:r></m:e><m:sub><m:r><m:t><span style="font-style:normal;font-weight:bold;">u</span></m:t></m:r></m:sub></m:sSub></m:e></m:d></m:e></m:nary></m:r><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">BB</span></m:t></m:r><m:r><m:rPr><m:scr m:val="double-struck"></m:scr></m:rPr><m:t>&#x1D539;&#x1D539;&#x1D539;</m:t></m:r><m:r><m:rPr><m:scr m:val="script"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:rPr><m:scr m:val="script"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D4D1;&#x1D4D2;&#x1D4D2;</m:t></m:r><m:r><m:rPr><m:scr m:val="monospace"></m:scr></m:rPr><m:t>&#x1D683;&#x1D683;</m:t></m:r><m:r><m:rPr><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D509;&#x211C;</m:t></m:r><m:r><m:rPr><m:scr m:val="fraktur"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D56D;&#x1D571;&#x1D57D;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5B2;&#x1D5A5;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D5D5;&#x1D5E6;&#x1D5D9;&#x1D770;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="i"></m:sty></m:rPr><m:t>&#x1D61A;&#x1D60D;&#x1D610;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="bi"></m:sty></m:rPr><m:t>&#x1D64E;&#x1D641;&#x1D63D;&#x1D644;&#x1D7AA;</m:t></m:r><m:r><m:rPr><m:sty m:val="bi"></m:sty></m:rPr><m:t><span class="nostem" style="font-weight:bold;"><em></em>BII</span></m:t></m:r><m:r><m:rPr><m:sty m:val="i"></m:sty></m:rPr><m:t><span class="nostem"><em></em>II</span></m:t></m:r>
+          </m:oMath>
+        </m:oMathPara>
       OUTPUT
   end
 

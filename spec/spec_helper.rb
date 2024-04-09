@@ -4,8 +4,10 @@ SimpleCov.start do
 end
 
 require "bundler/setup"
-require 'rspec/match_fuzzy'
+require "rspec/match_fuzzy"
 require "html2doc"
+require "rspec/matchers"
+require "equivalent-xml"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

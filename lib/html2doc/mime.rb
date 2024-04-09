@@ -124,7 +124,7 @@ class Html2Doc
 
   def skip_image_cleanup?(img)
     src = img["src"]
-    (img.element? && %w(img v:imagedata).include?(img.name)) or return true
+    (img.element? && %w(img imagedata).include?(img.name)) or return true
     (src.nil? || src.empty? || /^http/.match?(src) ||
       %r{^data:(image|application)/[^;]+;base64}.match?(src)) and return true
     false
