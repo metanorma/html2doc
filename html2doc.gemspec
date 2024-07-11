@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
   end
   spec.required_ruby_version = Gem::Requirement.new(">= 2.7.0")
 
+  spec.add_dependency "base64"
   spec.add_dependency "htmlentities", "~> 4.3.4"
   spec.add_dependency "metanorma-utils", "~> 1.8.0"
   spec.add_dependency "mime-types"
