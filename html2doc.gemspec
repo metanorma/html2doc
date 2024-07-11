@@ -27,7 +27,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = Gem::Requirement.new(">= 2.7.0")
 
   spec.add_dependency "htmlentities", "~> 4.3.4"
-  spec.add_dependency "metanorma-utils", "~> 1.7.0"
+  spec.add_dependency "metanorma-utils", "~> 1.8.0"
   spec.add_dependency "mime-types"
   spec.add_dependency "nokogiri", "~> 1.16"
   spec.add_dependency "plane1converter", "~> 0.0.1"
