@@ -48,7 +48,7 @@ class Html2Doc
   end
 
   def mime_boundary
-    salt = UUIDTools::UUID.random_create.to_s.gsub(/-/, ".")[0..17]
+    salt = UUIDTools::UUID.random_create.to_s.tr("-", ".")[0..17]
     "----=_NextPart_#{salt}"
   end
 
@@ -67,10 +67,10 @@ class Html2Doc
   end
 
   def contentid(mhtml)
-    mhtml.gsub %r{(<img[^>]*?src=")([^"']+)(['"])}m do |m|
+    mhtml.gsub %r{(<img[^>]*?src=")([^"'<]+)(['"])}m do |m|
       repl = "#{$1}cid:#{File.basename($2)}#{$3}"
       /^data:|^https?:/ =~ $2 ? m : repl
-    end.gsub %r{(<v:imagedata[^>]*?src=")([^"']+)(['"])}m do |m|
+    end.gsub %r{(<v:imagedata[^>]*?src=")([^"'<]+)(['"])}m do |m|
       repl = "#{$1}cid:#{File.basename($2)}#{$3}"
       /^data:|^https?:/ =~ $2 ? m : repl
     end

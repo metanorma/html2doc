@@ -8,12 +8,12 @@ class Html2Doc
   HERE
 
   def to_xhtml(xml)
-    xml.gsub!(/<\?xml[^>]*>/, "")
+    xml.gsub!(/<\?xml[^<>]*>/, "")
     unless /<!DOCTYPE /.match? xml
       xml = '<!DOCTYPE html SYSTEM
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' + xml
     end
-    xml = xml.gsub(/<!--\s*\[([^\]]+)\]>/, "<!-- MSWORD-COMMENT \\1 -->")
+    xml = xml.gsub(/<!--\s*\[([^\<\]]+)\]>/, "<!-- MSWORD-COMMENT \\1 -->")
       .gsub(/<!\s*\[endif\]\s*-->/, "<!-- MSWORD-COMMENT-END -->")
     Nokogiri::XML.parse(xml)
   end
@@ -38,7 +38,7 @@ class Html2Doc
               '<span style="mso-special-character:footnote"></span>')
     doc.gsub!(%r{<div style="mso-element:footnote-list"></div>},
               '<div style="mso-element:footnote-list"/>')
-    doc.gsub!(%r{(<a style="mso-comment-reference:[^>/]+)/>}, "\\1></a>")
+    doc.gsub!(%r{(<a style="mso-comment-reference:[^<>/]+)/>}, "\\1></a>")
     doc.gsub!(%r{<link rel="File-List"}, "<link rel=File-List")
     doc.gsub!(%r{<meta http-equiv="Content-Type"},
               "<meta http-equiv=Content-Type")
