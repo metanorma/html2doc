@@ -67,10 +67,10 @@ class Html2Doc
   end
 
   def contentid(mhtml)
-    mhtml.gsub %r{(<img[^>]*?src=")([^"'<]+)(['"])}m do |m|
+    mhtml.gsub %r{(<img[^<>]*?src=")([^"'<]+)(['"])}m do |m|
       repl = "#{$1}cid:#{File.basename($2)}#{$3}"
       /^data:|^https?:/ =~ $2 ? m : repl
-    end.gsub %r{(<v:imagedata[^>]*?src=")([^"'<]+)(['"])}m do |m|
+    end.gsub %r{(<v:imagedata[^<>]*?src=")([^"'<]+)(['"])}m do |m|
       repl = "#{$1}cid:#{File.basename($2)}#{$3}"
       /^data:|^https?:/ =~ $2 ? m : repl
     end
