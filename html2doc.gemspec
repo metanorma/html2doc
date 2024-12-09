@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "htmlentities", "~> 4.3.4"
   spec.add_dependency "metanorma-utils", ">= 1.9.0"
   spec.add_dependency "mime-types"
-  spec.add_dependency "nokogiri", "~> 1.16"
+  spec.add_dependency "nokogiri", "~> 1.16.8"
   spec.add_dependency "plane1converter", "~> 0.0.1"
   spec.add_dependency "plurimath", "~> 0.8.0"
   spec.add_dependency "thread_safe"
