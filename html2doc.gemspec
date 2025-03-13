@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "mime-types"
   spec.add_dependency "nokogiri", "~> 1.16.8"
   spec.add_dependency "plane1converter", "~> 0.0.1"
-  spec.add_dependency "plurimath", "~> 0.8.0"
+  spec.add_dependency "plurimath", "~> 0.9.0"
   spec.add_dependency "thread_safe"
   spec.add_dependency "uuidtools"
   spec.add_dependency "unitsml"
@@ -45,7 +45,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 12.0"
   spec.add_development_dependency "rspec", "~> 3.6"
   spec.add_development_dependency "rspec-match_fuzzy", "~> 0.2.0"
-  spec.add_development_dependency "rubocop", "~> 1.5.2"
+  spec.add_development_dependency "rubocop", "~> 1"
+  spec.add_development_dependency "rubocop-performance"
   spec.add_development_dependency "simplecov", "~> 0.15"
   spec.add_development_dependency "timecop", "~> 0.9"
 end
