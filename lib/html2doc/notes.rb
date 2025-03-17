@@ -2,22 +2,27 @@ require "uuidtools"
 
 class Html2Doc
   def footnotes(docxml)
-    i = 1
+    #i = 1
+    indexes = {}
+    @footnote_idx = 1
     fn = []
     docxml.xpath("//a").each do |a|
-      next unless process_footnote_link(docxml, a, i, fn)
-
-      i += 1
+      process_footnote_link(docxml, a, indexes, fn) or next
+      #i += 1
     end
-    process_footnote_texts(docxml, fn)
+    process_footnote_texts(docxml, fn, indexes)
   end
 
-  def process_footnote_texts(docxml, footnotes)
+  # Currently cannot deal with separate footnote containers in each chapter
+  # We may eventually need to support that
+  def process_footnote_texts(docxml, footnotes, indexes)
     body = docxml.at("//body")
     list = body.add_child("<div style='mso-element:footnote-list'/>")
-    footnotes.each_with_index do |f, i|
-      fn = list.first.add_child(footnote_container(docxml, i + 1))
+    footnotes.each do |f|
+      #require 'debug'; binding.b
+      fn = list.first.add_child(footnote_container(docxml, indexes[f["id"]]))
       f.parent = fn.first
+      f["id"] = ""
       footnote_div_to_p(f)
     end
     footnote_cleanup(docxml)
@@ -47,14 +52,17 @@ class Html2Doc
     DIV
   end
 
-  def process_footnote_link(docxml, elem, idx, footnote)
-    return false unless footnote?(elem)
-
+  def process_footnote_link(docxml, elem, indexes, footnote)
+    footnote?(elem) or return false
     href = elem["href"].gsub(/^#/, "")
+    #require "debug"; binding.b
     note = docxml.at("//*[@name = '#{href}' or @id = '#{href}']")
-    return false if note.nil?
-
-    set_footnote_link_attrs(elem, idx)
+    note.nil? and return false
+unless indexes[href] 
+  indexes[href] = @footnote_idx
+@footnote_idx += 1
+end
+    set_footnote_link_attrs(elem, indexes[href])
     if elem.at("./span[@class = 'MsoFootnoteReference']")
       process_footnote_link1(elem)
     else elem.children = FN
@@ -73,7 +81,7 @@ class Html2Doc
   end
 
   def transform_footnote_text(note)
-    note["id"] = ""
+    #note["id"] = ""
     note.xpath(".//div").each { |div| div.replace(div.children) }
     note.xpath(".//aside | .//p").each do |p|
       p.name = "p"
