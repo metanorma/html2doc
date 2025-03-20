@@ -850,9 +850,9 @@ RSpec.describe Html2Doc do
 
   it "processes epub:type footnotes" do
     simple_body = '<div>This is a very simple
-     document<a epub:type="footnote" href="#a1">1</a> allegedly<a epub:type="footnote" href="#a2">2</a></div>
-     <aside id="a1">Footnote</aside>
-     <aside id="a2">Other Footnote</aside>'
+     document<a epub:type="footnote" href="#a_632">1</a> allegedly<a epub:type="footnote" href="#a_782">2</a></div>
+     <aside id="a_632">Footnote</aside>
+     <aside id="a_782">Other Footnote</aside>'
     Html2Doc.new(filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
