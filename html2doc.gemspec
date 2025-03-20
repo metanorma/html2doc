@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "base64"
   spec.add_dependency "htmlentities", "~> 4.3.4"
+  spec.add_dependency "lutaml-model", "~> 0.7.0"
   spec.add_dependency "metanorma-utils", ">= 1.9.0"
   spec.add_dependency "mime-types"
   spec.add_dependency "nokogiri", "~> 1.18.3"
