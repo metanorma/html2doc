@@ -167,7 +167,8 @@ class Html2Doc
     doc.root = ooxml_cleanup(xml, docnamespaces)
     # d = xml.parent["block"] != "false" # display_style
     ooxml = Nokogiri::XML(Plurimath::Math
-      .parse(doc.root.to_xml(indent: 0), :mathml).to_omml(split_on_linebreak: true))
+      .parse(doc.root.to_xml(indent: 0), :mathml)
+      .to_omml(split_on_linebreak: true))
     ooxml = unitalic(accent_tr(ooxml))
     ooxml = ooml_clean(uncenter(xml, ooxml))
     xml.swap(ooxml)
@@ -217,13 +218,18 @@ class Html2Doc
     alignnode = math.xpath(STYLE_BEARING_NODE).last
     ooxml.document? and ooxml = ooxml.root
     ret = uncenter_unneeded(math, ooxml, alignnode) and return ret
-    dir = "left"
-    alignnode["style"]&.include?("text-align:right") and dir = "right"
-    ooxml.name == "oMathPara" or
-      ooxml.wrap("<m:oMathPara></m:oMathPara>")
+    dir = ooxml_alignment(alignnode)
+    ooxml.name == "oMathPara" or ooxml.wrap("<m:oMathPara></m:oMathPara>")
     ooxml.elements.first.previous =
       "<m:oMathParaPr><m:jc m:val='#{dir}'/></m:oMathParaPr>"
     ooxml
+  end
+
+  def ooxml_alignment(alignnode)
+    dir = "left"
+    /text-align:\s*right/.match?(alignnode["style"]) and dir = "right"
+    /text-align:\s*center/.match?(alignnode["style"]) and dir = "center"
+    dir
   end
 
   def uncenter_unneeded(math, ooxml, alignnode)
