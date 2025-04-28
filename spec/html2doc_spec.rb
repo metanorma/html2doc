@@ -499,7 +499,7 @@ RSpec.describe Html2Doc do
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
         #{word_body('<div><m:oMathPara>
                 <m:oMath>
-                <m:r><m:t>H</m:t></m:r><m:r><m:t>&#xA0;original&#xA0;</m:t></m:r><m:r><m:t>J</m:t></m:r>
+                <m:r><m:t>H</m:t></m:r><m:r><m:rPr><m:sty m:val="p"></m:sty></m:rPr><m:t><span style="font-style:normal;">&#xA0;original&#xA0;</span></m:t></m:r><m:r><m:t>J</m:t></m:r>
                 </m:oMath>
                 </m:oMathPara></div>', '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
