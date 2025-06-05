@@ -137,8 +137,8 @@ class Html2Doc
   def bookmarks(docxml)
     docxml.xpath("//*[@id][not(@name)][not(@style = 'mso-element:footnote')]")
       .each do |x|
-      (x["id"].empty? ||
-        %w(v:shapetype v:shape v:rect v:line v:group).include?(x.name)) and next
+      (x["id"].empty? || x.namespace&.prefix == "v" &&
+        %w(shapetype shape rect line group).include?(x.name)) and next
       if x.children.empty? then x.add_child("<a name='#{x['id']}'></a>")
       else x.children.first.previous = "<a name='#{x['id']}'></a>"
       end
