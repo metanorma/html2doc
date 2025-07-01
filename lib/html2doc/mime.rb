@@ -135,8 +135,7 @@ class Html2Doc
   # Scan both @stylesheet and docxml.to_xml (where @standardstylesheet has ended up)
   # Allow 0.9 * height to fit caption
   def page_dimensions(docxml)
-    stylesheet = read_stylesheet(@stylesheet)
-    page_size = find_page_size_in_doc(stylesheet, docxml.to_xml) or
+    page_size = find_page_size_in_doc(@stylesheet, docxml.to_xml) or
       return [680, 400]
     m_size = /size:\s*(\S+)\s+(\S+)\s*;/.match(page_size) or return [680, 400]
     m_marg = /margin:\s*(\S+)\s+(\S+)\s*(\S+)\s*(\S+)\s*;/.match(page_size) or
