@@ -170,10 +170,8 @@ class Html2Doc
         if current_base == base_name
           current_content += "#{line}\n"
         else
-          if parsing_active
-            save_current_list(result, current_base,
-                              current_content)
-          end
+          # save accumulated list style definition, new list style
+          save_current_list(result, current_base, current_content)
           current_base = base_name
           current_content = "#{line}\n"
         end
@@ -190,7 +188,6 @@ class Html2Doc
       end
       # If parsing_active is false and no @list declaration, skip the line
     end
-
     # Save the last list if we were still parsing
     save_current_list(result, current_base, current_content)
     result
