@@ -55,7 +55,7 @@ class Html2Doc
         @list #{newstylename}\n{mso-list-id:#{rand(100_000_000..999_999_999)};
         mso-list-template-ids:#{rand(100_000_000..999_999_999)};}
       LISTSTYLE
-      .sub(/@list\s+level:#{level}\s+\{/m,
+      .sub(/@list\s+#{newstylename}\s+level:#{level}\s+\{/m,
            "\\0mso-level-start-at:#{start};\n")
     "#{s}\n"
   end
