@@ -263,6 +263,9 @@ ASCII_MATH = '<m:nary><m:naryPr><m:chr m:val="&#x2211;"></m:chr><m:limLoc m:val=
 DEFAULT_STYLESHEET = File.read("lib/html2doc/wordstyle.css",
                                encoding: "utf-8").freeze
 
+NEW_LIST_STYLES = File.read("spec/wordstyle-custom-lists.css",
+                               encoding: "utf-8")
+
 def guid_clean(xml)
   xml.gsub(/NextPart_[0-9a-f.]+/, "NextPart_")
 end
@@ -960,6 +963,32 @@ RSpec.describe Html2Doc do
         #{word_body('<div>
                   <p style="mso-list:l2 level1 lfo1;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level4 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level5 lfo1;" class="MsoListParagraphCxSpFirst">A</p></p></p></p></div></p>
                   <p style="mso-list:l2 level1 lfo2;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level4 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l2 level5 lfo2;" class="MsoListParagraphCxSpFirst">A</p></p></p></p></div></p></div>',
+                    '<div style="mso-element:footnote-list"/>')}
+        #{WORD_FTR1}
+      OUTPUT
+  end
+
+  it "sets custom start numbering of lists" do
+    simple_body = <<~BODY
+      <div>
+      <ol id="1"><li><div><p><ol id="2" start="3"><li><ul id="3"><li><p><ol id="4" start="5"><li><ol id="5" start="7"><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
+      <ol id="6" start="2"><li><div><p><ol id="7" start="1"><li><ul id="8"><li><p><ol id="9"><li><ol id="10"><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>
+    BODY
+    Html2Doc.new(filename: "test", liststyles: { ul: "l0", ol: "l1" })
+      .process(html_input(simple_body))
+    style = "#{DEFAULT_STYLESHEET} #{NEW_LIST_STYLES}"
+      .gsub(/mso-list-id:\d+/, "mso-list-id:_")
+  .gsub(/mso-list-template-ids:\d+/, "mso-list-template-ids:_")
+    doc = File.read("test.doc", encoding: "utf-8")
+      .gsub(/mso-list-id:\d+/, "mso-list-id:_")
+  .gsub(/mso-list-template-ids:\d+/, "mso-list-template-ids:_")
+
+    expect(guid_clean(doc))
+      .to match_fuzzy(<<~OUTPUT)
+        #{WORD_HDR} #{style} #{WORD_HDR_END}
+        #{word_body('<div>
+        <p style="mso-list:l1 level1 lfo1;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l3 level4 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l4 level5 lfo1;" class="MsoListParagraphCxSpFirst">A</p></p></p></p></div></p>
+       <p style="mso-list:l5 level1 lfo2;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l1 level2 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l1 level4 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l1 level5 lfo2;" class="MsoListParagraphCxSpFirst">A</p></p></p></p></div></p></div>',
                     '<div style="mso-element:footnote-list"/>')}
         #{WORD_FTR1}
       OUTPUT

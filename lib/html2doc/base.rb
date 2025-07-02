@@ -13,7 +13,7 @@ class Html2Doc
     @imagedir = hash[:imagedir]
     @debug = hash[:debug]
     @liststyles = hash[:liststyles]
-    @stylesheet = hash[:stylesheet]
+    @stylesheet = read_stylesheet(hash[:stylesheet])
     @c = HTMLEntities.new
   end
 
@@ -74,8 +74,7 @@ class Html2Doc
   end
 
   def locate_landscape(_docxml)
-    css = read_stylesheet(@stylesheet)
-    @landscape = css.scan(/div\.\S+\s+\{\s*page:\s*[^;]+L;\s*\}/m)
+    @landscape = @stylesheet.scan(/div\.\S+\s+\{\s*page:\s*[^;]+L;\s*\}/m)
       .map { |e| e.sub(/^div\.(\S+).*$/m, "\\1") }
   end
 
@@ -99,11 +98,9 @@ class Html2Doc
     end
   end
 
-  def stylesheet(_filename, _header_filename, cssname)
-    stylesheet = read_stylesheet(cssname)
+  def stylesheet(_filename, _header_filename, _cssname)
+    stylesheet = "#{@stylesheet}\n#{@newliststyledefs}"
     xml = Nokogiri::XML("<style/>")
-    # s = Nokogiri::XML::CDATA.new(xml, "\n#{stylesheet}\n")
-    # xml.children.first << Nokogiri::XML::Comment.new(xml, s)
     xml.children.first << Nokogiri::XML::CDATA
       .new(xml, "\n<!--\n#{stylesheet}\n-->\n")
     xml.root.to_s
