@@ -90,20 +90,34 @@ class Html2Doc
     %r{^([A-Z]:)?/}.match?(src) ? src : File.join(localdir, src)
   end
 
+  IMAGE_IMAGEDATA =
+    ".//*[local-name() = 'img' or local-name() = 'imagedata']".freeze
+
   # only processes locally stored images
   def image_cleanup(docxml, dir, localdir)
     maxheight, maxwidth = page_dimensions(docxml)
-    docxml.traverse do |i|
+    docxml.xpath(IMAGE_IMAGEDATA).each do |i|
       skip_image_cleanup?(i) and next
       local_filename = rename_image(i, dir, localdir)
-      i["width"], i["height"] =
-        if landscape?(i)
-          Vectory.image_resize(i, local_filename, maxwidth, maxheight)
-        else
-          Vectory.image_resize(i, local_filename, maxheight, maxwidth)
-        end
+      if tr_ancestor = i.xpath("ancestor::*[local-name() = 'tr']").first
+        image_count = tr_ancestor.xpath(IMAGE_IMAGEDATA).count
+        image_resize(i, local_filename, maxheight, maxwidth, image_count)
+      else # Normal behavior for non-table images
+        image_resize(i, local_filename, maxheight, maxwidth, 1)
+      end
     end
     docxml
+  end
+
+  def image_resize(img, local_filename, maxheight, maxwidth, image_count)
+    img["width"], img["height"] =
+      if landscape?(img)
+        Vectory.image_resize(img, local_filename, maxwidth,
+                             maxheight / image_count)
+      else
+        Vectory.image_resize(img, local_filename, maxheight,
+                             maxwidth / image_count)
+      end
   end
 
   def landscape?(img)
