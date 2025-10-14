@@ -264,7 +264,7 @@ DEFAULT_STYLESHEET = File.read("lib/html2doc/wordstyle.css",
                                encoding: "utf-8").freeze
 
 NEW_LIST_STYLES = File.read("spec/wordstyle-custom-lists.css",
-                               encoding: "utf-8")
+                            encoding: "utf-8")
 
 def guid_clean(xml)
   xml.gsub(/NextPart_[0-9a-f.]+/, "NextPart_")
@@ -774,6 +774,20 @@ RSpec.describe Html2Doc do
       OUTPUT
   end
 
+  it "resizes images for width in a table" do
+    simple_body = '<table><tbody><tr><td><img src="spec/19160-7.gif"></td><td><img src="spec/19160-7.gif"></td></tr></tbody></table>'
+    Html2Doc.new(filename: "test", imagedir: ".",
+                 stylesheet: "spec/wordstyle-nopagesize.css")
+      .process(html_input(simple_body))
+    testdoc = File.read("test.doc", encoding: "utf-8")
+    expect(testdoc).to match(%r{Content-Type: image/gif})
+    expect(image_clean(guid_clean(testdoc))
+      .sub(/^.*<body/m, "<body")
+      .sub(%r{</body>.*$}m, "</body>")).to match_fuzzy(<<~OUTPUT)
+        <body>\n<table><tbody><tr><td><img src=\"cid:image.gif\" width=\"200\" height=\"59\"/><td><img src=\"cid:image.gif\" width=\"200\" height=\"59\"/></td></td></tr>\n</tbody></table>\n<div style=\"mso-element:footnote-list\"/></body>
+      OUTPUT
+  end
+
   it "resizes images for width with custom page size" do
     simple_body = '<img src="spec/19160-7.gif">'
     Html2Doc.new(filename: "test", imagedir: ".",
@@ -978,19 +992,19 @@ RSpec.describe Html2Doc do
       .process(html_input(simple_body))
     style = "#{DEFAULT_STYLESHEET} #{NEW_LIST_STYLES}"
       .gsub(/mso-list-id:\d+/, "mso-list-id:_")
-  .gsub(/mso-list-template-ids:\d+/, "mso-list-template-ids:_")
+      .gsub(/mso-list-template-ids:\d+/, "mso-list-template-ids:_")
     doc = File.read("test.doc", encoding: "utf-8")
       .gsub(/mso-list-id:\d+/, "mso-list-id:_")
-  .gsub(/mso-list-template-ids:\d+/, "mso-list-template-ids:_")
+      .gsub(/mso-list-template-ids:\d+/, "mso-list-template-ids:_")
 
     expect(guid_clean(doc))
       .to match_fuzzy(<<~OUTPUT)
-        #{WORD_HDR} #{style} #{WORD_HDR_END}
-        #{word_body('<div>
-        <p style="mso-list:l1 level1 lfo1;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l3 level4 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l4 level5 lfo1;" class="MsoListParagraphCxSpFirst">A</p></p></p></p></div></p>
-       <p style="mso-list:l5 level1 lfo2;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l1 level2 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l1 level4 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l1 level5 lfo2;" class="MsoListParagraphCxSpFirst">A</p></p></p></p></div></p></div>',
-                    '<div style="mso-element:footnote-list"/>')}
-        #{WORD_FTR1}
+         #{WORD_HDR} #{style} #{WORD_HDR_END}
+         #{word_body('<div>
+         <p style="mso-list:l1 level1 lfo1;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l2 level2 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l3 level4 lfo1;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l4 level5 lfo1;" class="MsoListParagraphCxSpFirst">A</p></p></p></p></div></p>
+        <p style="mso-list:l5 level1 lfo2;" class="MsoListParagraphCxSpFirst"><div><p class="MsoNormal"><p style="mso-list:l1 level2 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l1 level4 lfo2;" class="MsoListParagraphCxSpFirst"><p style="mso-list:l1 level5 lfo2;" class="MsoListParagraphCxSpFirst">A</p></p></p></p></div></p></div>',
+                     '<div style="mso-element:footnote-list"/>')}
+         #{WORD_FTR1}
       OUTPUT
   end
 
@@ -1048,7 +1062,7 @@ RSpec.describe Html2Doc do
       .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     base64_image = testdoc[/image\/png\n\n(.*?)\n\n----/m, 1].gsub!("\n", "")
-    base64_image_basename = testdoc[%r{Content-ID: <([0-9a-z\-]+)\.png}m, 1]
+    base64_image_basename = testdoc[%r{Content-ID: <([0-9a-z-]+)\.png}m, 1]
     doc_bin_image = Base64.strict_decode64(base64_image)
     file_bin_image = IO
       .read("spec/test_files/#{base64_image_basename}.png", mode: "rb")
