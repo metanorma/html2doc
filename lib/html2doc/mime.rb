@@ -1,6 +1,6 @@
 require "uuidtools"
 require "base64"
-require "mime/types"
+require "marcel"
 require "fileutils"
 require "vectory"
 
@@ -21,7 +21,7 @@ class Html2Doc
   end
 
   def mime_attachment(boundary, _filename, item, dir)
-    content_type = mime_type(item)
+    content_type = mime_type(File.join(dir, item))
     text_mode = %w[text application].any? { |p| content_type.start_with? p }
 
     path = File.join(dir, item)
@@ -41,9 +41,9 @@ class Html2Doc
   end
 
   def mime_type(item)
-    types = MIME::Types.type_for(item)
-    type = types ? types.first.to_s : 'text/plain; charset="utf-8"'
-    type = %(#{type} charset="utf-8") if /^text/.match(type) && types
+    type = Marcel::MimeType.for Pathname.new(item) ||
+      'text/plain; charset="utf-8"'
+    type = %(#{type} charset="utf-8") if /^text/.match?(type)
     type
   end
 
@@ -59,7 +59,6 @@ class Html2Doc
     Dir.foreach(dir) do |item|
       next if item == "." || item == ".." || /^\./.match(item) ||
         item == "filelist.xml"
-
       mhtml += mime_attachment(boundary, "#{filename}.htm", item, dir)
     end
     mhtml += "--#{boundary}--"
