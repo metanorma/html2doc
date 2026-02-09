@@ -82,7 +82,7 @@ WORD_FTR1 = <<~FTR.freeze
   Content-ID: <filelist.xml>
   Content-Disposition: inline; filename="filelist.xml"
   Content-Transfer-Encoding: base64
-  Content-Type: #{Html2Doc.new({}).mime_type('filelist.xml')}
+  Content-Type: application/xml
 
   PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
   ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9ImZp
@@ -96,7 +96,7 @@ WORD_FTR2 = <<~FTR.freeze
   Content-ID: <filelist.xml>
   Content-Disposition: inline; filename="filelist.xml"
   Content-Transfer-Encoding: base64
-  Content-Type: #{Html2Doc.new({}).mime_type('filelist.xml')}
+  Content-Type: application/xml
   PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
   ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9ImZp
   bGVsaXN0LnhtbCIvPgogIDxvOkZpbGUgSFJlZj0iaGVhZGVyLmh0bWwiLz4KPC94bWw+Cg==
@@ -108,7 +108,7 @@ WORD_FTR3 = <<~FTR.freeze
   Content-ID: <filelist.xml>
   Content-Disposition: inline; filename="filelist.xml"
   Content-Transfer-Encoding: base64
-  Content-Type: #{Html2Doc.new({}).mime_type('filelist.xml')}
+  Content-Type: application/xml
 
   PHhtbCB4bWxuczpvPSJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiPgog
   ICAgICAgIDxvOk1haW5GaWxlIEhSZWY9Ii4uL3Rlc3QuaHRtIi8+ICA8bzpGaWxlIEhSZWY9IjFh
