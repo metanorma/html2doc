@@ -362,7 +362,7 @@ RSpec.describe Html2Doc do
     hdr = Base64.decode64(
       html
       .sub(%r{^.*Content-Location: file:///C:/Doc/test_files/header.html}, "")
-      .sub(%r{^.*Content-Type: text/html charset="utf-8"}m, "")
+      .sub(%r{^.*Content-Type: text/html; charset="utf-8"}m, "")
       .sub(%r{------=_NextPart_--.*$}m, ""),
     ).force_encoding("UTF-8")
     # expect(hdr.gsub(/\xa0/, " ")).to match_fuzzy(HEADERHTML)

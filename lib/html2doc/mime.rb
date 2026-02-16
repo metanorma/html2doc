@@ -42,16 +42,24 @@ class Html2Doc
 
   def mime_type(item)
     abs_path = File.absolute_path(item)
-    type = Marcel::MimeType.for(Pathname.new(abs_path))
-    
-    # Marcel sometimes fails to detect XML files and returns application/octet-stream
-    # Override for .xml files when detection fails
-    if type == "application/octet-stream" && File.extname(abs_path).downcase == ".xml"
-      type = "application/xml"
-    end
-    
+    type = mime_type1(abs_path)
     type ||= 'text/plain; charset="utf-8"'
-    type = %(#{type} charset="utf-8") if /^text/.match?(type)
+    type = %(#{type}; charset="utf-8") if /^text/.match?(type)
+    type
+  end
+
+  # Marcel sometimes fails to detect XML files and returns application/octet-stream
+  # Override for .xml and .html files when detection fails
+  def mime_type1(abs_path)
+    type = Marcel::MimeType.for(Pathname.new(abs_path))
+    if type == "application/octet-stream"
+      case File.extname(abs_path).downcase
+      when ".xml"
+        type = "application/xml"
+      when ".html", ".htm"
+        type = "text/html"
+      end
+    end
     type
   end
 
@@ -67,6 +75,7 @@ class Html2Doc
     Dir.foreach(dir) do |item|
       next if item == "." || item == ".." || /^\./.match(item) ||
         item == "filelist.xml"
+
       mhtml += mime_attachment(boundary, "#{filename}.htm", item, dir)
     end
     mhtml += "--#{boundary}--"
