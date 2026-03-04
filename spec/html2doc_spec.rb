@@ -864,6 +864,23 @@ RSpec.describe Html2Doc do
   #     expect{ Html2Doc.process(html_input(simple_body), filename: "test") }
   #     .to output("https://example.com/19160-6.svg: SVG not supported\n").to_stderr
   #   end
+  
+  it "processes ampersands in href" do
+    simple_body = '<div><p class="MsoNormal">a &amp; b</p>
+    <p class="MsoNormal"><a name="_" id="_"></a>    <a href="https://fonts.googleapis.com/css?family=Space+Mono:400,400i,700,700i&display=swap">https://fonts.googleapis.com/css?family=Space+Mono:400,400i,700,700i&amp;display=swap</a></p>
+     </div>'
+    Html2Doc.new(filename: "test").process(html_input(simple_body))
+    expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
+      .to match_fuzzy(<<~OUTPUT)
+        #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
+        #{word_body('<div><p class="MsoNormal">a &amp; b</p>
+    <p class="MsoNormal"><a name="_" id="_"></a>    <a href="https://fonts.googleapis.com/css?family=Space+Mono:400,400i,700,700i&display=swap">https://fonts.googleapis.com/css?family=Space+Mono:400,400i,700,700i&amp;display=swap</a></p>
+     </div>',
+                    '<div style="mso-element:footnote-list"/>')}
+        #{WORD_FTR1}
+      OUTPUT
+  end
+
 
   it "processes epub:type footnotes" do
     simple_body = '<div>This is a very simple

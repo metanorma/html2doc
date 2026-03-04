@@ -15,7 +15,22 @@ class Html2Doc
     end
     xml = xml.gsub(/<!--\s*\[([^\<\]]+)\]>/, "<!-- MSWORD-COMMENT \\1 -->")
       .gsub(/<!\s*\[endif\]\s*-->/, "<!-- MSWORD-COMMENT-END -->")
+    # Escape & to &amp; in href attributes before XML parsing to prevent stripping
+    xml = escape_amp_in_hrefs(xml)
     Nokogiri::XML.parse(xml)
+  end
+
+  # Escape plain & to &amp; in href attributes
+  # This prevents Nokogiri from stripping invalid HTML entities during XML parsing
+  def escape_amp_in_hrefs(html)
+    # Match href="..." and href='...' separately
+    html.gsub(/(href\s*=\s*")([^"]*)"|(href\s*=\s*')([^']*)'/) do
+      if Regexp.last_match(1)
+        "#{Regexp.last_match(1)}#{Regexp.last_match(2).gsub('&', '&amp;')}\""
+      else
+        "#{Regexp.last_match(3)}#{Regexp.last_match(4).gsub('&', '&amp;')}'"
+      end
+    end
   end
 
   DOCTYPE = <<~DOCTYPE.freeze
@@ -23,11 +38,26 @@ class Html2Doc
   DOCTYPE
 
   def from_xhtml(xml)
-    xml.to_xml.sub(%{ xmlns="http://www.w3.org/1999/xhtml"}, "")
+    result = xml.to_xml.sub(%{ xmlns="http://www.w3.org/1999/xhtml"}, "")
       .sub(DOCTYPE, "").gsub(%{ />}, "/>")
       .gsub(/<!-- MSWORD-COMMENT (.+?) -->/, "<!--[\\1]>")
       .gsub(/<!-- MSWORD-COMMENT-END -->/, "<![endif]-->")
       .gsub("\n--&gt;\n", "\n-->\n")
+    # Unescape &amp; to & in href attributes for proper URL handling
+    unescape_amp_in_hrefs(result)
+  end
+
+  # Unescape &amp; to & in href attributes only
+  # This ensures URLs work correctly in Word while preserving &amp; in text
+  def unescape_amp_in_hrefs(html)
+    # Match href="..." and href='...' separately
+    html.gsub(/(href\s*=\s*")([^"]*)"|(href\s*=\s*')([^']*)'/) do
+      if Regexp.last_match(1)
+        "#{Regexp.last_match(1)}#{Regexp.last_match(2).gsub('&amp;', '&')}\""
+      else
+        "#{Regexp.last_match(3)}#{Regexp.last_match(4).gsub('&amp;', '&')}'"
+      end
+    end
   end
 
   def msword_fix(doc)
