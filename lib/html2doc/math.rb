@@ -61,9 +61,13 @@ class Html2Doc
   def mathml_insert_rows(math, docnamespaces)
     math.xpath(%w(msup msub msubsup munder mover munderover)
             .map { |m| ".//xmlns:#{m}" }.join(" | "), docnamespaces).each do |x|
-      next unless x.next_element && x.next_element != "mrow"
-
-      x.next_element.wrap("<mrow/>")
+      #next unless x.next_element && x.next_element != "mrow"
+      #x.next_element.wrap("<mrow/>")
+              x.elements.size == 2 or next
+              x.elements.each do |y|
+                %w(mrow mstyle).include?(y.name) or next
+                y.wrap("<mrow/>")
+              end
     end
     math
   end
