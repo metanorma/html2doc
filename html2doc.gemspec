@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "marcel"
   spec.add_dependency "metanorma-utils", ">= 1.9.0"
-  spec.add_dependency "nokogiri", "~> 1.18.3"
+  spec.add_dependency "nokogiri", "~> 1.19"
   spec.add_dependency "plane1converter", "~> 0.0.1"
   spec.add_dependency "plurimath", "~> 0.10.0"
   spec.add_dependency "thread_safe"
