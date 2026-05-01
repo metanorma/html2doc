@@ -10,8 +10,11 @@ OptionParser.new do |opts|
   opts.on("--stylesheet FILE.CSS", "Use the provided stylesheet") do |v|
     options[:stylesheet] = v
   end
-  opts.on("--header HEADER.HTML", "Use the provided stylesheet") do |v|
-    options[:header] = v
+  opts.on("--header HEADER.HTML", "Use the provided header file") do |v|
+    options[:header_file] = v
+  end
+  opts.on("--format FORMAT", "Output format: mht (default) or docx") do |v|
+    options[:output_format] = v.to_sym
   end
 end.parse!
 
@@ -20,8 +23,9 @@ if ARGV.length < 1
   exit
 end
 
-Html2Doc.process(
+Html2Doc.new(
   filename: ARGV[0].gsub(/\.html?$/, ""),
   stylesheet: options[:stylesheet],
-  header: options[:header],
+  header_file: options[:header_file],
+  output_format: options[:output_format] || :mht,
 ).process(File.read(ARGV[0], encoding: "utf-8"))

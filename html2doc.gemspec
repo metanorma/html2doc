@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features|bin|.github)/}) \
     || f.match(%r{Rakefile|bin/rspec})
-  end
+  end + Dir.glob("data/**/*.{xml,yml}")
   spec.required_ruby_version = Gem::Requirement.new(">= 2.7.0")
 
   spec.add_dependency "base64"
@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "marcel"
   spec.add_dependency "metanorma-utils", ">= 1.9.0"
-  spec.add_dependency "nokogiri", "~> 1.18.3"
+  spec.add_dependency "nokogiri", ">= 1.18.3"
   spec.add_dependency "plane1converter", "~> 0.0.1"
   spec.add_dependency "plurimath", "~> 0.10.0"
   spec.add_dependency "thread_safe"
