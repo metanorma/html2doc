@@ -17,6 +17,9 @@ class Html2Doc
       .gsub(/<!\s*\[endif\]\s*-->/, "<!-- MSWORD-COMMENT-END -->")
     # Escape & to &amp; in href attributes before XML parsing to prevent stripping
     xml = escape_amp_in_hrefs(xml)
+    # Convert HTML named entities to numeric character references
+    # so Nokogiri's XML parser can handle them (XML only has 5 predefined entities)
+    xml = encode_html_entities(xml)
     Nokogiri::XML.parse(xml)
   end
 
@@ -29,6 +32,24 @@ class Html2Doc
         "#{Regexp.last_match(1)}#{Regexp.last_match(2).gsub('&', '&amp;')}\""
       else
         "#{Regexp.last_match(3)}#{Regexp.last_match(4).gsub('&', '&amp;')}'"
+      end
+    end
+  end
+
+  # Convert HTML named entities to XML-safe numeric character references.
+  # Nokogiri's XML parser only recognizes 5 predefined XML entities (amp, lt, gt, quot, apos).
+  # All other named HTML entities (nbsp, mdash, copy, etc.) must be converted to &#NNN; form.
+  def encode_html_entities(xml)
+    coder = HTMLEntities.new
+    xml.gsub(/&(?!(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+))([a-zA-Z]+);/) do
+      # Capture match data before calling coder.decode (which uses regex internally)
+      match = Regexp.last_match
+      entity_name = match[2]
+      decoded = coder.decode("&#{entity_name};")
+      if decoded == "&#{entity_name};"
+        "&#{entity_name};"
+      else
+        "&##{decoded.ord};"
       end
     end
   end
