@@ -1203,7 +1203,7 @@ class Html2Doc
       end
 
       # Find all <m:r> elements (Nokogiri uses full name "m:r" without namespace decl)
-      doc.xpath("//*[name()='m:r']").each do |mr|
+      doc.css("m\\:r").each do |mr|
         # Check if w:rPr already exists
         has_word_rpr = mr.children.any? { |c| c.name == "w:rPr" || (c.name == "rPr" && c.namespace&.href&.include?("wordprocessingml")) }
         next if has_word_rpr
@@ -1223,7 +1223,7 @@ class Html2Doc
       end
       # Remove <w:i/> from inside <m:ctrlPr> — reference output doesn't include
       # italic in math control properties (Plurimath adds it but reference strips it)
-      doc.xpath("//*[name()='m:ctrlPr']//*[name()='w:i']").each(&:remove)
+      doc.css("m\\:ctrlPr w\\:i").each(&:remove)
 
       doc.root.to_xml
     end
@@ -1492,9 +1492,9 @@ class Html2Doc
 
         # Find the footnote target
         # Bookmarks step may have moved id to <a name="..."> inside the container
-        target = docxml.at_xpath("//*[@id='#{href}']")
+        target = docxml.at_css("##{CSS.escape(href)}")
         if target.nil?
-          named_anchor = docxml.at_xpath("//a[@name='#{href}']")
+          named_anchor = docxml.at_css("a[name='#{CSS.escape(href)}']")
           # The real target is the parent container (aside/div), not the anchor
           target = named_anchor&.parent if named_anchor &&
             %w[aside div].include?(named_anchor.parent&.name)
@@ -1892,17 +1892,20 @@ class Html2Doc
     # Extract field instruction from an IE conditional comment containing field-begin.
     # E.g., " PAGE \* MERGEFORMAT " from the comment HTML
     def extract_field_instruction(comment_text)
-      # The instruction text is between field-begin and field-separator spans
-      # Parse it from the comment HTML
-      text = comment_text
-        .sub(/.*mso-element:field-begin[^>]*>[^<]*/m, "")
-        .sub(/<span[^>]*mso-element:field-separator[^>]*>.*/m, "")
-        .gsub(/<[^>]+>/, "")
-        .gsub(/&nbsp;/, " ")
-        .strip
+      doc = Nokogiri::HTML.fragment(comment_text)
 
-      # Clean up: the instruction is typically "PAGE \* MERGEFORMAT" etc.
-      text
+      field_begin = doc.css("span").find { |s| s["style"]&.include?("mso-element:field-begin") }
+      return "" unless field_begin
+
+      parts = []
+      node = field_begin.next
+      while node
+        break if node.element? && node["style"]&.include?("mso-element:field-separator")
+        parts << node.text
+        node = node.next
+      end
+
+      parts.join.strip
     end
 
     # Build the flat list of header/footer parts for document.header_footer_parts.
