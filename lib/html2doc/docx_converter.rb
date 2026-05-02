@@ -1202,28 +1202,32 @@ class Html2Doc
         root.add_namespace("w", W_NS)
       end
 
-      # Find all <m:r> elements (Nokogiri uses full name "m:r" without namespace decl)
-      doc.css("m\\:r").each do |mr|
+      # Find all <m:r> elements (namespace-aware: name is "r" in math namespace)
+      doc.traverse do |node|
+        next unless node.element? && node.name == "r" && node.namespace&.prefix == "m"
         # Check if w:rPr already exists
-        has_word_rpr = mr.children.any? { |c| c.name == "w:rPr" || (c.name == "rPr" && c.namespace&.href&.include?("wordprocessingml")) }
+        has_word_rpr = node.children.any? { |c| c.name == "rPr" && c.namespace&.prefix == "w" }
         next if has_word_rpr
 
-        # Create w:rPr with w:rStyle using proper namespace
         rpr = Nokogiri::XML::Node.new("w:rPr", doc)
         rstyle = Nokogiri::XML::Node.new("w:rStyle", doc)
         rstyle["w:val"] = "stem"
         rpr.add_child(rstyle)
-        # Find <m:t>
-        mt = mr.children.find { |c| c.name == "m:t" || (c.name == "t" && c.namespace&.href&.include?("math")) }
+        mt = node.children.find { |c| c.name == "t" && c.namespace&.prefix == "m" }
         if mt
           mt.add_previous_sibling(rpr)
         else
-          mr.add_child(rpr)
+          node.add_child(rpr)
         end
       end
-      # Remove <w:i/> from inside <m:ctrlPr> — reference output doesn't include
-      # italic in math control properties (Plurimath adds it but reference strips it)
-      doc.css("m\\:ctrlPr w\\:i").each(&:remove)
+      # Remove <w:i/> from inside <m:ctrlPr>
+      doc.traverse do |node|
+        next unless node.element? && node.name == "i" && node.namespace&.prefix == "w"
+        parent = node.parent
+        if parent && parent.name == "ctrlPr" && parent.namespace&.prefix == "m"
+          node.remove
+        end
+      end
 
       doc.root.to_xml
     end
@@ -1492,9 +1496,9 @@ class Html2Doc
 
         # Find the footnote target
         # Bookmarks step may have moved id to <a name="..."> inside the container
-        target = docxml.at_css("##{CSS.escape(href)}")
+        target = docxml.at_css("[id='#{href}']")
         if target.nil?
-          named_anchor = docxml.at_css("a[name='#{CSS.escape(href)}']")
+          named_anchor = docxml.at_css("a[name='#{href}']")
           # The real target is the parent container (aside/div), not the anchor
           target = named_anchor&.parent if named_anchor &&
             %w[aside div].include?(named_anchor.parent&.name)

@@ -278,4 +278,21 @@ RSpec.describe "DOCX output" do
       expect(footers).to be_empty
     end
   end
+
+  describe "reference fixture validation" do
+    it "spec/fixtures/iso-damd-fdis-sample.docx passes Uniword validation" do
+      path = File.expand_path("fixtures/iso-damd-fdis-sample.docx", __dir__)
+      skip "Reference fixture not found" unless File.exist?(path)
+
+      ctx = Uniword::Validation::Rules::DocumentContext.new(path)
+      issues = Uniword::Validation::Rules::Registry.all.flat_map do |rule|
+        rule.applicable?(ctx) ? rule.check(ctx) : []
+      end
+      ctx.close
+
+      errors = issues.select { |i| i.severity == "error" }
+      expect(errors).to be_empty,
+        "Reference DOCX validation errors:\n#{errors.map { |e| "  #{e.code}: #{e.message}" }.join("\n")}"
+    end
+  end
 end
