@@ -1,6 +1,7 @@
 require "spec_helper"
 require "html2doc"
 require "uniword"
+require "uniword/validation/rules"
 
 RSpec.describe "rice.html fixture comparison" do
   EXAMPLES_DIR = File.expand_path("examples", __dir__)
@@ -256,6 +257,35 @@ RSpec.describe "rice.html fixture comparison" do
 
         expect(gen_paras).to eq(ref_paras),
           "Paragraph count: generated #{gen_paras}, reference #{ref_paras}"
+      end
+    end
+
+    describe "DOCX validation" do
+      it "passes Uniword DOC-100..DOC-109 validation rules" do
+        ctx = Uniword::Validation::Rules::DocumentContext.new(generated_docx_file)
+        issues = Uniword::Validation::Rules::Registry.all.flat_map do |rule|
+          rule.applicable?(ctx) ? rule.check(ctx) : []
+        end
+        ctx.close
+
+        core_errors = issues.select { |i| i.severity == "error" && i.code.to_s.match?(/^DOC-10[0-9]$/) }
+        expect(core_errors).to be_empty,
+          "Generated DOCX has validation errors:\n#{core_errors.map { |e| "  #{e.code}: #{e.message}" }.join("\n")}"
+      end
+
+      it "reference DOCX has no more DOC-100..DOC-107 errors than expected" do
+        ctx = Uniword::Validation::Rules::DocumentContext.new(rice_docx_path)
+        issues = Uniword::Validation::Rules::Registry.all.flat_map do |rule|
+          rule.applicable?(ctx) ? rule.check(ctx) : []
+        end
+        ctx.close
+
+        # DOC-108 (external relationship targets) fires on the reference DOCX
+        # because it contains file:/// and http:// hyperlinks that aren't in the ZIP.
+        # This is expected behavior for Word-generated files with external links.
+        core_errors = issues.select { |i| i.severity == "error" && i.code.to_s.match?(/^DOC-10[0-7]$/) }
+        expect(core_errors).to be_empty,
+          "Reference DOCX has validation errors:\n#{core_errors.map { |e| "  #{e.code}: #{e.message}" }.join("\n")}"
       end
     end
 
