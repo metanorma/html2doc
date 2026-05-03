@@ -1,0 +1,2 @@
+gem "ukiryu", git: "https://github.com/ukiryu/ukiryu", branch: "fix/lutaml-model-0.8.0"
+
