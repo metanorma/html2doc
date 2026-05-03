@@ -40,6 +40,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "lutaml-model", "~> 0.7.0"
   spec.add_dependency "plurimath",    "~> 0.10.0", "< 0.10.1"
   spec.add_dependency "mml",          "~> 2.0.3", "< 2.1"
+  spec.add_dependency "unitsml", "~> 0.5.1"
 
   spec.add_development_dependency "debug"
   spec.add_development_dependency "equivalent-xml", "~> 0.6"
