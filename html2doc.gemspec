@@ -37,6 +37,10 @@ Gem::Specification.new do |spec|
   spec.add_dependency "thread_safe"
   spec.add_dependency "uuidtools"
   spec.add_dependency "vectory", "~> 0.8"
+  # Pending migration of Metanorma to lutaml-model 0.8
+  spec.add_dependency "lutaml-model", "~> 0.7.0"
+  spec.add_dependency "plurimath",    "~> 0.10.0", "< 0.10.1"
+  spec.add_dependency "mml",          "~> 2.0.3", "< 2.1"
 
   spec.add_development_dependency "debug"
   spec.add_development_dependency "equivalent-xml", "~> 0.6"
