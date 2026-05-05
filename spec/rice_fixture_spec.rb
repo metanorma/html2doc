@@ -261,29 +261,31 @@ RSpec.describe "rice.html fixture comparison" do
     end
 
     describe "DOCX validation" do
-      it "passes Uniword DOC-100..DOC-109 validation rules" do
+      it "passes Uniword DOC-100..DOC-107, DOC-109 validation rules" do
         ctx = Uniword::Validation::Rules::DocumentContext.new(generated_docx_file)
         issues = Uniword::Validation::Rules::Registry.all.flat_map do |rule|
           rule.applicable?(ctx) ? rule.check(ctx) : []
         end
         ctx.close
 
-        core_errors = issues.select { |i| i.severity == "error" && i.code.to_s.match?(/^DOC-10[0-9]$/) }
+        # DOC-108 (relationship targets in ZIP) excluded: hyperlink relationships
+        # point to external URLs or bookmark anchors that are never ZIP parts.
+        core_errors = issues.reject { |i| i.code.to_s == "DOC-108" }
+          .select { |i| i.severity == "error" && i.code.to_s.match?(/^DOC-10[0-9]$/) }
         expect(core_errors).to be_empty,
           "Generated DOCX has validation errors:\n#{core_errors.map { |e| "  #{e.code}: #{e.message}" }.join("\n")}"
       end
 
-      it "reference DOCX has no more DOC-100..DOC-107 errors than expected" do
+      it "reference DOCX has no DOC-100..DOC-107, DOC-109 errors" do
         ctx = Uniword::Validation::Rules::DocumentContext.new(rice_docx_path)
         issues = Uniword::Validation::Rules::Registry.all.flat_map do |rule|
           rule.applicable?(ctx) ? rule.check(ctx) : []
         end
         ctx.close
 
-        # DOC-108 (external relationship targets) fires on the reference DOCX
-        # because it contains file:/// and http:// hyperlinks that aren't in the ZIP.
-        # This is expected behavior for Word-generated files with external links.
-        core_errors = issues.select { |i| i.severity == "error" && i.code.to_s.match?(/^DOC-10[0-7]$/) }
+        # DOC-108 excluded: same reason as generated — hyperlinks aren't ZIP parts.
+        core_errors = issues.reject { |i| i.code.to_s == "DOC-108" }
+          .select { |i| i.severity == "error" && i.code.to_s.match?(/^DOC-10[0-9]$/) }
         expect(core_errors).to be_empty,
           "Reference DOCX has validation errors:\n#{core_errors.map { |e| "  #{e.code}: #{e.message}" }.join("\n")}"
       end
