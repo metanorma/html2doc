@@ -287,7 +287,7 @@ RSpec.describe Html2Doc do
   end
 
   it "preserves Word HTML directives" do
-    Html2Doc.new(filename: "test").process(html_input(%[A<!--[if gte mso 9]>X<![endif]-->B]))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(%[A<!--[if gte mso 9]>X<![endif]-->B]))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -298,7 +298,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a blank document" do
-    Html2Doc.new(filename: "test").process(html_input(""))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(""))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -308,14 +308,14 @@ RSpec.describe Html2Doc do
 
   it "removes any temp files" do
     File.delete("test.doc")
-    Html2Doc.new(filename: "test").process(html_input(""))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(""))
     expect(File.exist?("test.doc")).to be true
     expect(File.exist?("test.htm")).to be false
     expect(File.exist?("test_files")).to be false
   end
 
   it "processes a stylesheet in an HTML document with a title" do
-    Html2Doc.new(filename: "test", stylesheet: "lib/html2doc/wordstyle.css")
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", stylesheet: "lib/html2doc/wordstyle.css")
       .process(html_input(""))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -325,7 +325,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a stylesheet in an HTML document without a title" do
-    Html2Doc.new(filename: "test",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test",
                  stylesheet: "lib/html2doc/wordstyle.css")
       .process(html_input_no_title(""))
     expect(guid_clean(File.read("test.doc",
@@ -338,7 +338,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a stylesheet in an HTML document with an empty head" do
-    Html2Doc.new(filename: "test",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test",
                  stylesheet: "lib/html2doc/wordstyle.css")
       .process(html_input_empty_head(""))
     word_hdr_end = WORD_HDR_END
@@ -355,7 +355,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a header" do
-    Html2Doc.new(filename: "test",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test",
                  header_file: "spec/header.html")
       .process(html_input(""))
     html = guid_clean(File.read("test.doc", encoding: "utf-8"))
@@ -379,7 +379,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes a header with an image" do
-    Html2Doc.new(filename: "test",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test",
                  header_file: "spec/header_img.html")
       .process(html_input(""))
     doc = guid_clean(File.read("test.doc", encoding: "utf-8"))
@@ -396,7 +396,7 @@ RSpec.describe Html2Doc do
                                            "19160-6.png"))),
       )
     end
-    Html2Doc.new(filename: "test",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test",
                  header_file: "spec/header_img1.html")
       .process(html_input(""))
     doc = guid_clean(File.read("test.doc", encoding: "utf-8"))
@@ -407,7 +407,7 @@ RSpec.describe Html2Doc do
   it "processes a populated document" do
     simple_body = "<h1>Hello word!</h1>
     <div>This is a very simple document</div>"
-    Html2Doc.new(filename: "test").process(html_input(simple_body))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -417,7 +417,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes mstyle" do
-    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input(%[<div><math xmlns="http://www.w3.org/1998/Math/MathML" displaystyle="true">
   <mstyle displaystyle="true">
     <mstyle mathvariant="bold">
@@ -486,14 +486,14 @@ RSpec.describe Html2Doc do
       .to be_equivalent_to(<<~OUTPUT)
         <m:oMathPara>
           <m:oMath>
-           <m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">&#x2212;</span></m:t></m:r><m:nary><m:naryPr><m:chr m:val="&#x222B;"></m:chr><m:limLoc m:val="subSup"></m:limLoc><m:subHide m:val="0"></m:subHide><m:supHide m:val="0"></m:supHide></m:naryPr><m:sub><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">log</span></m:t></m:r></m:sub><m:sup><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">2</span></m:t></m:r></m:sup><m:e><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">&#x200B;</span></m:t></m:r></m:e></m:nary><m:d><m:dPr><m:begChr m:val="("></m:begChr><m:sepChr m:val=""></m:sepChr><m:endChr m:val=")"></m:endChr></m:dPr><m:e><m:sSub><m:sSubPr><m:ctrlPr><w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"></w:rFonts><w:i></w:i></w:rPr></m:ctrlPr></m:sSubPr><m:e><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">p</span></m:t></m:r></m:e><m:sub><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">u</span></m:t></m:r></m:sub></m:sSub></m:e></m:d><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">BB</span></m:t></m:r><m:r><m:rPr><m:scr m:val="double-struck"></m:scr></m:rPr><m:t>&#x1D539;&#x1D539;&#x1D539;</m:t></m:r><m:r><m:rPr><m:scr m:val="script"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:rPr><m:scr m:val="script"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D4D1;&#x1D4D2;&#x1D4D2;</m:t></m:r><m:r><m:rPr><m:scr m:val="monospace"></m:scr></m:rPr><m:t>&#x1D683;&#x1D683;</m:t></m:r><m:r><m:rPr><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D509;&#x211C;</m:t></m:r><m:r><m:rPr><m:scr m:val="fraktur"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D56D;&#x1D571;&#x1D57D;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5B2;&#x1D5A5;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D5D5;&#x1D5E6;&#x1D5D9;&#x1D770;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="i"></m:sty></m:rPr><m:t>&#x1D61A;&#x1D60D;&#x1D610;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="bi"></m:sty></m:rPr><m:t>&#x1D64E;&#x1D641;&#x1D63D;&#x1D644;&#x1D7AA;</m:t></m:r><m:r><m:rPr><m:sty m:val="bi"></m:sty></m:rPr><m:t><span class="nostem" style="font-weight:bold;"><em></em>BII</span></m:t></m:r><m:r><m:rPr><m:sty m:val="i"></m:sty></m:rPr><m:t><span class="nostem"><em></em>II</span></m:t></m:r>
+           <m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">&#x2212;</span></m:t></m:r><m:nary><m:naryPr><m:chr m:val="&#x222B;"></m:chr><m:limLoc m:val="subSup"></m:limLoc><m:subHide m:val="0"></m:subHide><m:supHide m:val="0"></m:supHide></m:naryPr><m:sub><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">log</span></m:t></m:r></m:sub><m:sup><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">2</span></m:t></m:r></m:sup><m:e><m:d><m:dPr><m:begChr m:val="("></m:begChr><m:sepChr m:val=""></m:sepChr><m:endChr m:val=")"></m:endChr></m:dPr><m:e><m:sSub><m:sSubPr><m:ctrlPr><w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"></w:rFonts><w:i></w:i></w:rPr></m:ctrlPr></m:sSubPr><m:e><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">p</span></m:t></m:r></m:e><m:sub><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">u</span></m:t></m:r></m:sub></m:sSub></m:e></m:d></m:e></m:nary><m:r><m:rPr><m:sty m:val="b"></m:sty></m:rPr><m:t><span style="font-style:normal;font-weight:bold;">BB</span></m:t></m:r><m:r><m:rPr><m:scr m:val="double-struck"></m:scr></m:rPr><m:t>&#x1D539;&#x1D539;&#x1D539;</m:t></m:r><m:r><m:rPr><m:scr m:val="script"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D49E;&#x1D49E;</m:t></m:r><m:r><m:rPr><m:scr m:val="script"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D4D1;&#x1D4D2;&#x1D4D2;</m:t></m:r><m:r><m:rPr><m:scr m:val="monospace"></m:scr></m:rPr><m:t>&#x1D683;&#x1D683;</m:t></m:r><m:r><m:rPr><m:scr m:val="fraktur"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D509;&#x211C;</m:t></m:r><m:r><m:rPr><m:scr m:val="fraktur"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D56D;&#x1D571;&#x1D57D;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="p"></m:sty></m:rPr><m:t>&#x1D5B2;&#x1D5A5;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="b"></m:sty></m:rPr><m:t>&#x1D5D5;&#x1D5E6;&#x1D5D9;&#x1D770;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="i"></m:sty></m:rPr><m:t>&#x1D61A;&#x1D60D;&#x1D610;</m:t></m:r><m:r><m:rPr><m:scr m:val="sans-serif"></m:scr><m:sty m:val="bi"></m:sty></m:rPr><m:t>&#x1D64E;&#x1D641;&#x1D63D;&#x1D644;&#x1D7AA;</m:t></m:r><m:r><m:rPr><m:sty m:val="bi"></m:sty></m:rPr><m:t><span class="nostem" style="font-weight:bold;"><em></em>BII</span></m:t></m:r><m:r><m:rPr><m:sty m:val="i"></m:sty></m:rPr><m:t><span class="nostem"><em></em>II</span></m:t></m:r>
           </m:oMath>
         </m:oMathPara>
       OUTPUT
   end
 
   it "processes spaces in MathML mtext" do
-    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
                                 <mrow><mi>H</mi><mtext>&#xa0;original&#xa0;</mtext><mi>J</mi></mrow>
                                 </math></div>"))
@@ -510,7 +510,7 @@ RSpec.describe Html2Doc do
   end
 
   it "processes linebreaks in MathML mtext" do
-    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
                                 <mstyle displaystyle='true'>
                                 <mi>x</mi><mo>=</mo><mo linebreak='newline'/><mi>y</mi>
@@ -542,7 +542,7 @@ RSpec.describe Html2Doc do
   end
 
   it "unwraps and converts accent in MathML" do
-    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
                                 <mover accent='true'><mrow><mi>p</mi></mrow><mrow><mo>^</mo></mrow></mover>
 </math></div>"))
@@ -559,7 +559,7 @@ RSpec.describe Html2Doc do
   end
 
   it "wraps msup after munderover in MathML" do
-    Html2Doc.new(filename: "test", asciimathdelims: ["{{", "}}"])
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", asciimathdelims: ["{{", "}}"])
       .process(html_input("<div><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'>
 <munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi></mrow></munderover><msup><mn>2</mn><mrow><mi>i</mi></mrow></msup></math></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
@@ -575,7 +575,7 @@ RSpec.describe Html2Doc do
   end
 
   it "uncenters paras with just inline maths" do
-    Html2Doc.new(filename: "test")
+    Html2Doc.new(output_format: :mht_legacy, filename: "test")
       .process(html_input("<div><p><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -589,7 +589,7 @@ RSpec.describe Html2Doc do
                 #{WORD_FTR1}
       OUTPUT
 
-    Html2Doc.new(filename: "test")
+    Html2Doc.new(output_format: :mht_legacy, filename: "test")
       .process(html_input("<div><p style='vertical-align:center;text-align:right;'><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -603,7 +603,7 @@ RSpec.describe Html2Doc do
                 #{WORD_FTR1}
       OUTPUT
 
-    Html2Doc.new(filename: "test")
+    Html2Doc.new(output_format: :mht_legacy, filename: "test")
       .process(html_input("<div><p style='vertical-align:center;text-align:left;'><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -617,7 +617,7 @@ RSpec.describe Html2Doc do
                 #{WORD_FTR1}
       OUTPUT
 
-    Html2Doc.new(filename: "test")
+    Html2Doc.new(output_format: :mht_legacy, filename: "test")
       .process(html_input("<div><table><tr><th><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></tr></th></table></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -631,7 +631,7 @@ RSpec.describe Html2Doc do
                 #{WORD_FTR1}
       OUTPUT
 
-    Html2Doc.new(filename: "test")
+    Html2Doc.new(output_format: :mht_legacy, filename: "test")
       .process(html_input("<div><p><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='true'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -645,7 +645,7 @@ RSpec.describe Html2Doc do
                 #{WORD_FTR1}
       OUTPUT
 
-    Html2Doc.new(filename: "test")
+    Html2Doc.new(output_format: :mht_legacy, filename: "test")
       .process(html_input("<div><p><i>a</i><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -657,7 +657,7 @@ RSpec.describe Html2Doc do
                 #{WORD_FTR1}
       OUTPUT
 
-    Html2Doc.new(filename: "test")
+    Html2Doc.new(output_format: :mht_legacy, filename: "test")
       .process(html_input("<div><p><span>     </span><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -671,7 +671,7 @@ RSpec.describe Html2Doc do
                 #{WORD_FTR1}
       OUTPUT
 
-    Html2Doc.new(filename: "test")
+    Html2Doc.new(output_format: :mht_legacy, filename: "test")
       .process(html_input("<div><p><math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math><br/>
                           <math xmlns='http://www.w3.org/1998/Math/MathML' displaystyle='false'><mi>i</mi><mo>=</mo><mn>0</mn></math></p></div>"))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
@@ -695,7 +695,7 @@ RSpec.describe Html2Doc do
   it "processes tabs" do
     simple_body = "<h1>Hello word!</h1>
     <div>This is a very &tab; simple document</div>"
-    Html2Doc.new(filename: "test").process(html_input(simple_body))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -708,7 +708,7 @@ RSpec.describe Html2Doc do
     simple_body = '<h1>Hello word!</h1>
     <p>This is a very simple document</p>
     <p class="x">This style stays</p>'
-    Html2Doc.new(filename: "test").process(html_input(simple_body))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -723,7 +723,7 @@ RSpec.describe Html2Doc do
     <li>This is a very simple document</li>
     <li class="x">This style stays</li>
     </ul>'
-    Html2Doc.new(filename: "test").process(html_input(simple_body))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -734,7 +734,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height, in a file in a subdirectory" do
     simple_body = '<img src="19160-6.png">'
-    Html2Doc.new(filename: "spec/test", imagedir: "spec",
+    Html2Doc.new(output_format: :mht_legacy, filename: "spec/test", imagedir: "spec",
                  stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
@@ -748,7 +748,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for width" do
     simple_body = '<img src="spec/19160-7.gif">'
-    Html2Doc.new(filename: "test", imagedir: ".",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", imagedir: ".",
                  stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
@@ -762,7 +762,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height" do
     simple_body = '<img src="spec/19160-8.jpg">'
-    Html2Doc.new(filename: "test", imagedir: ".",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", imagedir: ".",
                  stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
@@ -776,7 +776,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for width in a table" do
     simple_body = '<table><tbody><tr><td><img src="spec/19160-7.gif"></td><td><img src="spec/19160-7.gif"></td></tr></tbody></table>'
-    Html2Doc.new(filename: "test", imagedir: ".",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", imagedir: ".",
                  stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
@@ -790,7 +790,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for width with custom page size" do
     simple_body = '<img src="spec/19160-7.gif">'
-    Html2Doc.new(filename: "test", imagedir: ".",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", imagedir: ".",
                  stylesheet: "spec/wordstyle-custom.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
@@ -804,7 +804,7 @@ RSpec.describe Html2Doc do
 
   it "resizes images for height with custom page size" do
     simple_body = '<img src="spec/19160-8.jpg">'
-    Html2Doc.new(filename: "test", imagedir: ".",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", imagedir: ".",
                  stylesheet: "spec/wordstyle-custom.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
@@ -821,7 +821,7 @@ RSpec.describe Html2Doc do
       <div class="WordSection1"><div class="figure"><img src="spec/19160-8.jpg"></div></div>
       <div class="WordSectionA"><div class="figure"><img src="spec/19160-8.jpg"></div></div>
     DIV
-    Html2Doc.new(filename: "test", imagedir: ".",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", imagedir: ".",
                  stylesheet: "spec/wordstyle-custom.css")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
@@ -835,7 +835,7 @@ RSpec.describe Html2Doc do
 
   it "does not move images if they are external URLs" do
     simple_body = '<img src="https://example.com/19160-6.png">'
-    Html2Doc.new(filename: "test", imagedir: ".")
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", imagedir: ".")
       .process(html_input(simple_body))
     testdoc = File.read("test.doc", encoding: "utf-8")
     expect(image_clean(guid_clean(testdoc))).to match_fuzzy(<<~OUTPUT)
@@ -847,7 +847,7 @@ RSpec.describe Html2Doc do
 
   it "deals with absolute image locations" do
     simple_body = %{<img src="#{__dir__}/19160-6.png">}
-    Html2Doc.new(filename: "spec/test", imagedir: ".",
+    Html2Doc.new(output_format: :mht_legacy, filename: "spec/test", imagedir: ".",
                  stylesheet: "spec/wordstyle-nopagesize.css")
       .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
@@ -869,7 +869,7 @@ RSpec.describe Html2Doc do
     simple_body = '<div><p class="MsoNormal">a &amp; b</p>
     <p class="MsoNormal"><a name="_" id="_"></a>    <a href="https://fonts.googleapis.com/css?family=Space+Mono:400,400i,700,700i&display=swap">https://fonts.googleapis.com/css?family=Space+Mono:400,400i,700,700i&amp;display=swap</a></p>
      </div>'
-    Html2Doc.new(filename: "test").process(html_input(simple_body))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -887,7 +887,7 @@ RSpec.describe Html2Doc do
      document<a epub:type="footnote" href="#a_632">1</a> allegedly<a epub:type="footnote" href="#a_782">2</a></div>
      <aside id="a_632">Footnote</aside>
      <aside id="a_782">Other Footnote</aside>'
-    Html2Doc.new(filename: "test").process(html_input(simple_body))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -907,7 +907,7 @@ RSpec.describe Html2Doc do
      document<a class="footnote" href="#a1">1</a> allegedly<a class="footnote" href="#a2">2</a></div>
      <aside id="a1">Footnote</aside>
      <aside id="a2">Other Footnote</aside>'
-    Html2Doc.new(filename: "test").process(html_input(simple_body))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -927,7 +927,7 @@ RSpec.describe Html2Doc do
      document<a class="footnote" href="#a1">(<span class="MsoFootnoteReference">1</span>)</a> allegedly<a class="footnote" href="#a2">2</a></div>
      <aside id="a1">Footnote</aside>
      <aside id="a2">Other Footnote</aside>'
-    Html2Doc.new(filename: "test").process(html_input(simple_body))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -947,7 +947,7 @@ RSpec.describe Html2Doc do
      document<a class="footnote" href="#a1">1</a> allegedly<a class="footnote" href="#a2">2</a></div>
      <aside id="a1"><p>Footnote</p></aside>
      <div id="a2"><p>Other Footnote</p></div>'
-    Html2Doc.new(filename: "test").process(html_input(simple_body))
+    Html2Doc.new(output_format: :mht_legacy, filename: "test").process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
         #{WORD_HDR} #{DEFAULT_STYLESHEET} #{WORD_HDR_END}
@@ -967,7 +967,7 @@ RSpec.describe Html2Doc do
       <div><ul id="0">
       <li><div><p><ol id="1"><li><ul id="2"><li><p><ol id="3"><li><ol id="4"><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li><div><ul id="5"><li>C</li></ul></div>
     BODY
-    Html2Doc.new(filename: "test", liststyles: { ul: "l1", ol: "l2" })
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", liststyles: { ul: "l1", ol: "l2" })
       .process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -986,7 +986,7 @@ RSpec.describe Html2Doc do
       <ol id="1"><li><div><p><ol id="2"><li><ul id="3"><li><p><ol id="4"><li><ol id="5"><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
       <ol id="6"><li><div><p><ol id="7"><li><ul id="8"><li><p><ol id="9"><li><ol id="10"><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>
     BODY
-    Html2Doc.new(filename: "test", liststyles: { ul: "l1", ol: "l2" })
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", liststyles: { ul: "l1", ol: "l2" })
       .process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -1005,7 +1005,7 @@ RSpec.describe Html2Doc do
       <ol id="1"><li><div><p><ol id="2" start="3"><li><ul id="3"><li><p><ol id="4" start="5"><li><ol id="5" start="7"><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol>
       <ol id="6" start="2"><li><div><p><ol id="7" start="1"><li><ul id="8"><li><p><ol id="9"><li><ol id="10"><li>A</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ol></div>
     BODY
-    Html2Doc.new(filename: "test", liststyles: { ul: "l0", ol: "l1" })
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", liststyles: { ul: "l0", ol: "l1" })
       .process(html_input(simple_body))
     style = "#{DEFAULT_STYLESHEET} #{NEW_LIST_STYLES}"
       .gsub(/mso-list-id:\d+/, "mso-list-id:_")
@@ -1034,7 +1034,7 @@ RSpec.describe Html2Doc do
       <div><ul class="other" id="10">
       <li><div><p><ol id="11"><li><ul id="12"><li><p><ol id="13"><li><ol id="14"><li>A</li><li><p>B</p><p>B2</p></li><li>C</li></ol></li></ol></p></li></ul></li></ol></p></div></li></ul></div>
     BODY
-    Html2Doc.new(filename: "test",
+    Html2Doc.new(output_format: :mht_legacy, filename: "test",
                  liststyles: { ul: "l1", ol: "l2",
                                steps: "l3" })
       .process(html_input(simple_body))
@@ -1059,7 +1059,7 @@ RSpec.describe Html2Doc do
         <p id="b"/>
       </div>
     BODY
-    Html2Doc.new(filename: "test", liststyles: { ul: "l1", ol: "l2" })
+    Html2Doc.new(output_format: :mht_legacy, filename: "test", liststyles: { ul: "l1", ol: "l2" })
       .process(html_input(simple_body))
     expect(guid_clean(File.read("test.doc", encoding: "utf-8")))
       .to match_fuzzy(<<~OUTPUT)
@@ -1075,7 +1075,7 @@ RSpec.describe Html2Doc do
 
   it "test image base64 image encoding" do
     simple_body = '<img src="19160-6.png">'
-    Html2Doc.new(filename: "spec/test", debug: true, imagedir: "spec")
+    Html2Doc.new(output_format: :mht_legacy, filename: "spec/test", debug: true, imagedir: "spec")
       .process(html_input(simple_body))
     testdoc = File.read("spec/test.doc", encoding: "utf-8")
     base64_image = testdoc[/image\/png\n\n(.*?)\n\n----/m, 1].gsub!("\n", "")

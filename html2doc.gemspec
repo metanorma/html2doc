@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features|bin|.github)/}) \
     || f.match(%r{Rakefile|bin/rspec})
-  end
+  end + Dir.glob("data/**/*.{xml,yml}")
   spec.required_ruby_version = Gem::Requirement.new(">= 2.7.0")
 
   spec.add_dependency "base64"
@@ -31,17 +31,16 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "marcel"
   spec.add_dependency "metanorma-utils", ">= 1.9.0"
-  spec.add_dependency "nokogiri", "~> 1.19"
+  spec.add_dependency "nokogiri", ">= 1.18.3"
   spec.add_dependency "plane1converter", "~> 0.0.1"
   spec.add_dependency "thread_safe"
   spec.add_dependency "uuidtools"
   spec.add_dependency "vectory", "~> 0.8"
-  # Pending migration of Metanorma to lutaml-model 0.8
-  spec.add_dependency "lutaml-model", "~> 0.7.0"
-  spec.add_dependency "plurimath",    "~> 0.10.0", "< 0.10.1"
-  spec.add_dependency "mml",          "~> 2.0.3", "< 2.1"
-  spec.add_dependency "unitsml", "~> 0.5.1"
-  spec.add_dependency "unitsdb", "~> 2.1.1"
+  spec.add_dependency "lutaml-model", "~> 0.8.0"
+  spec.add_dependency "plurimath", "~> 0.10.0"
+  spec.add_dependency "mml", "~> 2.3.0"
+  spec.add_dependency "unitsml", "~> 0.6.0"
+  spec.add_dependency "unitsdb", "~> 2.1"
 
   spec.add_development_dependency "debug"
   spec.add_development_dependency "equivalent-xml", "~> 0.6"
