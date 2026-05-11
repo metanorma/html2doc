@@ -36,7 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "plurimath", "~> 0.10.1"
   spec.add_dependency "thread_safe"
   spec.add_dependency "uuidtools"
-  spec.add_dependency "vectory", "~> 0.8"
+  spec.add_dependency "vectory", "~> 0.10"
 
   spec.add_development_dependency "debug"
   spec.add_development_dependency "equivalent-xml", "~> 0.6"
