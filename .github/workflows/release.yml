@@ -19,6 +19,16 @@ jobs:
     uses: metanorma/ci/.github/workflows/rubygems-release.yml@main
     with:
       next_version: ${{ github.event.inputs.next_version }}
+      # Explicit release_command needed since metanorma/ci#314 deprecated
+      # `bundler_cache` (hardcoded to false) — the reusable's release job no
+      # longer runs `bundle install` implicitly via ruby/setup-ruby, so the
+      # default `bundle exec rake release` fires against uninstalled gems.
+      # Surfaced by kwkwan on metanorma-plugin-lutaml#285. Deeper fix
+      # (bundle install inside rubygems-release.yml's release job) tracked
+      # separately.
+      release_command: |
+        bundle install
+        bundle exec rake release
     secrets:
       rubygems-api-key: ${{ secrets.METANORMA_CI_RUBYGEMS_API_KEY }}
       pat_token: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
