@@ -37,8 +37,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "uuidtools"
   spec.add_dependency "vectory", "~> 0.8"
   spec.add_dependency "lutaml-model", "~> 0.8.0"
-  spec.add_dependency "plurimath", "~> 0.10.0"
-  spec.add_dependency "mml", "~> 2.3.0"
+  spec.add_dependency "plurimath", ">= 0.10.0"
+  spec.add_dependency "mml", ">= 2.3"
   spec.add_dependency "unitsml", "~> 0.6.0"
   spec.add_dependency "unitsdb", "~> 2.1"
 
