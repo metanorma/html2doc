@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   end
   spec.required_ruby_version = Gem::Requirement.new(">= 3.3.0")
 
-  spec.add_dependency "base64"
+  spec.add_dependency "base64", ">= 1.1"
   spec.add_dependency "htmlentities", "~> 4.3.4"
 
   spec.add_dependency "marcel"
