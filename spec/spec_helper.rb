@@ -7,7 +7,7 @@ require "bundler/setup"
 require "rspec/match_fuzzy"
 require "html2doc"
 require "rspec/matchers"
-require "equivalent-xml"
+require "canon/rspec_matchers"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
