@@ -38,12 +38,20 @@ on:
         default: 'skip'
   repository_dispatch:
     types: [ do-release ]
+    types: [ do-release ]
+  # The publish leg: when the release PR (head branch release/v*) merges,
+  # metanorma/ci tags the merge commit and publishes (metanorma/ci#515).
+  # Ordinary PR closes are skipped inside the reusable workflow.
+  pull_request:
+    types:
+      - closed
 
 # Least-privilege ceiling for the called rubygems-release.yml: its release job
 # needs contents:write (git tag push) and id-token:write (OIDC Trusted Publishing).
 permissions:
   contents: write
   id-token: write
+  pull-requests: write
 
 jobs:
   release:
