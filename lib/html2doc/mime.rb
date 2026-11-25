@@ -1,6 +1,5 @@
 require "uuidtools"
 require "base64"
-require "digest"
 require "marcel"
 require "fileutils"
 require "vectory"
