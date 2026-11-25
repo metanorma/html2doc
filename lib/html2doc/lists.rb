@@ -1,4 +1,4 @@
-require "uuidtools"
+require "digest"
 require "htmlentities"
 require "nokogiri"
 
@@ -30,7 +30,9 @@ class Html2Doc
   def list_add(xpath, liststyles, listtype, level)
     xpath.each do |l|
       level == 1 && l["seen"] = true and @listnumber += 1
-      l["id"] ||= UUIDTools::UUID.random_create
+      # document-scoped counter, not random entropy: this id is only used
+      # for list bookkeeping, and must not vary between runs
+      l["id"] ||= "list#{(@listididx += 1)}"
       liststyle = derive_liststyle(l, liststyles[listtype], level)
       (l.xpath(".//li") - l.xpath(".//ol//li | .//ul//li")).each do |li|
         style_list(li, level, liststyle, @listnumber)
@@ -52,12 +54,20 @@ class Html2Doc
     s = @liststyledefs[liststyle]
       .gsub(/@list\s+#{liststyle}/, "@list #{newstylename}")
       .sub(/@list\s+#{newstylename}\s+\{[^}]*\}/m, <<~LISTSTYLE)
-        @list #{newstylename}\n{mso-list-id:#{rand(100_000_000..999_999_999)};
-        mso-list-template-ids:#{rand(100_000_000..999_999_999)};}
+        @list #{newstylename}\n{mso-list-id:#{opaque_list_id(newstylename)};
+        mso-list-template-ids:#{opaque_list_id("#{newstylename}:template")};}
       LISTSTYLE
       .sub(/@list\s+#{newstylename}:level#{level}\s+\{/m,
            "\\0mso-level-start-at:#{start};\n")
     "#{s}\n"
+  end
+
+  # Word treats mso-list-id / mso-list-template-ids as opaque identifiers
+  # that must be unique within the document stylesheet. Derive them from
+  # the list style name instead of random entropy, so identical input
+  # yields byte-identical Word output.
+  def opaque_list_id(seed)
+    100_000_000 + Digest::SHA256.hexdigest(seed).to_i(16) % 900_000_000
   end
 
   def list_add_tail(list, liststyles, listtype, level)
@@ -129,6 +139,7 @@ class Html2Doc
 
   def parse_stylesheet_line_styles
     @listnumber = 0
+    @listididx = 0
     result = process_stylesheet_lines(@stylesheet.split("\n"))
     @liststyledefs = clean_result_content(result)
     @newliststyledefs = ""
