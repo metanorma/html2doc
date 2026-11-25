@@ -1,5 +1,6 @@
 require "uuidtools"
 require "base64"
+require "digest"
 require "marcel"
 require "fileutils"
 require "vectory"
@@ -63,16 +64,20 @@ class Html2Doc
     type
   end
 
-  def mime_boundary
-    salt = UUIDTools::UUID.random_create.to_s.tr("-", ".")[0..17]
+  # Deterministic MIME boundary: minted from the content of this package
+  # instead of random entropy, so identical input yields byte-identical
+  # .doc MHTML output. Boundaries only need uniqueness within a document,
+  # not across the universe.
+  def mime_boundary(seed)
+    salt = uuid5(seed).tr("-", ".")[0..17]
     "----=_NextPart_#{salt}"
   end
 
   def mime_package(result, filename, dir)
-    boundary = mime_boundary
+    boundary = mime_boundary("#{filename}.htm:#{result}")
     mhtml = mime_preamble(boundary, "#{filename}.htm", result)
     mhtml += mime_attachment(boundary, "#{filename}.htm", "filelist.xml", dir)
-    Dir.foreach(dir) do |item|
+    Dir.entries(dir).sort.each do |item|
       next if item == "." || item == ".." || /^\./.match(item) ||
         item == "filelist.xml"
 
@@ -94,8 +99,16 @@ class Html2Doc
 
   IMAGE_PATH = "//*[local-name() = 'img' or local-name() = 'imagedata']".freeze
 
-  def mkuuid
-    UUIDTools::UUID.random_create.to_s
+  # RFC 4122 name-based (SHA-1, version 5) UUID minted from seed content.
+  # Word/Outlook treat Content-IDs as opaque; deriving them from content
+  # keeps identical documents byte-identical across runs.
+  def uuid5(seed)
+    UUIDTools::UUID.sha1_create(UUIDTools::UUID_OID_NAMESPACE,
+                                seed).to_s
+  end
+
+  def image_uuid(filename)
+    uuid5(IO.binread(filename))
   end
 
   def warnsvg(src)
@@ -146,7 +159,7 @@ class Html2Doc
 
   def rename_image(img, dir, localdir)
     local_filename = localname(img["src"], localdir)
-    new_filename = "#{mkuuid}#{File.extname(img['src'])}"
+    new_filename = "#{image_uuid(local_filename)}#{File.extname(img['src'])}"
     FileUtils.cp local_filename, File.join(dir, new_filename)
     img["src"] = File.join(File.basename(dir), new_filename)
     local_filename
@@ -228,7 +241,7 @@ class Html2Doc
         !(%r{ src="data:(image|application)/[^;]+;base64}.match a[1])
       m = / src=['"](?<src>[^"']+)['"]/.match a[1]
       m2 = /\.(?<suffix>[a-zA-Z_0-9]+)$/.match m[:src]
-      new_filename = "#{mkuuid}.#{m2[:suffix]}"
+      new_filename = "#{image_uuid(localname(m[:src], localdir))}.#{m2[:suffix]}"
       FileUtils.cp localname(m[:src], localdir), File.join(dir, new_filename)
       a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='cid:#{new_filename}'")
     end
