@@ -1,4 +1,4 @@
-require "uuidtools"
+require "digest"
 require "base64"
 require "marcel"
 require "fileutils"
@@ -63,27 +63,37 @@ class Html2Doc
     type
   end
 
-  # Deterministic MIME boundary: minted from the content of this package
-  # instead of random entropy, so identical input yields byte-identical
-  # .doc MHTML output. Boundaries only need uniqueness within a document,
-  # not across the universe.
+  # Deterministic MIME boundary: minted from the content address of this
+  # package instead of random entropy, so identical input yields
+  # byte-identical .doc MHTML output. Boundaries only need uniqueness
+  # within a document, not across the universe.
   def mime_boundary(seed)
-    salt = uuid5(seed).tr("-", ".")[0..17]
-    "----=_NextPart_#{salt}"
+    "----=_NextPart_#{Digest::SHA256.hexdigest(seed)[0, 18]}"
   end
 
   def mime_package(result, filename, dir)
-    boundary = mime_boundary("#{filename}.htm:#{result}")
+    boundary = mime_boundary(package_seed(result, filename, dir))
     mhtml = mime_preamble(boundary, "#{filename}.htm", result)
     mhtml += mime_attachment(boundary, "#{filename}.htm", "filelist.xml", dir)
-    Dir.entries(dir).sort.each do |item|
-      next if item == "." || item == ".." || /^\./.match(item) ||
-        item == "filelist.xml"
+    Dir.children(dir).sort.each do |item|
+      next if /^\./.match?(item) || item == "filelist.xml"
 
       mhtml += mime_attachment(boundary, "#{filename}.htm", item, dir)
     end
     mhtml += "--#{boundary}--"
     File.open("#{filename}.doc", "w:UTF-8") { |f| f.write contentid(mhtml) }
+  end
+
+  # The seed is the package's content address: the main document name, the
+  # main HTML with its references reduced to content addresses, and every
+  # attachment as name:SHA-256 pairs in sorted order. Deriving it from
+  # content alone - never from raw paths or scratch state - keeps the
+  # boundary immune to upstream working-directory volatility.
+  def package_seed(result, filename, dir)
+    parts = Dir.children(dir).sort.map do |item|
+      "#{item}:#{content_address(File.join(dir, item))}"
+    end
+    "#{File.basename(filename)}.htm:#{contentid(result)}:#{parts.join(',')}"
   end
 
   def contentid(mhtml)
@@ -98,16 +108,12 @@ class Html2Doc
 
   IMAGE_PATH = "//*[local-name() = 'img' or local-name() = 'imagedata']".freeze
 
-  # RFC 4122 name-based (SHA-1, version 5) UUID minted from seed content.
-  # Word/Outlook treat Content-IDs as opaque; deriving them from content
-  # keeps identical documents byte-identical across runs.
-  def uuid5(seed)
-    UUIDTools::UUID.sha1_create(UUIDTools::UUID_OID_NAMESPACE,
-                                seed).to_s
-  end
-
-  def image_uuid(filename)
-    uuid5(IO.binread(filename))
+  # Content-addressed part name seed, mirroring IsoDoc::AssetStore's
+  # addressing: the SHA-256 of the part bytes. Word/Outlook treat
+  # Content-IDs as opaque; identical content collapses to a single part,
+  # and emitted names carry no entropy.
+  def content_address(filename)
+    Digest::SHA256.file(filename).hexdigest
   end
 
   def warnsvg(src)
@@ -158,7 +164,8 @@ class Html2Doc
 
   def rename_image(img, dir, localdir)
     local_filename = localname(img["src"], localdir)
-    new_filename = "#{image_uuid(local_filename)}#{File.extname(img['src'])}"
+    new_filename =
+      "#{content_address(local_filename)}#{File.extname(img['src'])}"
     FileUtils.cp local_filename, File.join(dir, new_filename)
     img["src"] = File.join(File.basename(dir), new_filename)
     local_filename
@@ -240,7 +247,8 @@ class Html2Doc
         !(%r{ src="data:(image|application)/[^;]+;base64}.match a[1])
       m = / src=['"](?<src>[^"']+)['"]/.match a[1]
       m2 = /\.(?<suffix>[a-zA-Z_0-9]+)$/.match m[:src]
-      new_filename = "#{image_uuid(localname(m[:src], localdir))}.#{m2[:suffix]}"
+      new_filename =
+        "#{content_address(localname(m[:src], localdir))}.#{m2[:suffix]}"
       FileUtils.cp localname(m[:src], localdir), File.join(dir, new_filename)
       a[1].sub!(%r{ src=['"](?<src>[^"']+)['"]}, " src='cid:#{new_filename}'")
     end

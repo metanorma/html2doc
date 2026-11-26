@@ -1,4 +1,5 @@
 require "spec_helper"
+require "digest"
 require "fileutils"
 
 RSpec.describe "Html2Doc output determinism" do
@@ -9,6 +10,8 @@ RSpec.describe "Html2Doc output determinism" do
       <body>
       <h1>Hello word!</h1>
       <img src="19160-6.png">
+      <img src="19160-6.png">
+      <img src="19160-7.gif">
       <div>
       <ol id="1"><li>A</li></ol>
       <ol id="2" start="3"><li>B</li></ol>
@@ -42,11 +45,18 @@ RSpec.describe "Html2Doc output determinism" do
       .to eq(first.scan(/----=_NextPart_/).count)
   end
 
-  it "mints image part names deterministically from image content" do
-    uuid = compile[%r{cid:([0-9a-f-]{36}\.png)}, 1]
+  it "names image parts by their SHA-256 content address" do
+    addresses = compile.scan(/cid:([0-9a-f]{64}\.(?:png|gif))/).flatten.uniq
+    png = "#{Digest::SHA256.file('spec/19160-6.png').hexdigest}.png"
+    gif = "#{Digest::SHA256.file('spec/19160-7.gif').hexdigest}.gif"
 
-    expect(uuid).not_to be_nil
-    expect(compile).to include("cid:#{uuid}")
+    expect(addresses.sort).to eq([gif, png].sort)
+  end
+
+  it "collapses identical images to a single content-addressed part" do
+    cids = compile.scan(/cid:[0-9a-f]{64}\.png/).uniq
+
+    expect(cids.length).to eq(1)
   end
 
   it "mints list ids deterministically" do
