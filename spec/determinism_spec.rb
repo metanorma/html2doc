@@ -67,4 +67,31 @@ RSpec.describe "Html2Doc output determinism" do
     expect(ids).to eq(compile.scan(/mso-list-id:(\d{9})/).flatten)
     expect(ids.uniq.length).to eq(ids.length)
   end
+
+  # header images pass through header_image_cleanup, whose scratch copies
+  # carry the same content-addressing as body images; header img srcs
+  # resolve against the filename's directory, body img srcs against the
+  # imagedir
+  def compile_with_header
+    FileUtils.rm_rf("det_header_test_files")
+    FileUtils.rm_f(%w[det_header_test.doc det_header_test.htm])
+    Html2Doc.new(filename: "det_header_test", imagedir: "spec",
+                 stylesheet: "spec/wordstyle-nopagesize.css",
+                 header_file: "spec/header_img.html",
+                 liststyles: { ul: "l0", ol: "l1" })
+      .process(input)
+    File.binread("det_header_test.doc")
+  end
+
+  it "produces byte-identical .doc output with header images across runs" do
+    expect(compile_with_header).to eq(compile_with_header)
+  end
+
+  it "names header image parts by their SHA-256 content address" do
+    doc = compile_with_header
+    png = "#{Digest::SHA256.file('spec/19160-6.png').hexdigest}.png"
+
+    expect(doc).to include("cid:#{png}")
+    expect(doc).not_to match(/cid:[0-9a-f]{8}-[0-9a-f]{4}-/)
+  end
 end
